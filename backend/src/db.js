@@ -6,6 +6,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+pool.query('SELECT 1')
+  .then(() => console.log('DB connected'))
+  .catch(err => console.error('DB connection failed:', err.message));
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };
