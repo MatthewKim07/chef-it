@@ -28,5 +28,6 @@ archive/web-scaffold/.next/
 # Read-only imported reference repo
 reference/pantry-pal/
 
-# Claude handoff note
+# Agent handoff note
 CLAUDE.md
+AGENTS.md
