@@ -37,10 +37,7 @@ public struct LoginView: View {
                     .padding(.bottom, 40)
 
                     VStack(spacing: 16) {
-                        brandTextField(placeholder: "Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never)
+                        brandEmailField(placeholder: "Email", text: $email)
 
                         brandSecureField(placeholder: "Password", text: $password)
                             .textContentType(.password)
@@ -115,17 +112,31 @@ public struct LoginView: View {
 
 func brandTextField(placeholder: String, text: Binding<String>) -> some View {
     TextField(placeholder, text: text)
-        .font(.custom("Nunito-Regular", size: 15))
-        .foregroundColor(BrandColor.text)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(Color.white)
-        .cornerRadius(8)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(BrandColor.matcha, lineWidth: 1))
+        .brandFieldChrome()
+}
+
+@ViewBuilder
+func brandEmailField(placeholder: String, text: Binding<String>) -> some View {
+    #if os(iOS)
+    TextField(placeholder, text: text)
+        .keyboardType(.emailAddress)
+        .textContentType(.emailAddress)
+        .textInputAutocapitalization(.never)
+        .brandFieldChrome()
+    #else
+    TextField(placeholder, text: text)
+        .brandFieldChrome()
+    #endif
 }
 
 func brandSecureField(placeholder: String, text: Binding<String>) -> some View {
     SecureField(placeholder, text: text)
+        .brandFieldChrome()
+}
+
+private extension View {
+    func brandFieldChrome() -> some View {
+        self
         .font(.custom("Nunito-Regular", size: 15))
         .foregroundColor(BrandColor.text)
         .padding(.horizontal, 16)
@@ -133,4 +144,5 @@ func brandSecureField(placeholder: String, text: Binding<String>) -> some View {
         .background(Color.white)
         .cornerRadius(8)
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(BrandColor.matcha, lineWidth: 1))
+    }
 }

@@ -41,10 +41,7 @@ public struct RegisterView: View {
                         brandTextField(placeholder: "Your chef name (optional)", text: $displayName)
                             .textContentType(.name)
 
-                        brandTextField(placeholder: "Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never)
+                        brandEmailField(placeholder: "Email", text: $email)
 
                         brandSecureField(placeholder: "Password", text: $password)
                             .textContentType(.newPassword)
