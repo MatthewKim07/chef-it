@@ -24,6 +24,8 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: App/ChefIt
+      - path: App/ChefIt/Resources
+        buildPhase: resources
     info:
       path: App/ChefIt/Info.plist
     settings:
