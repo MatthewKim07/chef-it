@@ -100,19 +100,35 @@ struct ChefitRootCoordinatorView: View {
                 route = .recipeDetails(id: "cooking-mode")
             }
         case .scan:
-            routePlaceholder("Scan") { route = .detectedIngredients }
+            ChefitScanPantryView(
+                onScanNow: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        route = .detectedIngredients
+                    }
+                },
+                onAddManually: { route = .home }
+            )
         case .detectedIngredients:
-            routePlaceholder("Detected ingredients") { route = .recommendations }
+            ChefitDetectedIngredientsView {
+                route = .recommendations
+            }
         case .recommendations:
-            routePlaceholder("Recommendations") { route = .recipeDiscover(id: "creamy-pasta") }
+            ChefitRecommendationsView { recipeID in
+                route = .recipeDiscover(id: recipeID)
+            }
         case .shoppingList:
-            routePlaceholder("Shopping list") {}
+            ChefitShoppingListView()
         case .saved:
-            routePlaceholder("Saved") { route = .recipeDiscover(id: "creamy-pasta") }
+            ChefitSavedView { recipeID in
+                route = .recipeDiscover(id: recipeID)
+            }
         case .profile:
-            routePlaceholder("Profile") { route = .shoppingList }
+            ChefitProfileView(
+                onShoppingTap: { route = .shoppingList },
+                onPantryTap: { route = .scan }
+            )
         case .community:
-            routePlaceholder("Community") {}
+            ChefitCommunityView()
         }
     }
 
