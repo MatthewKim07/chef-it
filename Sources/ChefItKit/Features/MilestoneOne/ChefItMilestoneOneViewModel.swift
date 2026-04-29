@@ -61,9 +61,11 @@ public final class ChefItMilestoneOneViewModel: ObservableObject {
     @Published public private(set) var suggestions: [String] = []
     @Published public private(set) var lastAddFeedback: AddFeedback?
     @Published public private(set) var undoableClearSnapshot: [Ingredient]?
+    @Published public private(set) var favoriteRecipeIDs: Set<String>
     @Published public var editState: BoardEditState = .idle
 
     public let ingredientStore: IngredientStore
+    public let favoriteRecipeStore: FavoriteRecipeStore
 
     private let planner: RecipeDiscoveryPlanner
     private let matcher: RecipeMatcher
@@ -73,16 +75,19 @@ public final class ChefItMilestoneOneViewModel: ObservableObject {
 
     public init(
         ingredientStore: IngredientStore? = nil,
+        favoriteRecipeStore: FavoriteRecipeStore = FavoriteRecipeStore(),
         planner: RecipeDiscoveryPlanner = RecipeDiscoveryPlanner(),
         matcher: RecipeMatcher = RecipeMatcher(),
         recipeSearchService: any RecipeSearchService = LocalSeedRecipeSearchService(),
         suggester: IngredientSuggester = IngredientSuggester()
     ) {
         self.ingredientStore = ingredientStore ?? IngredientStore()
+        self.favoriteRecipeStore = favoriteRecipeStore
         self.planner = planner
         self.matcher = matcher
         self.recipeSearchService = recipeSearchService
         self.suggester = suggester
+        self.favoriteRecipeIDs = favoriteRecipeStore.favoriteRecipeIDs
 
         ingredientsObservation = self.ingredientStore.$ingredients.sink { [weak self] ingredients in
             guard let self else { return }
@@ -182,6 +187,17 @@ public final class ChefItMilestoneOneViewModel: ObservableObject {
 
     public func dismissUndo() {
         undoableClearSnapshot = nil
+    }
+
+    // MARK: - Favorites
+
+    public func toggleFavorite(_ recipe: Recipe) {
+        _ = favoriteRecipeStore.toggle(recipe.id)
+        favoriteRecipeIDs = favoriteRecipeStore.favoriteRecipeIDs
+    }
+
+    public func isFavorite(_ recipe: Recipe) -> Bool {
+        favoriteRecipeIDs.contains(recipe.id)
     }
 
     // MARK: - Discovery

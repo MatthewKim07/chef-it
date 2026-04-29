@@ -468,6 +468,7 @@ public struct ChefItMilestoneOneView: View {
                 summaryBadge(title: "candidates", value: "\(snapshot.candidateCount)")
                 summaryBadge(title: "ready", value: "\(snapshot.results.ready.count)")
                 summaryBadge(title: "almost", value: "\(snapshot.results.almost.count)")
+                summaryBadge(title: "saved", value: "\(model.favoriteRecipeIDs.count)")
             }
 
             if !snapshot.plan.proteins.isEmpty || !snapshot.plan.supportingIngredients.isEmpty {
@@ -481,6 +482,17 @@ public struct ChefItMilestoneOneView: View {
                         .foregroundStyle(Palette.paper.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+
+            let savedMatches = (snapshot.results.ready + snapshot.results.almost)
+                .filter { model.isFavorite($0.recipe) }
+            if !savedMatches.isEmpty {
+                resultColumn(
+                    title: "Saved",
+                    subtitle: "Quick access to recipes you bookmarked in this workspace.",
+                    matches: savedMatches,
+                    tone: Palette.plum
+                )
             }
 
             resultColumn(
@@ -547,6 +559,21 @@ public struct ChefItMilestoneOneView: View {
                 Spacer(minLength: 12)
 
                 VStack(alignment: .trailing, spacing: 4) {
+                    Button {
+                        model.toggleFavorite(match.recipe)
+                    } label: {
+                        Image(systemName: model.isFavorite(match.recipe) ? "bookmark.fill" : "bookmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(model.isFavorite(match.recipe) ? tone : Palette.paper.opacity(0.72))
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .fill(Palette.paper.opacity(0.08))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(model.isFavorite(match.recipe) ? "Remove saved recipe" : "Save recipe")
+
                     Text("\(match.recipe.cookingMinutes) min")
                         .font(.system(size: 12, weight: .semibold, design: .monospaced))
                         .foregroundStyle(tone)
