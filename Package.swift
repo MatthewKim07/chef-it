@@ -5,7 +5,7 @@ let package = Package(
     name: "ChefItKit",
     platforms: [
         .iOS(.v17),
-        .macOS(.v13)
+        .macOS(.v14)
     ],
     products: [
         .library(name: "ChefItKit", targets: ["ChefItKit"])

@@ -1,15 +1,16 @@
-import XCTest
+import Testing
 @testable import ChefItKit
 
-final class RecipeDiscoveryPlannerTests: XCTestCase {
-    private let normalizer = IngredientNormalizer()
-    private let planner = RecipeDiscoveryPlanner()
+@Suite("RecipeDiscoveryPlanner")
+struct RecipeDiscoveryPlannerTests {
+    let normalizer = IngredientNormalizer()
+    let planner = RecipeDiscoveryPlanner()
 
     private func ingredient(_ raw: String) -> Ingredient {
         Ingredient(name: raw, canonicalName: normalizer.canonicalize(raw))
     }
 
-    func testPlannerSeparatesProteinsFromSupportingIngredients() {
+    @Test func plannerSeparatesProteinsFromSupportingIngredients() {
         let ingredients = [
             ingredient("Chicken Breast"),
             ingredient("Cherry Tomatoes"),
@@ -19,17 +20,17 @@ final class RecipeDiscoveryPlannerTests: XCTestCase {
 
         let plan = planner.makePlan(from: ingredients)
 
-        XCTAssertEqual(plan.proteins, ["chicken"])
-        XCTAssertEqual(plan.supportingIngredients, ["tomato", "garlic", "rice"])
-        XCTAssertEqual(plan.query.proteins, ["chicken"])
+        #expect(plan.proteins == ["chicken"])
+        #expect(plan.supportingIngredients == ["tomato", "garlic", "rice"])
+        #expect(plan.query.proteins == ["chicken"])
     }
 
-    func testLocalSeedSearchPrioritizesProteinMatches() async throws {
+    @Test func localSeedSearchPrioritizesProteinMatches() async throws {
         let service = LocalSeedRecipeSearchService()
         let query = RecipeQuery(canonicalIngredients: ["chicken", "garlic"], proteins: ["chicken"])
 
         let recipes = try await service.search(query: query)
 
-        XCTAssertEqual(recipes.first?.id, "lemon-chicken")
+        #expect(recipes.first?.id == "lemon-chicken")
     }
 }

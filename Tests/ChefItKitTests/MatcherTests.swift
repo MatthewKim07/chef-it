@@ -1,53 +1,54 @@
-import XCTest
+import Testing
 @testable import ChefItKit
 
-final class MatcherTests: XCTestCase {
+@Suite("RecipeMatcher")
+struct MatcherTests {
     let matcher = RecipeMatcher()
     let normalizer = IngredientNormalizer()
 
     private func ingredient(_ raw: String) -> Ingredient {
-        let canonical = normalizer.canonicalize(raw)
-        return Ingredient(name: raw, canonicalName: canonical)
+        Ingredient(name: raw, canonicalName: normalizer.canonicalize(raw))
     }
 
-    func testReadyWhenAllPresent() {
+    @Test func readyWhenAllPresent() {
         let pantry = ["pasta", "garlic", "olive oil", "salt"].map(ingredient)
         let results = matcher.match(ingredients: pantry, recipes: SeedRecipes.all)
-        XCTAssertTrue(results.ready.contains { $0.recipe.id == "garlic-oil-pasta" })
-        XCTAssertEqual(results.ready.first { $0.recipe.id == "garlic-oil-pasta" }?.missingIngredients, [])
+        #expect(results.ready.contains { $0.recipe.id == "garlic-oil-pasta" })
+        let pasta = results.ready.first { $0.recipe.id == "garlic-oil-pasta" }
+        #expect(pasta?.missingIngredients == [])
     }
 
-    func testAlmostWhenOneMissing() {
+    @Test func almostWhenOneMissing() {
         let pantry = ["egg", "tomato", "salt"].map(ingredient)
         let results = matcher.match(ingredients: pantry, recipes: SeedRecipes.all)
         let almost = results.almost.first { $0.recipe.id == "tomato-egg-stir" }
-        XCTAssertNotNil(almost)
-        XCTAssertEqual(almost?.missingIngredients, ["rice"])
+        #expect(almost != nil)
+        #expect(almost?.missingIngredients == ["rice"])
     }
 
-    func testExcludedBeyondThreshold() {
+    @Test func excludedBeyondThreshold() {
         let pantry = ["egg"].map(ingredient)
         let results = matcher.match(ingredients: pantry, recipes: SeedRecipes.all)
-        // tomato-egg-stir needs egg+tomato+salt+rice → 3 missing, beyond default threshold of 2
-        XCTAssertNil(results.ready.first { $0.recipe.id == "tomato-egg-stir" })
-        XCTAssertNil(results.almost.first { $0.recipe.id == "tomato-egg-stir" })
+        // tomato-egg-stir needs egg+tomato+salt+rice → 3 missing > default threshold 2
+        #expect(!results.ready.contains { $0.recipe.id == "tomato-egg-stir" })
+        #expect(!results.almost.contains { $0.recipe.id == "tomato-egg-stir" })
     }
 
-    func testReadySortedByCookingTime() {
+    @Test func readySortedByCookingTime() {
         let pantry = ["pasta", "garlic", "olive oil", "salt", "egg", "tomato", "rice"].map(ingredient)
         let results = matcher.match(ingredients: pantry, recipes: SeedRecipes.all)
         let times = results.ready.map(\.recipe.cookingMinutes)
-        XCTAssertEqual(times, times.sorted())
+        #expect(times == times.sorted())
     }
 
-    func testCanonicalizationLetsRawFormsMatch() {
+    @Test func canonicalizationLetsRawFormsMatch() {
         let pantry = ["Cherry Tomatoes", "Eggs", "Kosher Salt", "white rice"].map(ingredient)
         let results = matcher.match(ingredients: pantry, recipes: SeedRecipes.all)
-        XCTAssertTrue(results.ready.contains { $0.recipe.id == "tomato-egg-stir" })
+        #expect(results.ready.contains { $0.recipe.id == "tomato-egg-stir" })
     }
 
-    func testEmptyPantryProducesNoReady() {
+    @Test func emptyPantryProducesNoReady() {
         let results = matcher.match(ingredients: [], recipes: SeedRecipes.all)
-        XCTAssertTrue(results.ready.isEmpty)
+        #expect(results.ready.isEmpty)
     }
 }
