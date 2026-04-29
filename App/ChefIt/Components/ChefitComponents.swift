@@ -5,7 +5,6 @@ enum ChefitTab: Hashable {
     case search
     case scan
     case saved
-    case profile
     case community
 }
 
@@ -14,19 +13,23 @@ struct ChefitBottomNavBar: View {
     let onTap: (ChefitTab) -> Void
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: ChefitSpacing.md) {
+        HStack(alignment: .bottom, spacing: 8) {
             navItem(title: "Home", icon: "house", tab: .home)
             navItem(title: "Search", icon: "magnifyingglass", tab: .search)
             scanButton
-            navItem(title: "Saved", icon: "heart", tab: .saved)
-            navItem(title: "Profile", icon: "person", tab: .profile)
+            navItem(title: "Saved", icon: "bookmark", tab: .saved)
+            navItem(title: "Community", icon: "person.2", tab: .community)
         }
-        .padding(.horizontal, ChefitSpacing.lg)
-        .padding(.top, ChefitSpacing.sm)
-        .padding(.bottom, ChefitSpacing.sm)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
-        .background(ChefitColors.white)
-        .chefitNavShadow()
+        .background(ChefitColors.white.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(ChefitColors.pistachio.opacity(0.6))
+                .frame(height: 1)
+        }
     }
 
     private func navItem(title: String, icon: String, tab: ChefitTab) -> some View {
@@ -34,18 +37,16 @@ struct ChefitBottomNavBar: View {
         return Button {
             onTap(tab)
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.matcha)
+                    .font(.system(size: 21, weight: .regular))
+                    .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
                 Text(title)
-                    .font(ChefitTypography.micro())
-                    .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.matcha)
-                Circle()
-                    .fill(isActive ? ChefitColors.sageGreen : .clear)
-                    .frame(width: 4, height: 4)
+                    .font(.custom("Nunito-SemiBold", size: 12))
+                    .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
             }
             .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
         }
         .buttonStyle(.plain)
     }
@@ -54,17 +55,24 @@ struct ChefitBottomNavBar: View {
         Button {
             onTap(.scan)
         } label: {
-            ZStack {
-                Circle()
-                    .fill(ChefitColors.peach)
-                    .frame(width: 56, height: 56)
-                    .chefitPrimaryButtonShadow()
-                Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(ChefitColors.white)
+            VStack(spacing: 2) {
+                ZStack {
+                    Circle()
+                        .fill(ChefitColors.peach)
+                        .frame(width: 52, height: 52)
+                    Image(systemName: "viewfinder")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(ChefitColors.white)
+                }
+                .offset(y: -10)
+
+                Text("Scan")
+                    .font(.custom("Nunito-SemiBold", size: 12))
+                    .foregroundStyle(ChefitColors.peach)
+                    .offset(y: -10)
             }
-            .offset(y: -14)
             .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
         }
         .buttonStyle(.plain)
     }
@@ -132,13 +140,16 @@ struct ChefitRecipeCard: View {
 
 struct ChefitIngredientChip: View {
     let label: String
-    let icon: String
+    let systemImage: String
     var showsRemove: Bool = false
     var onRemove: (() -> Void)?
 
     var body: some View {
         HStack(spacing: ChefitSpacing.xs) {
-            Text(icon)
+            Image(systemName: systemImage)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(ChefitColors.sageGreen)
+                .frame(width: 22, alignment: .center)
             Text(label)
                 .font(ChefitTypography.label())
                 .foregroundStyle(ChefitColors.sageGreen)
@@ -216,15 +227,17 @@ struct ChefitSectionHeader: View {
 }
 
 struct ChefitCategoryBubble: View {
-    let icon: String
+    let systemImage: String
     let label: String
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: ChefitSpacing.sm) {
-                Text(icon)
-                    .font(.system(size: 28))
+                Image(systemName: systemImage)
+                    .font(.system(size: 26, weight: .semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(ChefitColors.sageGreen)
                     .frame(width: 64, height: 64)
                     .background(ChefitColors.pistachio)
                     .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
@@ -241,7 +254,7 @@ struct ChefitCategoryBubble: View {
 struct ChefitStepRow: View {
     let stepNumber: Int
     let text: String
-    var icon: String?
+    var systemImage: String?
 
     var body: some View {
         HStack(spacing: ChefitSpacing.sm) {
@@ -257,8 +270,11 @@ struct ChefitStepRow: View {
                 .foregroundStyle(ChefitColors.text)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let icon {
-                Text(icon)
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(ChefitColors.matcha)
+                    .symbolRenderingMode(.hierarchical)
             }
 
             Image(systemName: "chevron.right")

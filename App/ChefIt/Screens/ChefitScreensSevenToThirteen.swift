@@ -38,7 +38,7 @@ struct ChefitScanPantryView: View {
             Spacer()
         }
         .padding(ChefitSpacing.md)
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -61,8 +61,10 @@ struct ChefitDetectedIngredientsView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: ChefitSpacing.md) {
                     ForEach(ChefitSampleData.detectedIngredients, id: \.1) { item in
                         VStack(spacing: ChefitSpacing.xs) {
-                            Text(item.0)
-                                .font(.system(size: 30))
+                            Image(systemName: item.0)
+                                .font(.system(size: 26, weight: .medium))
+                                .symbolRenderingMode(.hierarchical)
+                                .foregroundStyle(ChefitColors.sageGreen)
                                 .frame(width: 60, height: 60)
                                 .background(ChefitColors.pistachio)
                                 .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
@@ -78,9 +80,8 @@ struct ChefitDetectedIngredientsView: View {
                     .padding(.top, ChefitSpacing.md)
             }
             .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -138,9 +139,8 @@ struct ChefitRecommendationsView: View {
                 }
             }
             .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -176,7 +176,6 @@ struct ChefitShoppingListView: View {
                     }
                 }
                 .padding(ChefitSpacing.md)
-                .padding(.bottom, 90)
             }
 
             Button {
@@ -189,7 +188,7 @@ struct ChefitShoppingListView: View {
             }
             .buttonStyle(ChefitPrimaryButtonStyle())
             .padding(ChefitSpacing.md)
-            .background(ChefitColors.cream)
+            .background(ChefitColors.cream.ignoresSafeArea())
             .overlay(alignment: .top) {
                 if showToast {
                     Text("Added to cart!")
@@ -203,7 +202,7 @@ struct ChefitShoppingListView: View {
                 }
             }
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 
     private func section(_ title: String) -> some View {
@@ -276,9 +275,8 @@ struct ChefitSavedView: View {
                 }
             }
             .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -316,9 +314,8 @@ struct ChefitProfileView: View {
                 ChefitProfileMenuRow(label: "Help & Support", onTap: {})
             }
             .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -326,72 +323,126 @@ struct ChefitCommunityView: View {
     @State private var feedTab = "For You"
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                HStack(spacing: ChefitSpacing.md) {
-                    ForEach(["For You", "Following", "Popular"], id: \.self) { tab in
-                        Button {
-                            feedTab = tab
-                        } label: {
-                            VStack(spacing: 4) {
-                                Text(tab)
-                                    .font(ChefitTypography.label())
-                                    .foregroundStyle(feedTab == tab ? ChefitColors.sageGreen : ChefitColors.matcha)
-                                Rectangle()
-                                    .fill(feedTab == tab ? ChefitColors.peach : .clear)
-                                    .frame(height: 2)
+        GeometryReader { proxy in
+            let horizontalInset = max(14, proxy.size.width * 0.04)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        ForEach(["For You", "Following", "Popular"], id: \.self) { tab in
+                            Button {
+                                feedTab = tab
+                            } label: {
+                                ZStack {
+                                    if feedTab == tab {
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(ChefitColors.peach.opacity(0.15))
+                                    }
+                                    Text(tab)
+                                        .font(.custom("Nunito-Bold", size: 13))
+                                        .foregroundStyle(feedTab == tab ? ChefitColors.text : ChefitColors.text.opacity(0.55))
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 34)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 4)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.top, 10)
+                    .padding(.bottom, 8)
+
+                    Divider().overlay(ChefitColors.text.opacity(0.08))
+
+                    VStack(spacing: 0) {
+                        ForEach(Array(ChefitSampleData.communityPosts.prefix(2).enumerated()), id: \.offset) { index, post in
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Circle()
+                                        .fill(ChefitColors.honey.opacity(0.4))
+                                        .frame(width: 24, height: 24)
+                                        .overlay {
+                                            Image(systemName: "person.fill")
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(ChefitColors.text.opacity(0.75))
+                                        }
+                                    Text(post.user)
+                                        .font(.custom("Nunito-SemiBold", size: 12))
+                                        .foregroundStyle(ChefitColors.text)
+                                    Text(post.time)
+                                        .font(.custom("Nunito-Regular", size: 11))
+                                        .foregroundStyle(ChefitColors.text.opacity(0.45))
+                                    Spacer()
+                                    Text("\(index + 2)h")
+                                        .font(.custom("Nunito-Bold", size: 11))
+                                        .foregroundStyle(ChefitColors.text.opacity(0.5))
+                                }
+
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(ChefitColors.cream)
+                                    .frame(height: 150)
+                                    .overlay {
+                                        Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                                            .font(.system(size: 72))
+                                            .foregroundStyle(ChefitColors.honey)
+                                    }
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Made Creamy Tomato Pasta")
+                                        .font(.custom("Nunito-Bold", size: 16))
+                                        .foregroundStyle(ChefitColors.text)
+                                    Text("So easy and delicious!")
+                                        .font(.custom("Nunito-SemiBold", size: 13))
+                                        .foregroundStyle(ChefitColors.text)
+                                    Text("#dinner  #quickmeals")
+                                        .font(.custom("Nunito-SemiBold", size: 13))
+                                        .foregroundStyle(ChefitColors.sageGreen)
+                                }
+
+                                HStack(spacing: 24) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "heart.fill")
+                                            .foregroundStyle(ChefitColors.peach)
+                                        Text("\(post.likes)")
+                                    }
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "bubble.left")
+                                        Text("\(post.comments)")
+                                    }
+                                    Spacer()
+                                    Image(systemName: "bookmark")
+                                }
+                                .font(.custom("Nunito-Bold", size: 14))
+                                .foregroundStyle(ChefitColors.text.opacity(0.7))
+                            }
+                            .padding(12)
+                            .overlay(alignment: .bottom) {
+                                if index == 0 {
+                                    Divider().overlay(ChefitColors.text.opacity(0.08))
+                                }
                             }
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-
-                ForEach(Array(ChefitSampleData.communityPosts.enumerated()), id: \.offset) { _, post in
-                    VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
-                        HStack {
-                            Circle()
-                                .fill(ChefitColors.pistachio)
-                                .frame(width: 40, height: 40)
-                            VStack(alignment: .leading) {
-                                Text(post.user)
-                                    .font(ChefitTypography.label())
-                                    .foregroundStyle(ChefitColors.sageGreen)
-                                Text(post.time)
-                                    .font(ChefitTypography.micro())
-                                    .foregroundStyle(ChefitColors.matcha)
-                            }
-                            Spacer()
-                        }
-
-                        AsyncImage(url: post.imageURL) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
-                        }
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-
-                        Text(post.caption)
-                            .font(ChefitTypography.body())
-                            .foregroundStyle(ChefitColors.sageGreen)
-
-                        HStack(spacing: ChefitSpacing.md) {
-                            Text("❤️ \(post.likes)")
-                            Text("💬 \(post.comments)")
-                            Text("🔖")
-                        }
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.matcha)
-                    }
-                    .padding(ChefitSpacing.md)
-                    .background(ChefitColors.white)
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-                    .chefitCardShadow()
+                .background(ChefitColors.white)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(ChefitColors.text.opacity(0.09), lineWidth: 1)
                 }
+                .padding(.horizontal, horizontalInset)
+                .padding(.top, 10)
+                .padding(.bottom, 10)
+
+                Text("See what others cooked,\nget inspired and connect.")
+                    .font(.custom("Nunito-SemiBold", size: 13))
+                    .foregroundStyle(ChefitColors.text.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 20)
             }
-            .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
+            .background(ChefitColors.cream.ignoresSafeArea())
         }
-        .background(ChefitColors.cream)
     }
 }

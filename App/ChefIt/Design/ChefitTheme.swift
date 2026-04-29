@@ -2,13 +2,25 @@ import SwiftUI
 
 enum ChefitColors {
     static let sageGreen = Color(hex: 0x4C5A3E)
-    static let matcha = Color(hex: 0xA8C5A1)
-    static let pistachio = Color(hex: 0xE8F0E3)
+    static let matcha = Color(hex: 0xABC5A1)
+    static let pistachio = Color(hex: 0xEBF0E3)
     static let cream = Color(hex: 0xFFF7E8)
-    static let peach = Color(hex: 0xFFB79D)
+    static let peach = Color(hex: 0xFFB793)
     static let honey = Color(hex: 0xFFD26F)
     static let text = Color(hex: 0x2F3A2E)
     static let white = Color.white
+
+    /// Welcome screen spec (matches design mock).
+    static let splashBackground = Color(hex: 0xFCF9F2)
+    static let splashBrandGreen = Color(hex: 0x6B8E61)
+    static let splashHatOutline = Color(hex: 0x3D3429)
+    static let splashLeafGreen = Color(hex: 0x7CB972)
+    static let splashBlush = Color(hex: 0xFFB7C5)
+    static let splashDotInactive = Color(hex: 0xE5E2DC)
+    static let splashButtonGradientTop = Color(hex: 0xF29B7E)
+    static let splashButtonGradientBottom = Color(hex: 0xE8876E)
+    static let splashIconPumpkin = Color(hex: 0xE89B6A)
+    static let splashIconTomatoRed = Color(hex: 0xE85858)
 }
 
 enum ChefitSpacing {

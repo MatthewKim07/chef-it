@@ -47,9 +47,18 @@ struct ChefitRecipeDiscoveryView: View {
                     .font(ChefitTypography.h2())
                     .foregroundStyle(ChefitColors.sageGreen)
 
-                Text("🕐 \(recipe.minutes) min · ⭐ \(recipe.difficulty) · 👤 2 servings")
-                    .font(ChefitTypography.micro())
-                    .foregroundStyle(ChefitColors.matcha)
+                HStack(spacing: 6) {
+                    Image(systemName: ChefitSymbol.clock)
+                    Text("\(recipe.minutes) min")
+                    Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
+                    Image(systemName: ChefitSymbol.star)
+                    Text(recipe.difficulty)
+                    Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
+                    Image(systemName: ChefitSymbol.personServings)
+                    Text("2 servings")
+                }
+                .font(ChefitTypography.micro())
+                .foregroundStyle(ChefitColors.matcha)
 
                 HStack {
                     Text("Ingredients")
@@ -64,7 +73,7 @@ struct ChefitRecipeDiscoveryView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: ChefitSpacing.sm) {
                         ForEach(ChefitSampleData.ingredientChips, id: \.0) { item in
-                            ChefitIngredientChip(label: item.0, icon: item.1)
+                            ChefitIngredientChip(label: item.0, systemImage: item.1)
                         }
                     }
                 }
@@ -74,9 +83,8 @@ struct ChefitRecipeDiscoveryView: View {
                     .padding(.top, ChefitSpacing.md)
             }
             .padding(ChefitSpacing.md)
-            .padding(.bottom, 90)
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
@@ -105,7 +113,7 @@ struct ChefitRecipeDetailsView: View {
 
                 ScrollView {
                     tabContent
-                        .padding(.bottom, 100)
+                        .padding(.bottom, ChefitSpacing.twoXL + ChefitSpacing.lg)
                 }
             }
             .padding(ChefitSpacing.md)
@@ -121,9 +129,9 @@ struct ChefitRecipeDetailsView: View {
             }
             .buttonStyle(ChefitPrimaryButtonStyle())
             .padding(ChefitSpacing.md)
-            .background(ChefitColors.cream)
+            .background(ChefitColors.cream.ignoresSafeArea())
         }
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 
     private var tabSelector: some View {
@@ -154,7 +162,11 @@ struct ChefitRecipeDetailsView: View {
             VStack(spacing: 0) {
                 ForEach(ChefitSampleData.recipeDetailIngredients, id: \.1) { item in
                     HStack {
-                        Text(item.0)
+                        Image(systemName: item.0)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(ChefitColors.matcha)
+                            .symbolRenderingMode(.hierarchical)
+                            .frame(width: 28, alignment: .center)
                         Text(item.1)
                             .font(ChefitTypography.body())
                             .foregroundStyle(ChefitColors.sageGreen)
@@ -169,10 +181,10 @@ struct ChefitRecipeDetailsView: View {
             }
         case .steps:
             VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
-                ChefitStepRow(stepNumber: 1, text: "Boil the pasta", icon: "🍝")
-                ChefitStepRow(stepNumber: 2, text: "Sauté garlic", icon: "🧄")
-                ChefitStepRow(stepNumber: 3, text: "Add tomatoes", icon: "🍅")
-                ChefitStepRow(stepNumber: 4, text: "Combine and serve", icon: "🍽️")
+                ChefitStepRow(stepNumber: 1, text: "Boil the pasta", systemImage: ChefitSymbol.stepBoilPasta)
+                ChefitStepRow(stepNumber: 2, text: "Sauté garlic", systemImage: ChefitSymbol.stepSaute)
+                ChefitStepRow(stepNumber: 3, text: "Add tomatoes", systemImage: ChefitSymbol.stepTomatoes)
+                ChefitStepRow(stepNumber: 4, text: "Combine and serve", systemImage: ChefitSymbol.stepServe)
             }
         case .notes:
             Text("No notes yet. Add your own tips here.")

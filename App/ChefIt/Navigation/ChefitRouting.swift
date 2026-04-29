@@ -21,40 +21,34 @@ struct ChefitRootCoordinatorView: View {
     @State private var selectedTab: ChefitTab = .home
 
     var body: some View {
-        VStack(spacing: 0) {
-            NavigationStack {
-                routeView
-                    .navigationBarBackButtonHidden(true)
-            }
-
-            if showsBottomNav {
-                ChefitBottomNavBar(activeTab: selectedTab) { tab in
-                    selectedTab = tab
-                    switch tab {
-                    case .home:
-                        route = .home
-                    case .search:
-                        route = .search
-                    case .scan:
-                        route = .scan
-                    case .saved:
-                        route = .saved
-                    case .profile:
-                        route = .profile
-                    case .community:
-                        route = .community
+        routeView
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(ChefitColors.cream.ignoresSafeArea(edges: .all))
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if showsBottomNav {
+                    ChefitBottomNavBar(activeTab: selectedTab) { tab in
+                        selectedTab = tab
+                        switch tab {
+                        case .home:
+                            route = .home
+                        case .search:
+                            route = .search
+                        case .scan:
+                            route = .scan
+                        case .saved:
+                            route = .saved
+                        case .community:
+                            route = .community
+                        }
                     }
                 }
             }
-        }
-        .background(ChefitColors.cream.ignoresSafeArea())
         .onChange(of: route) { _, newValue in
             switch newValue {
             case .home: selectedTab = .home
             case .search: selectedTab = .search
             case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
             case .saved: selectedTab = .saved
-            case .profile: selectedTab = .profile
             case .community: selectedTab = .community
             default: break
             }
@@ -144,6 +138,6 @@ struct ChefitRootCoordinatorView: View {
         }
         .padding(ChefitSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ChefitColors.cream)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }

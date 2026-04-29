@@ -33,29 +33,32 @@ enum ChefitSampleData {
         )
     ]
 
+    /// `(label, SF Symbol name)`
     static let ingredientChips: [(String, String)] = [
-        ("Tomato", "🍅"),
-        ("Garlic", "🧄"),
-        ("Olive Oil", "🫒"),
-        ("Pasta", "🍝")
+        ("Tomato", ChefitSymbol.tomato),
+        ("Garlic", ChefitSymbol.garlic),
+        ("Olive Oil", ChefitSymbol.oliveOil),
+        ("Pasta", ChefitSymbol.pasta)
     ]
 
+    /// `(SF Symbol name, ingredient name, quantity)`
     static let recipeDetailIngredients: [(String, String, String)] = [
-        ("🍅", "Tomato", "2 pcs"),
-        ("🍝", "Pasta", "200g"),
-        ("🧄", "Garlic", "2 cloves"),
-        ("🫒", "Olive Oil", "2 tbsp")
+        (ChefitSymbol.tomato, "Tomato", "2 pcs"),
+        (ChefitSymbol.pasta, "Pasta", "200g"),
+        (ChefitSymbol.garlic, "Garlic", "2 cloves"),
+        (ChefitSymbol.oliveOil, "Olive Oil", "2 tbsp")
     ]
 
+    /// `(SF Symbol name, label)`
     static let detectedIngredients: [(String, String)] = [
-        ("🍅", "Tomato"),
-        ("🥛", "Milk"),
-        ("🧅", "Onion"),
-        ("🥦", "Broccoli"),
-        ("🍗", "Chicken"),
-        ("🧄", "Garlic"),
-        ("🍝", "Pasta"),
-        ("🥚", "Eggs")
+        (ChefitSymbol.tomato, "Tomato"),
+        (ChefitSymbol.milk, "Milk"),
+        (ChefitSymbol.onion, "Onion"),
+        (ChefitSymbol.broccoli, "Broccoli"),
+        (ChefitSymbol.chicken, "Chicken"),
+        (ChefitSymbol.garlic, "Garlic"),
+        (ChefitSymbol.pasta, "Pasta"),
+        (ChefitSymbol.egg, "Eggs")
     ]
 
     static let shoppingToBuy: [String] = [
@@ -75,7 +78,7 @@ enum ChefitSampleData {
         (
             "kitchen.with.love",
             "2h",
-            "Made Creamy Tomato Pasta 😍 So easy and delicious! #dinner #quickmeals",
+            "Made Creamy Tomato Pasta — so easy and delicious! #dinner #quickmeals",
             URL(string: "https://source.unsplash.com/400x300/?tomato,pasta,dinner"),
             125,
             28
@@ -99,7 +102,7 @@ enum ChefitSampleData {
         (
             "mealmagic",
             "8h",
-            "Simple ingredients, big flavor ✨ #homecooking",
+            "Simple ingredients, big flavor. #homecooking",
             URL(string: "https://source.unsplash.com/400x300/?home,cooking"),
             63,
             9
