@@ -74,17 +74,31 @@ struct ChefitRootCoordinatorView: View {
     private var routeView: some View {
         switch route {
         case .splash:
-            routePlaceholder("Splash") { route = .auth }
+            ChefitSplashView {
+                route = .auth
+            }
         case .auth:
-            routePlaceholder("Auth") { route = .home }
+            ChefitAuthView {
+                route = .home
+            }
         case .home:
-            routePlaceholder("Home") { route = .search }
+            ChefitHomeView(
+                onSearchTap: { route = .search },
+                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) }
+            )
         case .search:
-            routePlaceholder("Search") { route = .recipeDiscover(id: "creamy-pasta") }
+            ChefitSearchView { recipeID in
+                route = .recipeDiscover(id: recipeID)
+            }
         case .recipeDiscover(let id):
-            routePlaceholder("Discover \(id)") { route = .recipeDetails(id: id) }
+            let recipe = ChefitSampleData.popularRecipes.first(where: { $0.id == id }) ?? ChefitSampleData.popularRecipes[0]
+            ChefitRecipeDiscoveryView(recipe: recipe) {
+                route = .recipeDetails(id: id)
+            }
         case .recipeDetails:
-            routePlaceholder("Recipe details") {}
+            ChefitRecipeDetailsView {
+                route = .recipeDetails(id: "cooking-mode")
+            }
         case .scan:
             routePlaceholder("Scan") { route = .detectedIngredients }
         case .detectedIngredients:
