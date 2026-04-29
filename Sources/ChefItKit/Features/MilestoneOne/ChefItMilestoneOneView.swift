@@ -33,7 +33,68 @@ public struct ChefItMilestoneOneView: View {
                 .frame(maxWidth: .infinity)
             }
             .background(shellBackground.ignoresSafeArea())
+            .sheet(isPresented: editSheetBinding) {
+                renameSheet
+            }
         }
+    }
+
+    private var editSheetBinding: Binding<Bool> {
+        Binding(
+            get: {
+                if case .idle = model.editState { return false }
+                return true
+            },
+            set: { isPresented in
+                if !isPresented { model.cancelEdit() }
+            }
+        )
+    }
+
+    private var renameSheet: some View {
+        let draft = Binding<String>(
+            get: {
+                switch model.editState {
+                case .editing(_, let d), .duplicateConflict(_, let d, _): return d
+                case .idle: return ""
+                }
+            },
+            set: { model.updateEditDraft($0) }
+        )
+
+        let conflictName: String? = {
+            if case .duplicateConflict(_, _, let existingID) = model.editState {
+                return model.ingredients.first { $0.id == existingID }?.name
+            }
+            return nil
+        }()
+
+        return VStack(alignment: .leading, spacing: 18) {
+            Text("Rename ingredient")
+                .font(.system(size: 22, weight: .semibold, design: .serif))
+
+            TextField("Ingredient name", text: draft)
+                .textFieldStyle(.roundedBorder)
+                .submitLabel(.done)
+                .onSubmit { model.commitEdit() }
+
+            if let conflictName {
+                Text("Already on board as \(conflictName). Cancel and remove the duplicate first.")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(.red)
+            }
+
+            HStack {
+                Button("Cancel") { model.cancelEdit() }
+                    .buttonStyle(ShellButtonStyle(kind: .ghost))
+                Spacer()
+                Button("Save") { model.commitEdit() }
+                    .buttonStyle(ShellButtonStyle(kind: .primary))
+            }
+        }
+        .padding(24)
+        .presentationDetents([.height(220)])
+        .presentationDragIndicator(.visible)
     }
 
     private var heroPanel: some View {
@@ -83,7 +144,7 @@ public struct ChefItMilestoneOneView: View {
                 panelHeader(
                     eyebrow: "Ingredient board",
                     title: "Counter stock",
-                    copy: "Manual intake is live now. This keeps the scan lane separate so milestone 2 can plug in capture and confirmation cleanly."
+                    copy: "Manual intake is solid. Type to add, tap a suggestion, long-press a chip to rename. Data persists across launches."
                 )
 
                 HStack(alignment: .top, spacing: 10) {
@@ -104,6 +165,18 @@ public struct ChefItMilestoneOneView: View {
                         model.addManualIngredients()
                     }
                     .buttonStyle(ShellButtonStyle(kind: .primary))
+                }
+
+                if !model.suggestions.isEmpty {
+                    suggestionStrip
+                }
+
+                if let feedback = model.lastAddFeedback, !feedback.isEmpty {
+                    feedbackBanner(feedback)
+                }
+
+                if let snapshot = model.undoableClearSnapshot {
+                    undoBanner(count: snapshot.count)
                 }
 
                 HStack(spacing: 10) {
@@ -177,6 +250,7 @@ public struct ChefItMilestoneOneView: View {
                     .background(Circle().fill(Palette.paperLift))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Remove \(ingredient.name)")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -186,6 +260,115 @@ public struct ChefItMilestoneOneView: View {
         )
         .overlay(
             Capsule(style: .continuous)
+                .stroke(Palette.line, lineWidth: 1)
+        )
+        .contentShape(Capsule(style: .continuous))
+        .contextMenu {
+            Button {
+                model.beginEdit(ingredient.id)
+            } label: {
+                Label("Rename", systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                model.removeIngredient(ingredient.id)
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+        }
+    }
+
+    private var suggestionStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(model.suggestions, id: \.self) { suggestion in
+                    Button {
+                        model.acceptSuggestion(suggestion)
+                    } label: {
+                        Text(suggestion)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(Palette.ink)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(Palette.paperLift)
+                            )
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(Palette.line, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Add suggestion \(suggestion)")
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func feedbackBanner(_ feedback: AddFeedback) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: feedback.duplicates > 0 && feedback.added == 0
+                  ? "exclamationmark.circle"
+                  : "checkmark.circle")
+                .foregroundStyle(feedback.duplicates > 0 && feedback.added == 0 ? Palette.ember : Palette.green)
+            Text(feedback.summary)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(Palette.ink)
+            Spacer()
+            Button {
+                model.dismissAddFeedback()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Palette.muted)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Palette.paperLift)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Palette.line, lineWidth: 1)
+        )
+    }
+
+    private func undoBanner(count: Int) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.uturn.backward.circle")
+                .foregroundStyle(Palette.ember)
+            Text("Cleared \(count). Restore?")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(Palette.ink)
+            Spacer()
+            Button("Undo") {
+                model.undoClear()
+            }
+            .buttonStyle(ShellButtonStyle(kind: .secondary))
+            Button {
+                model.dismissUndo()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Palette.muted)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss undo")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Palette.accentSoft.opacity(0.55))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Palette.line, lineWidth: 1)
         )
     }
