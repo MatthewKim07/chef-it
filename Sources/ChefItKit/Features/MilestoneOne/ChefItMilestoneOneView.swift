@@ -663,6 +663,7 @@ public struct ChefItMilestoneOneView: View {
                 summaryBadge(title: "candidates", value: "\(snapshot.candidateCount)")
                 summaryBadge(title: "ready", value: "\(snapshot.results.ready.count)")
                 summaryBadge(title: "almost", value: "\(snapshot.results.almost.count)")
+                summaryBadge(title: "saved", value: "\(model.favoriteRecipeIDs.count)")
             }
 
             if !snapshot.plan.proteins.isEmpty || !snapshot.plan.supportingIngredients.isEmpty {
@@ -687,6 +688,17 @@ public struct ChefItMilestoneOneView: View {
                 emptyMessage(
                     title: "Candidates found, but no close matches",
                     body: "Chef It found recipes, but they had too many missing ingredients to be useful yet."
+                )
+            }
+
+            let savedMatches = (snapshot.results.ready + snapshot.results.almost)
+                .filter { model.isFavorite($0.recipe) }
+            if !savedMatches.isEmpty {
+                resultColumn(
+                    title: "Saved",
+                    subtitle: "Quick access to recipes you bookmarked in this workspace.",
+                    matches: savedMatches,
+                    tone: Palette.plum
                 )
             }
 
@@ -755,18 +767,35 @@ public struct ChefItMilestoneOneView: View {
 
     private func recipeMatchCard(_ match: RecipeMatch, tone: Color) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(match.recipe.title)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.paper)
-                    .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(match.recipe.title)
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Palette.paper)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                recipeMetaRow(match, tone: tone)
+                    recipeMetaRow(match, tone: tone)
 
-                Text(match.recipe.blurb)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(Palette.paper.opacity(0.72))
-                    .lineLimit(3)
+                    Text(match.recipe.blurb)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(Palette.paper.opacity(0.72))
+                        .lineLimit(3)
+                }
+
+                Button {
+                    model.toggleFavorite(match.recipe)
+                } label: {
+                    Image(systemName: model.isFavorite(match.recipe) ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(model.isFavorite(match.recipe) ? tone : Palette.paper.opacity(0.72))
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(Palette.paper.opacity(0.08))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(model.isFavorite(match.recipe) ? "Remove saved recipe" : "Save recipe")
             }
 
             coverageBar(match: match, tone: tone)

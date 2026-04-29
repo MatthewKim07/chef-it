@@ -6,7 +6,11 @@ import Testing
 struct MilestoneOneViewModelTests {
     private func makeModel() -> ChefItMilestoneOneViewModel {
         let store = IngredientStore(persister: InMemoryIngredientPersister())
-        return ChefItMilestoneOneViewModel(ingredientStore: store)
+        let favorites = FavoriteRecipeStore(persister: InMemoryFavoriteRecipePersister())
+        return ChefItMilestoneOneViewModel(
+            ingredientStore: store,
+            favoriteRecipeStore: favorites
+        )
     }
 
     @Test func addManualUpdatesFeedback() {
@@ -76,5 +80,25 @@ struct MilestoneOneViewModelTests {
 
         model.cancelEdit()
         if case .idle = model.editState {} else { Issue.record("expected idle") }
+    }
+
+    @Test func togglingFavoriteRecipeUpdatesState() {
+        let model = makeModel()
+        let recipe = Recipe(
+            id: "saved-recipe",
+            title: "Skillet Pasta",
+            blurb: "Quick pantry dinner.",
+            cookingMinutes: 20,
+            ingredients: ["pasta", "tomato", "garlic"]
+        )
+
+        #expect(!model.isFavorite(recipe))
+        model.toggleFavorite(recipe)
+        #expect(model.isFavorite(recipe))
+        #expect(model.favoriteRecipeIDs.contains(recipe.id))
+
+        model.toggleFavorite(recipe)
+        #expect(!model.isFavorite(recipe))
+        #expect(!model.favoriteRecipeIDs.contains(recipe.id))
     }
 }
