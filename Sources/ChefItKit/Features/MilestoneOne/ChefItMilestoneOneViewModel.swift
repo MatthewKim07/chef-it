@@ -203,7 +203,11 @@ public final class ChefItMilestoneOneViewModel: ObservableObject {
                 maxCookingMinutes: maxCookingMinutes
             )
             let candidates = try await recipeSearchService.search(query: plan.query)
-            let results = matcher.match(ingredients: ingredients, recipes: candidates)
+            let results = matcher.match(
+                ingredients: ingredients,
+                recipes: candidates,
+                context: plan.matchingContext
+            )
             phase = .loaded(
                 DiscoveryWorkspaceSnapshot(
                     plan: plan,

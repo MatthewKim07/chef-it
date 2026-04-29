@@ -49,4 +49,12 @@ public struct RecipeDiscoveryPlan: Sendable {
         self.proteins = proteins
         self.supportingIngredients = supportingIngredients
     }
+
+    /// Context the matcher uses to score and explain candidates.
+    public var matchingContext: RecipeMatchingContext {
+        RecipeMatchingContext(
+            plannerProteins: proteins,
+            plannerSupporting: supportingIngredients
+        )
+    }
 }
