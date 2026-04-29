@@ -34,7 +34,7 @@ public struct ChefItMilestoneOneView: View {
                         }
                     }
                 }
-                .padding(20)
+                .padding(proxy.size.width < 430 ? 12 : 20)
                 .frame(maxWidth: 1180, alignment: .leading)
                 .frame(maxWidth: .infinity)
             }
@@ -269,8 +269,8 @@ public struct ChefItMilestoneOneView: View {
                     Spacer(minLength: 16)
 
                     VStack(alignment: .trailing, spacing: 8) {
-                        shellTag("Milestone 01")
-                        shellTag("Recipe API wired")
+                        shellTag("Milestone 06")
+                        shellTag("Core loop polish")
                     }
                 }
 
@@ -539,7 +539,7 @@ public struct ChefItMilestoneOneView: View {
                 panelHeader(
                     eyebrow: "Recipe workspace",
                     title: "Ready now vs almost there",
-                    copy: "The structure mirrors Pantry Pal's real result framing: ingredients feed a search plan, candidate recipes are matched locally, and the workspace splits into fully-ready and near-miss groups.",
+                    copy: "Ingredients feed live recipe search, then Chef It explains what you can cook now and what needs a few additions.",
                     foreground: Palette.paper,
                     secondary: Palette.paper.opacity(0.72)
                 )
@@ -550,7 +550,7 @@ public struct ChefItMilestoneOneView: View {
                 case .needsIngredients:
                     emptyMessage(
                         title: "Waiting on ingredients",
-                        body: "The discovery planner stays idle until the board has something to work with."
+                        body: "Add pantry items manually or scan a photo. Recipe search starts once the board has ingredients."
                     )
 
                 case .staged:
@@ -560,10 +560,7 @@ public struct ChefItMilestoneOneView: View {
                     loadingWorkspace
 
                 case .failed(let message):
-                    emptyMessage(
-                        title: "Discovery pipeline placeholder",
-                        body: message
-                    )
+                    failedWorkspace(message)
 
                 case .loaded(let snapshot):
                     resultsWorkspace(snapshot: snapshot)
@@ -601,19 +598,68 @@ public struct ChefItMilestoneOneView: View {
 
     private var loadingWorkspace: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
-                ProgressView()
-                    .tint(Palette.paper)
-                Text("Searching recipes and matching API candidates.")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundStyle(Palette.paper.opacity(0.88))
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    ProgressView()
+                        .tint(Palette.paper)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Searching live recipes")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundStyle(Palette.paper)
+                        Text("Chef It is adapting API candidates and ranking them against your board.")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(Palette.paper.opacity(0.72))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                VStack(spacing: 8) {
+                    loadingBar(widthRatio: 0.82)
+                    loadingBar(widthRatio: 0.64)
+                    loadingBar(widthRatio: 0.48)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Palette.stoveLift)
+            )
+        }
+    }
+
+    private func failedWorkspace(_ message: String) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            emptyMessage(
+                title: "Recipe search needs attention",
+                body: message
+            )
+
+            HStack(spacing: 10) {
+                Button("Try again") {
+                    Task {
+                        await model.refreshWorkspace()
+                    }
+                }
+                .buttonStyle(ShellButtonStyle(kind: .primary))
+                .disabled(model.ingredients.isEmpty)
+
+                if model.ingredients.isEmpty {
+                    Text("Add ingredients first.")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(Palette.paper.opacity(0.68))
+                }
             }
         }
     }
 
     private func resultsWorkspace(snapshot: DiscoveryWorkspaceSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 12) {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 112), spacing: 10, alignment: .leading)],
+                alignment: .leading,
+                spacing: 10
+            ) {
                 summaryBadge(title: "candidates", value: "\(snapshot.candidateCount)")
                 summaryBadge(title: "ready", value: "\(snapshot.results.ready.count)")
                 summaryBadge(title: "almost", value: "\(snapshot.results.almost.count)")
@@ -632,6 +678,18 @@ public struct ChefItMilestoneOneView: View {
                 }
             }
 
+            if snapshot.candidateCount == 0 {
+                emptyMessage(
+                    title: "No recipes returned",
+                    body: "The recipe API did not return candidates for this board. Try fewer ingredients or a broader pantry mix."
+                )
+            } else if snapshot.results.ready.isEmpty && snapshot.results.almost.isEmpty {
+                emptyMessage(
+                    title: "Candidates found, but no close matches",
+                    body: "Chef It found recipes, but they had too many missing ingredients to be useful yet."
+                )
+            }
+
             resultColumn(
                 title: "Ready to cook",
                 subtitle: "All required ingredients are already on the board.",
@@ -646,6 +704,20 @@ public struct ChefItMilestoneOneView: View {
                 tone: Palette.gold
             )
         }
+    }
+
+    private func loadingBar(widthRatio: CGFloat) -> some View {
+        GeometryReader { geo in
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Palette.paper.opacity(0.12))
+                .overlay(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Palette.paper.opacity(0.24))
+                        .frame(width: geo.size.width * widthRatio)
+                }
+        }
+        .frame(height: 8)
+        .accessibilityHidden(true)
     }
 
     private func resultColumn(
@@ -737,7 +809,16 @@ public struct ChefItMilestoneOneView: View {
                 Link(destination: sourceURL) {
                     compactLinkLabel("Source", systemImage: "arrow.up.right", tone: tone)
                 }
+                .accessibilityLabel("Open source for \(match.recipe.title)")
             }
+
+            Button {
+                selectedRecipeMatch = match
+            } label: {
+                compactLinkLabel("Details", systemImage: "list.bullet.rectangle", tone: Palette.paper.opacity(0.86))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Show details for \(match.recipe.title)")
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -749,6 +830,37 @@ public struct ChefItMilestoneOneView: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .stroke(tone.opacity(0.28), lineWidth: 1)
         )
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(match.recipe.title), \(match.coveragePercent) percent coverage")
+    }
+
+    private func recipeMetaRow(_ match: RecipeMatch, tone: Color) -> some View {
+        FlowLayout(spacing: 6) {
+            recipePill("\(match.recipe.cookingMinutes) min", tone: tone)
+            recipePill("\(match.coveragePercent)%", tone: tone)
+            recipePill("\(match.matchedIngredients.count)/\(match.recipe.ingredients.count)", tone: Palette.paper.opacity(0.7))
+            if !match.recipe.cuisine.isEmpty {
+                recipePill(match.recipe.cuisine, tone: Palette.paper.opacity(0.7))
+            }
+        }
+    }
+
+    private func recipePill(_ label: String, tone: Color) -> some View {
+        Text(label)
+            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            .foregroundStyle(tone)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(Palette.paper.opacity(0.08))
+            )
+    }
+
+    private func compactLinkLabel(_ label: String, systemImage: String, tone: Color) -> some View {
+        Label(label, systemImage: systemImage)
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundStyle(tone)
     }
 
     private func coverageBar(match: RecipeMatch, tone: Color) -> some View {
@@ -809,16 +921,7 @@ public struct ChefItMilestoneOneView: View {
         case .needsIngredients: label = "idle"
         case .staged: label = "staged"
         case .loading: label = "searching"
-                .accessibilityLabel("Open source for \(match.recipe.title)")
         case .loaded: label = "grouped"
-
-            Button {
-                selectedRecipeMatch = match
-            } label: {
-                compactLinkLabel("Details", systemImage: "list.bullet.rectangle", tone: Palette.paper.opacity(0.86))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Show details for \(match.recipe.title)")
         case .failed: label = "needs api"
         }
 
@@ -830,37 +933,6 @@ public struct ChefItMilestoneOneView: View {
                 .font(.system(size: 12, weight: .semibold, design: .monospaced))
                 .foregroundStyle(Palette.paper)
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(match.recipe.title), \(match.coveragePercent) percent coverage")
-    }
-
-    private func recipeMetaRow(_ match: RecipeMatch, tone: Color) -> some View {
-        FlowLayout(spacing: 6) {
-            recipePill("\(match.recipe.cookingMinutes) min", tone: tone)
-            recipePill("\(match.coveragePercent)%", tone: tone)
-            recipePill("\(match.matchedIngredients.count)/\(match.recipe.ingredients.count)", tone: Palette.paper.opacity(0.7))
-            if !match.recipe.cuisine.isEmpty {
-                recipePill(match.recipe.cuisine, tone: Palette.paper.opacity(0.7))
-            }
-        }
-    }
-
-    private func recipePill(_ label: String, tone: Color) -> some View {
-        Text(label)
-            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-            .foregroundStyle(tone)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 5)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(Palette.paper.opacity(0.08))
-            )
-    }
-
-    private func compactLinkLabel(_ label: String, systemImage: String, tone: Color) -> some View {
-        Label(label, systemImage: systemImage)
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
-            .foregroundStyle(tone)
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
