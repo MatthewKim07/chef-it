@@ -2,14 +2,15 @@ import SwiftUI
 import ChefItKit
 
 struct RootView: View {
-    @StateObject private var model = ChefItMilestoneOneViewModel(
-        ingredientStore: IngredientStore.live(),
-        matcher: RecipeMatcher(almostThreshold: 8),
-        recipeSearchService: LiveRecipeSearchServiceFactory.makeDefault()
-    )
+    @StateObject private var authService = AuthService.shared
 
     var body: some View {
-        ChefItMilestoneOneView(model: model)
+        if authService.isLoggedIn {
+            ChefItMilestoneOneView()
+        } else {
+            LoginView()
+                .environmentObject(authService)
+        }
     }
 }
 
