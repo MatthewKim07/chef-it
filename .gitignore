@@ -1,0 +1,29 @@
+# Swift / Xcode
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcuserstate
+Packages/
+Package.resolved
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+.DS_Store
+
+# Generated
+ChefIt.xcodeproj/
+.next/
+
+# Web archive (kept for reference, do not rebuild)
+archive/web-scaffold/
+archive/web-scaffold/node_modules/
+archive/web-scaffold/.next/
+
+# Read-only imported reference repo
+reference/pantry-pal/
