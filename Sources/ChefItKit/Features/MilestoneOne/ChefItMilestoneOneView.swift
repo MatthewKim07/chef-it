@@ -2,10 +2,15 @@ import SwiftUI
 
 public struct ChefItMilestoneOneView: View {
     @StateObject private var model: ChefItMilestoneOneViewModel
+    @StateObject private var scanModel: ScanFlowViewModel
 
     @MainActor
     public init(model: ChefItMilestoneOneViewModel? = nil) {
-        _model = StateObject(wrappedValue: model ?? ChefItMilestoneOneViewModel())
+        let resolvedModel = model ?? ChefItMilestoneOneViewModel()
+        _model = StateObject(wrappedValue: resolvedModel)
+        _scanModel = StateObject(
+            wrappedValue: ScanFlowViewModel(ingredientStore: resolvedModel.ingredientStore)
+        )
     }
 
     public var body: some View {
@@ -116,7 +121,7 @@ public struct ChefItMilestoneOneView: View {
 
                     VStack(alignment: .trailing, spacing: 8) {
                         shellTag("Milestone 01")
-                        shellTag("Scan + recipe APIs deferred")
+                        shellTag("Recipe API deferred")
                     }
                 }
 
@@ -375,23 +380,7 @@ public struct ChefItMilestoneOneView: View {
 
     private var scanEntryPanel: some View {
         ShellPanel(tint: Palette.accentSoft) {
-            VStack(alignment: .leading, spacing: 16) {
-                panelHeader(
-                    eyebrow: "Scan entry point",
-                    title: "Photo lane",
-                    copy: "Pantry Pal's scan flow is capture or upload -> detect ingredients -> confirm selections. Chef It exposes that lane here without wiring the actual scanner yet."
-                )
-
-                HStack(spacing: 10) {
-                    milestoneStep(number: "01", title: "Capture")
-                    milestoneStep(number: "02", title: "Detect")
-                    milestoneStep(number: "03", title: "Confirm")
-                }
-
-                Text("Deferred intentionally: no live camera, no image upload, no detection backend call in milestone 1.")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(Palette.ember)
-            }
+            ScanEntryPanelView(model: scanModel)
         }
     }
 
