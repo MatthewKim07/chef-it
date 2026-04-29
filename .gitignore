@@ -16,6 +16,9 @@ Package.resolved
 # macOS
 .DS_Store
 
+# Secrets (never commit)
+Secrets.xcconfig
+
 # Generated
 ChefIt.xcodeproj/
 .next/
