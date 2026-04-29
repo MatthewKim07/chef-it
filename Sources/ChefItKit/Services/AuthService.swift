@@ -8,11 +8,12 @@ public final class AuthService: ObservableObject {
     @Published public private(set) var isLoggedIn: Bool
     @Published public private(set) var currentUser: AuthUser?
 
-    private let baseURL = "http://localhost:3000"
+    private let baseURL: String
     private let keychainService = "com.chefit.auth"
     private let keychainAccount = "jwt"
 
     public init() {
+        baseURL = Self.resolvedBaseURL()
         isLoggedIn = false
         isLoggedIn = retrieveToken() != nil
     }
@@ -93,6 +94,24 @@ public final class AuthService: ObservableObject {
         case 409: throw AuthError.emailAlreadyRegistered
         default:  throw AuthError.serverError(message)
         }
+    }
+
+    private static func resolvedBaseURL(
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        bundle: Bundle = .main
+    ) -> String {
+        firstConfiguredValue(
+            environment["AUTH_BASE_URL"],
+            bundle.object(forInfoDictionaryKey: "AUTH_BASE_URL") as? String
+        ) ?? "http://127.0.0.1:3000"
+    }
+
+    private static func firstConfiguredValue(_ values: String?...) -> String? {
+        values
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { value in
+                !value.isEmpty && !value.hasPrefix("$(")
+            }
     }
 
     // MARK: - Keychain

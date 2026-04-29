@@ -12,6 +12,7 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     EDAMAM_APP_ID: ""
     EDAMAM_APP_KEY: ""
+    AUTH_BASE_URL: "http://127.0.0.1:3000"
 
 packages:
   ChefItKit:
@@ -32,6 +33,9 @@ targets:
       properties:
         EDAMAM_APP_ID: $(EDAMAM_APP_ID)
         EDAMAM_APP_KEY: $(EDAMAM_APP_KEY)
+        AUTH_BASE_URL: $(AUTH_BASE_URL)
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chefit.app
@@ -64,6 +68,7 @@ schemes:
       environmentVariables:
         EDAMAM_APP_ID: ""
         EDAMAM_APP_KEY: ""
+        AUTH_BASE_URL: $(AUTH_BASE_URL)
     test:
       config: Debug
       targets:
