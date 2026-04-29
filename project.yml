@@ -22,12 +22,18 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
+    configFiles:
+      Debug: Secrets.xcconfig
+      Release: Secrets.xcconfig
     sources:
       - path: App/ChefIt
       - path: App/ChefIt/Resources
         buildPhase: resources
     info:
       path: App/ChefIt/Info.plist
+      properties:
+        EDAMAM_APP_ID: $(EDAMAM_APP_ID)
+        EDAMAM_APP_KEY: $(EDAMAM_APP_KEY)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chefit.app
@@ -57,6 +63,9 @@ schemes:
         ChefIt: all
     run:
       config: Debug
+      environmentVariables:
+        EDAMAM_APP_ID: ""
+        EDAMAM_APP_KEY: ""
     test:
       config: Debug
       targets:
