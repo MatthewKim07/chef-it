@@ -536,52 +536,133 @@ public struct ChefItMilestoneOneView: View {
             } else {
                 VStack(spacing: 12) {
                     ForEach(matches) { match in
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(match.recipe.title)
-                                        .font(.system(size: 19, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(Palette.paper)
-                                    Text(match.recipe.blurb)
-                                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                                        .foregroundStyle(Palette.paper.opacity(0.72))
-                                }
+                        recipeMatchCard(match, tone: tone)
+                    }
+                }
+            }
+        }
+    }
 
-                                Spacer(minLength: 12)
+    private func recipeMatchCard(_ match: RecipeMatch, tone: Color) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(match.recipe.title)
+                        .font(.system(size: 19, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Palette.paper)
+                    Text(match.recipe.blurb)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(Palette.paper.opacity(0.72))
+                }
 
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text("\(match.recipe.cookingMinutes) min")
-                                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                                        .foregroundStyle(tone)
-                                    Text("\(Int((match.coverage * 100).rounded()))% coverage")
-                                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                        .foregroundStyle(Palette.paper.opacity(0.62))
-                                }
-                            }
+                Spacer(minLength: 12)
 
-                            if !match.missingIngredients.isEmpty {
-                                Text("Missing: \(match.missingIngredients.joined(separator: ", "))")
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundStyle(tone)
-                            }
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("\(match.recipe.cookingMinutes) min")
+                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(tone)
+                    Text(String(format: "score %.2f", match.score))
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundStyle(Palette.paper.opacity(0.55))
+                        .accessibilityHidden(true)
+                }
+            }
 
-                            if !match.matchedIngredients.isEmpty {
-                                Text("Matched: \(match.matchedIngredients.joined(separator: ", "))")
-                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(Palette.paper.opacity(0.68))
-                            }
+            coverageBar(match: match, tone: tone)
+
+            if !match.rationale.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(match.rationale.enumerated()), id: \.offset) { _, line in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text("·")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundStyle(tone)
+                            Text(line)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(Palette.paper.opacity(0.86))
                         }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .fill(Palette.stoveLift)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .stroke(tone.opacity(0.28), lineWidth: 1)
+                    }
+                }
+            }
+
+            if !match.matchedIngredients.isEmpty || !match.missingIngredients.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    if !match.matchedIngredients.isEmpty {
+                        ingredientChipRow(
+                            label: "have",
+                            items: match.matchedIngredients,
+                            tone: Palette.sage
                         )
                     }
+                    if !match.missingIngredients.isEmpty {
+                        ingredientChipRow(
+                            label: "need",
+                            items: match.missingIngredients,
+                            tone: Palette.ember
+                        )
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Palette.stoveLift)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(tone.opacity(0.28), lineWidth: 1)
+        )
+    }
+
+    private func coverageBar(match: RecipeMatch, tone: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("\(match.coveragePercent)% coverage")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Palette.paper.opacity(0.7))
+                Spacer()
+                Text("\(match.matchedIngredients.count)/\(match.recipe.ingredients.count) ingredients")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Palette.paper.opacity(0.55))
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(Palette.paper.opacity(0.12))
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(tone)
+                        .frame(width: max(0, geo.size.width * match.coverage))
+                }
+            }
+            .frame(height: 6)
+        }
+    }
+
+    private func ingredientChipRow(label: String, items: [String], tone: Color) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text(label.uppercased())
+                .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                .foregroundStyle(tone)
+                .padding(.top, 5)
+                .frame(width: 38, alignment: .leading)
+            FlowLayout(spacing: 6) {
+                ForEach(items, id: \.self) { item in
+                    Text(item)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(Palette.paper.opacity(0.85))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(tone.opacity(0.18))
+                        )
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .stroke(tone.opacity(0.4), lineWidth: 1)
+                        )
                 }
             }
         }
@@ -827,6 +908,56 @@ private struct ShellButtonStyle: ButtonStyle {
 
     private var border: Color {
         Palette.line
+    }
+}
+
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var rowWidth: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        var widestRow: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if rowWidth + size.width > maxWidth, rowWidth > 0 {
+                totalHeight += rowHeight + spacing
+                widestRow = max(widestRow, rowWidth - spacing)
+                rowWidth = 0
+                rowHeight = 0
+            }
+            rowWidth += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        totalHeight += rowHeight
+        widestRow = max(widestRow, rowWidth - spacing)
+        return CGSize(width: widestRow, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let maxWidth = bounds.width
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.minX + maxWidth, x > bounds.minX {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            subview.place(
+                at: CGPoint(x: x, y: y),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(width: size.width, height: size.height)
+            )
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }
 
