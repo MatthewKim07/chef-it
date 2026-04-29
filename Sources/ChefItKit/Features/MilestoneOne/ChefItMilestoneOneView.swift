@@ -121,7 +121,7 @@ public struct ChefItMilestoneOneView: View {
 
                     VStack(alignment: .trailing, spacing: 8) {
                         shellTag("Milestone 01")
-                        shellTag("Recipe API deferred")
+                        shellTag("Recipe API wired")
                     }
                 }
 
@@ -438,10 +438,10 @@ public struct ChefItMilestoneOneView: View {
         VStack(alignment: .leading, spacing: 14) {
             emptyMessage(
                 title: "Workspace is staged",
-                body: "Ingredients are normalized and ready. Run the placeholder discovery step to exercise the real match grouping without any live recipe API dependency yet."
+                body: "Ingredients are normalized and ready. Run discovery to search the recipe API, adapt candidates, and match them against the board."
             )
 
-            Button("Run local discovery") {
+            Button("Run discovery") {
                 Task {
                     await model.refreshWorkspace()
                 }
@@ -455,7 +455,7 @@ public struct ChefItMilestoneOneView: View {
             HStack(spacing: 12) {
                 ProgressView()
                     .tint(Palette.paper)
-                Text("Building the discovery plan and matching seed recipes.")
+                Text("Searching recipes and matching API candidates.")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.paper.opacity(0.88))
             }
@@ -492,7 +492,7 @@ public struct ChefItMilestoneOneView: View {
 
             resultColumn(
                 title: "Almost there",
-                subtitle: "Recipes with a small missing set stay visible for later fulfillment logic.",
+                subtitle: "API recipes with a manageable missing set stay visible for comparison.",
                 matches: snapshot.results.almost,
                 tone: Palette.gold
             )
@@ -520,7 +520,7 @@ public struct ChefItMilestoneOneView: View {
                     title: "No recipes in this group yet",
                     body: title == "Ready to cook"
                         ? "This is where full matches land once every required ingredient is covered."
-                        : "This is reserved for the near-miss set that later milestones can enrich with fulfillment actions."
+                        : "This is reserved for recipes that match your board but still need a few additions."
                 )
             } else {
                 VStack(spacing: 12) {
@@ -590,6 +590,14 @@ public struct ChefItMilestoneOneView: View {
                             tone: Palette.ember
                         )
                     }
+                }
+            }
+
+            if let sourceURL = match.recipe.sourceURL {
+                Link(destination: sourceURL) {
+                    Label("Open recipe source", systemImage: "arrow.up.right")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(tone)
                 }
             }
         }
@@ -662,9 +670,9 @@ public struct ChefItMilestoneOneView: View {
         switch model.phase {
         case .needsIngredients: label = "idle"
         case .staged: label = "staged"
-        case .loading: label = "matching"
+        case .loading: label = "searching"
         case .loaded: label = "grouped"
-        case .failed: label = "placeholder"
+        case .failed: label = "needs api"
         }
 
         return HStack(spacing: 8) {

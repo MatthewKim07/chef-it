@@ -217,7 +217,8 @@ public final class ChefItMilestoneOneViewModel: ObservableObject {
             )
         } catch {
             phase = .failed(
-                "Milestone 1 keeps recipe search local. The live API connector is deferred, but this shell is ready for it."
+                (error as? LocalizedError)?.errorDescription
+                    ?? "Recipe search failed. Check the API configuration and try again."
             )
         }
     }

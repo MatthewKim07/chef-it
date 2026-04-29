@@ -10,6 +10,8 @@ settings:
     SWIFT_VERSION: "5.10"
     DEVELOPMENT_TEAM: ""
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+    EDAMAM_APP_ID: ""
+    EDAMAM_APP_KEY: ""
 
 packages:
   ChefItKit:
