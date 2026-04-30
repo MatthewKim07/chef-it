@@ -427,12 +427,12 @@ struct ChefitRecipeDetailsView: View {
 
     let recipe: ChefitRecipeDetailsPayload
     let onBack: () -> Void
-    let onStartCooking: () -> Void
 
     @EnvironmentObject private var authService: AuthService
     @StateObject private var reviewsVM = RecipeReviewsViewModel()
     @State private var selectedTab: RecipeTab = .ingredients
     @State private var showReviewComposer = false
+    @State private var showCreatePost = false
 
     private var currentUserId: Int? { authService.currentUser?.id }
     private var currentUserReview: Review? {
@@ -483,12 +483,12 @@ struct ChefitRecipeDetailsView: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
-                onStartCooking()
+                showCreatePost = true
             } label: {
                 HStack {
-                    Text("Start Cooking")
+                    Text("Create Post")
                     Spacer()
-                    Image(systemName: "play.fill")
+                    Image(systemName: "square.and.pencil")
                 }
                 .padding(.horizontal, ChefitSpacing.sm)
             }
@@ -498,6 +498,10 @@ struct ChefitRecipeDetailsView: View {
         }
         .background(ChefitColors.cream.ignoresSafeArea())
         .task { await reviewsVM.load(recipeId: recipe.id) }
+        .sheet(isPresented: $showCreatePost) {
+            CreatePostView(initialRecipeId: recipe.id)
+                .environmentObject(authService)
+        }
         .sheet(isPresented: $showReviewComposer) {
             ReviewComposerSheet(
                 recipeId: recipe.id,

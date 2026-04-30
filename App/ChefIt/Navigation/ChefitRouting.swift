@@ -164,8 +164,7 @@ struct ChefitRootCoordinatorView: View {
                     let hasMainRecipe = homeFeed.recipeByID[payload.id] != nil
                         || ChefitSampleData.popularRecipes.contains(where: { $0.id == payload.id })
                     route = hasMainRecipe ? .recipeDiscover(id: payload.id) : .recommendations
-                },
-                onStartCooking: { route = .recipeDetails(payload: payload) }
+                }
             )
 
         case .scan:
