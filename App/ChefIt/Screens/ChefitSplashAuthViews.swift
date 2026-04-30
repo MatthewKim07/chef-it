@@ -50,20 +50,7 @@ struct ChefitSplashView: View {
             .padding(.top, 20)
             .padding(.bottom, 28)
 
-            HStack(spacing: 10) {
-                Circle()
-                    .fill(ChefitColors.splashBrandGreen)
-                    .frame(width: 8, height: 8)
-                Circle()
-                    .fill(ChefitColors.splashDotInactive)
-                    .frame(width: 8, height: 8)
-                Circle()
-                    .fill(ChefitColors.splashDotInactive)
-                    .frame(width: 8, height: 8)
-            }
-            .padding(.bottom, 20)
-
-            Spacer(minLength: 24)
+            Spacer(minLength: 44)
 
             Button(action: onGetStarted) {
                 Text("Get Started")
