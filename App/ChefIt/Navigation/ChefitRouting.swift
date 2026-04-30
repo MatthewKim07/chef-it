@@ -19,6 +19,7 @@ enum ChefitRoute: Hashable {
 struct ChefitRootCoordinatorView: View {
     // RootView already owns unauthenticated entry. The coordinator should start
     // inside the authenticated app shell rather than replaying placeholder auth.
+    @EnvironmentObject private var homeFeed: HomeFeedViewModel
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
 
@@ -80,7 +81,9 @@ struct ChefitRootCoordinatorView: View {
                 route = .recipeDiscover(id: recipeID)
             }
         case .recipeDiscover(let id):
-            let recipe = ChefitSampleData.popularRecipes.first(where: { $0.id == id }) ?? ChefitSampleData.popularRecipes[0]
+            let recipe = homeFeed.recipeByID[id]
+                ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
+                ?? ChefitSampleData.popularRecipes[0]
             ChefitRecipeDiscoveryView(recipe: recipe) {
                 route = .recipeDetails(id: id)
             }
