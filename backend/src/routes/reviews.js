@@ -2,14 +2,17 @@ const router = require('express').Router({ mergeParams: true });
 const db = require('../db');
 const requireAuth = require('../middleware/auth');
 
+const REVIEW_SELECT = `
+  SELECT r.id, r.rating, r.body, r.created_at,
+         u.id AS user_id, u.display_name, u.avatar_url
+    FROM reviews r
+    JOIN users u ON u.id = r.user_id`;
+
 // Get reviews for a recipe
 router.get('/', async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT r.id, r.rating, r.body, r.created_at,
-              u.id AS user_id, u.display_name, u.avatar_url
-         FROM reviews r
-         JOIN users u ON u.id = r.user_id
+      `${REVIEW_SELECT}
         WHERE r.recipe_id = $1
         ORDER BY r.created_at DESC`,
       [req.params.recipeId]
@@ -37,7 +40,11 @@ router.post('/', requireAuth, async (req, res) => {
        RETURNING *`,
       [req.user.id, req.params.recipeId, rating, body || null]
     );
-    res.status(201).json(rows[0]);
+    const { rows: full } = await db.query(
+      `${REVIEW_SELECT} WHERE r.id = $1`,
+      [rows[0].id]
+    );
+    res.status(201).json(full[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

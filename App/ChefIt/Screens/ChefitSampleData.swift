@@ -49,6 +49,38 @@ enum ChefitSampleData {
         (ChefitSymbol.oliveOil, "Olive Oil", "2 tbsp")
     ]
 
+    /// Recipe-specific rows for discovery + cart missing-ingredient logic.
+    static func ingredientRows(forRecipeId id: String) -> [(String, String, String)] {
+        switch id {
+        case "veggie-stir-fry":
+            return [
+                (ChefitSymbol.broccoli, "Broccoli", "1 head"),
+                (ChefitSymbol.tomato, "Bell Pepper", "2"),
+                (ChefitSymbol.garlic, "Garlic", "3 cloves"),
+                (ChefitSymbol.oliveOil, "Sesame Oil", "1 tbsp")
+            ]
+        case "tomato-broccoli-pasta":
+            return [
+                (ChefitSymbol.tomato, "Tomato", "400g"),
+                (ChefitSymbol.broccoli, "Broccoli", "200g"),
+                (ChefitSymbol.pasta, "Pasta", "350g"),
+                (ChefitSymbol.garlic, "Garlic", "2 cloves"),
+                (ChefitSymbol.oliveOil, "Olive Oil", "3 tbsp")
+            ]
+        default:
+            return recipeDetailIngredients
+        }
+    }
+
+    static func ingredientDisplayNames(forRecipeId id: String) -> [String] {
+        ingredientRows(forRecipeId: id).map(\.1)
+    }
+
+    /// `(label, SF Symbol)` chips for discovery horizontal strip.
+    static func ingredientChips(forRecipeId id: String) -> [(String, String)] {
+        ingredientRows(forRecipeId: id).map { ($0.1, $0.0) }
+    }
+
     /// `(SF Symbol name, label)`
     static let detectedIngredients: [(String, String)] = [
         (ChefitSymbol.tomato, "Tomato"),

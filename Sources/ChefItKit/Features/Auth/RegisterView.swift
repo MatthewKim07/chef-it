@@ -47,15 +47,10 @@ public struct RegisterView: View {
                             .padding(.bottom, 22)
                             .accessibilityLabel("Chefit")
 
-                        VStack(spacing: 12) {
-                            Text("Welcome, Chef.")
+                        VStack(spacing: 10) {
+                            Text("Create your account")
                                 .font(.custom("Nunito-Bold", size: 28))
                                 .foregroundColor(BrandColor.text)
-                                .multilineTextAlignment(.center)
-
-                            Text("Create your account")
-                                .font(.custom("Nunito-Bold", size: 17))
-                                .foregroundColor(BrandColor.sageGreen)
                                 .multilineTextAlignment(.center)
 
                             Text("Join the kitchen, Chef.")

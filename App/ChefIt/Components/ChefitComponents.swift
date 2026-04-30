@@ -2,7 +2,6 @@ import SwiftUI
 
 enum ChefitTab: Hashable {
     case home
-    case search
     case scan
     case community
     case profile
@@ -15,7 +14,6 @@ struct ChefitBottomNavBar: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             navItem(title: "Home", icon: "house", tab: .home)
-            navItem(title: "Search", icon: "magnifyingglass", tab: .search)
             scanButton
             navItem(title: "Community", icon: "person.2", tab: .community)
             navItem(title: "Profile", icon: "person.crop.circle", tab: .profile)
@@ -24,13 +22,18 @@ struct ChefitBottomNavBar: View {
         .padding(.top, 8)
         .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
-        .background(ChefitColors.white.ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(ChefitColors.pistachio.opacity(0.6))
-                .frame(height: 1)
+        .background(alignment: .top) {
+            ChefitColors.white
+                .ignoresSafeArea(edges: .bottom)
+                .overlay(alignment: .top) {
+                    Rectangle()
+                        .fill(ChefitColors.pistachio.opacity(0.6))
+                        .frame(height: 1)
+                }
         }
     }
+
+    private static let iconRowHeight: CGFloat = 36
 
     private func navItem(title: String, icon: String, tab: ChefitTab) -> some View {
         let isActive = activeTab == tab
@@ -41,12 +44,12 @@ struct ChefitBottomNavBar: View {
                 Image(systemName: icon)
                     .font(.system(size: 21, weight: .regular))
                     .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
+                    .frame(height: Self.iconRowHeight)
                 Text(title)
                     .font(.custom("Nunito-SemiBold", size: 12))
                     .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
             }
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 48)
         }
         .buttonStyle(.plain)
     }
@@ -55,24 +58,25 @@ struct ChefitBottomNavBar: View {
         Button {
             onTap(.scan)
         } label: {
-            VStack(spacing: 2) {
-                ZStack {
-                    Circle()
-                        .fill(ChefitColors.peach)
-                        .frame(width: 52, height: 52)
-                    Image(systemName: "viewfinder")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(ChefitColors.white)
-                }
-                .offset(y: -10)
+            VStack(spacing: 5) {
+                Color.clear
+                    .frame(width: 50, height: Self.iconRowHeight)
+                    .overlay(alignment: .bottom) {
+                        ZStack {
+                            Circle()
+                                .fill(ChefitColors.peach)
+                                .frame(width: 50, height: 50)
+                            Image(systemName: "viewfinder")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundStyle(ChefitColors.white)
+                        }
+                    }
 
                 Text("Scan")
                     .font(.custom("Nunito-SemiBold", size: 12))
                     .foregroundStyle(ChefitColors.peach)
-                    .offset(y: -10)
             }
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 48)
         }
         .buttonStyle(.plain)
     }

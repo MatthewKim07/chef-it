@@ -22,4 +22,7 @@ app.use('/api/recipes/:recipeId/reviews', reviewRoutes);
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Chefit backend running on port ${PORT}`));
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`Chefit backend listening on http://${HOST}:${PORT}`);
+});

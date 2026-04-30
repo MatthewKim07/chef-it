@@ -51,7 +51,11 @@ public final class IngredientStore: ObservableObject {
     }
 
     @discardableResult
-    public func add(rawName: String, source: IngredientSource = .manual) -> IngredientAddOutcome {
+    public func add(
+        rawName: String,
+        source: IngredientSource = .manual,
+        expiresAt: Date? = nil
+    ) -> IngredientAddOutcome {
         let canonical = normalizer.canonicalize(rawName)
         guard !canonical.isEmpty else { return .empty }
         if let existing = ingredients.first(where: { $0.canonicalName == canonical }) {
@@ -62,7 +66,8 @@ public final class IngredientStore: ObservableObject {
             name: rawName.trimmingCharacters(in: .whitespacesAndNewlines),
             canonicalName: canonical,
             category: category,
-            source: source
+            source: source,
+            expiresAt: expiresAt
         )
         ingredients.append(ingredient)
         persist()
@@ -147,10 +152,35 @@ public final class IngredientStore: ObservableObject {
             canonicalName: canonical,
             category: normalizer.category(for: canonical),
             source: prior.source,
-            addedAt: prior.addedAt
+            addedAt: prior.addedAt,
+            expiresAt: prior.expiresAt
         )
         ingredients[index] = updated
         persist()
         return .renamed(updated)
+    }
+
+    /// Ingredients with explicit freshness metadata that are near expiry.
+    public func expiringIngredients(
+        freshnessThreshold: Double = 0.4,
+        now: Date = Date()
+    ) -> [Ingredient] {
+        ingredients
+            .filter { ingredient in
+                guard let freshness = ingredient.freshness(now: now) else { return false }
+                return freshness <= freshnessThreshold
+            }
+            .sorted { lhs, rhs in
+                switch (lhs.expiresAt, rhs.expiresAt) {
+                case let (l?, r?):
+                    return l < r
+                case (.some, .none):
+                    return true
+                case (.none, .some):
+                    return false
+                case (.none, .none):
+                    return lhs.addedAt < rhs.addedAt
+                }
+            }
     }
 }

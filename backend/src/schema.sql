@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   recipe_id  TEXT NOT NULL,
   rating     INTEGER CHECK (rating >= 1 AND rating <= 5),
   body       TEXT,
+  CONSTRAINT reviews_user_recipe_unique UNIQUE (user_id, recipe_id),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
