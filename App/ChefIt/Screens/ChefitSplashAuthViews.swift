@@ -183,10 +183,29 @@ struct ChefitAuthView: View {
                     .accessibilityLabel("Chefit mascot, chef hat")
 
                 Text("Welcome!")
-                    .font(.custom("PlayfairDisplay-Bold", size: 34))
-                    .foregroundStyle(ChefitColors.sageGreen)
+                    .font(.custom("PlayfairDisplay-Bold", size: 38))
+                    .foregroundStyle(ChefitColors.splashBrandGreen)
                     .multilineTextAlignment(.center)
-                    .padding(.bottom, 28)
+                    .padding(.bottom, 14)
+
+                // Center row + small downward nudge so heart matches text optical midline (PNG sits high in frame).
+                HStack(alignment: .center, spacing: 2) {
+                    Text("Let's get cooking")
+                        .font(.custom("Nunito-Regular", size: 17))
+                        .foregroundStyle(Color.black)
+                    Image("ChefitAuthHeart")
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .padding(.leading, -8)
+                        .offset(y: 3)
+                        .accessibilityHidden(true)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Let's get cooking")
+                .padding(.bottom, 28)
 
                 VStack(spacing: 12) {
                     chefitAuthOutlineButton(
