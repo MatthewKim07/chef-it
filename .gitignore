@@ -35,4 +35,6 @@ reference/pantry-pal/
 CLAUDE.md
 AGENTS.md
 
-.env
+# Backend
+backend/.env
+backend/node_modules/
