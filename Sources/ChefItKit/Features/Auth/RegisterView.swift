@@ -16,81 +16,115 @@ public struct RegisterView: View {
         ZStack {
             BrandColor.cream.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 64)
-
-                    Text("chefit")
-                        .font(.custom("PlayfairDisplay-Bold", size: 32))
-                        .foregroundColor(BrandColor.sageGreen)
-                        .padding(.bottom, 40)
-
-                    VStack(spacing: 8) {
-                        Text("Create your account")
-                            .font(.custom("PlayfairDisplay-Bold", size: 26))
-                            .foregroundColor(BrandColor.text)
-                            .multilineTextAlignment(.center)
-
-                        Text("Join the kitchen, Chef.")
-                            .font(.custom("Nunito-Regular", size: 15))
-                            .foregroundColor(BrandColor.matcha)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(BrandColor.sageGreen)
                     }
-                    .padding(.bottom, 40)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
 
-                    VStack(spacing: 16) {
-                        brandTextField(placeholder: "Your chef name (optional)", text: $displayName)
-                            .textContentType(.name)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
 
-                        brandEmailField(placeholder: "Email", text: $email)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        Spacer().frame(height: 20)
 
-                        brandSecureField(placeholder: "Password", text: $password)
-                            .textContentType(.newPassword)
-                    }
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, errorMessage != nil ? 16 : 32)
-
-                    if let error = errorMessage {
-                        Text(error)
-                            .font(.custom("Nunito-Regular", size: 13))
-                            .foregroundColor(Color(hex: "#B94040"))
-                            .multilineTextAlignment(.center)
+                        Image("ChefitSplashWordmark")
+                            .resizable()
+                            .interpolation(.high)
+                            .scaledToFit()
+                            .frame(maxWidth: 176)
+                            .frame(maxWidth: .infinity)
                             .padding(.horizontal, 32)
-                            .padding(.bottom, 16)
-                    }
+                            .padding(.bottom, 22)
+                            .accessibilityLabel("Chefit")
 
-                    Button(action: register) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 32)
-                                .fill(isLoading || email.isEmpty || password.isEmpty
-                                      ? BrandColor.peach.opacity(0.5)
-                                      : BrandColor.peach)
-                                .frame(height: 52)
-                            if isLoading {
-                                ProgressView().tint(.white)
-                            } else {
-                                Text("Create Account")
-                                    .font(.custom("Nunito-SemiBold", size: 16))
-                                    .foregroundColor(.white)
+                        VStack(spacing: 12) {
+                            Text("Welcome, Chef.")
+                                .font(.custom("Nunito-Bold", size: 28))
+                                .foregroundColor(BrandColor.text)
+                                .multilineTextAlignment(.center)
+
+                            Text("Create your account")
+                                .font(.custom("Nunito-Bold", size: 17))
+                                .foregroundColor(BrandColor.sageGreen)
+                                .multilineTextAlignment(.center)
+
+                            Text("Join the kitchen, Chef.")
+                                .font(.custom("Nunito-Regular", size: 15))
+                                .foregroundColor(BrandColor.matcha)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 36)
+
+                        VStack(spacing: 16) {
+                            brandTextField(placeholder: "Your chef name (optional)", text: $displayName)
+                                .textContentType(.name)
+
+                            brandEmailField(placeholder: "Email", text: $email)
+
+                            brandSecureField(placeholder: "Password", text: $password)
+                                .textContentType(.newPassword)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, errorMessage != nil ? 16 : 32)
+
+                        if let error = errorMessage {
+                            Text(error)
+                                .font(.custom("Nunito-Regular", size: 13))
+                                .foregroundColor(Color(hex: "#B94040"))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
+                                .padding(.bottom, 16)
+                        }
+
+                        Button(action: register) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 32)
+                                    .fill(isLoading || email.isEmpty || password.isEmpty
+                                          ? BrandColor.peach.opacity(0.5)
+                                          : BrandColor.peach)
+                                    .frame(height: 52)
+                                if isLoading {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Text("Create Account")
+                                        .font(.custom("Nunito-SemiBold", size: 16))
+                                        .foregroundColor(.white)
+                                }
                             }
                         }
-                    }
-                    .disabled(isLoading || email.isEmpty || password.isEmpty)
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 24)
-                    .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+                        .disabled(isLoading || email.isEmpty || password.isEmpty)
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, 24)
+                        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
 
-                    Button { dismiss() } label: {
-                        (Text("Already have an account? ")
-                            .foregroundColor(BrandColor.text.opacity(0.6))
-                         + Text("Log in")
-                            .foregroundColor(BrandColor.sageGreen))
-                        .font(.custom("Nunito-SemiBold", size: 14))
-                    }
+                        Button { dismiss() } label: {
+                            (Text("Already have an account? ")
+                                .foregroundColor(BrandColor.text.opacity(0.6))
+                             + Text("Log in")
+                                .foregroundColor(BrandColor.sageGreen))
+                            .font(.custom("Nunito-SemiBold", size: 14))
+                        }
 
-                    Spacer().frame(height: 40)
+                        Spacer().frame(height: 40)
+                    }
                 }
             }
         }
+        #if os(iOS)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        #endif
     }
 
     private func register() {

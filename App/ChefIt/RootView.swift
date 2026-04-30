@@ -2,18 +2,20 @@ import SwiftUI
 import ChefItKit
 
 struct RootView: View {
-    @StateObject private var authService = AuthService.shared
+    @EnvironmentObject private var authService: AuthService
 
     var body: some View {
-        if authService.isLoggedIn {
-            ChefitRootCoordinatorView()
-        } else {
-            LoginView()
-                .environmentObject(authService)
+        Group {
+            if authService.isLoggedIn {
+                ChefitRootCoordinatorView()
+            } else {
+                ChefitGuestFlowView()
+            }
         }
     }
 }
 
 #Preview {
     RootView()
+        .environmentObject(AuthService.shared)
 }
