@@ -75,7 +75,6 @@ struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
 
     @State private var selectedPost: Post?
-    @State private var showDetail = false
 
     private var currentUserId: Int? { authService.currentUser?.id }
 
@@ -93,20 +92,18 @@ struct FeedView: View {
         }
         .background(ChefitColors.cream.ignoresSafeArea())
         .task { await vm.loadInitial() }
-        .fullScreenCover(isPresented: $showDetail) {
-            if let post = selectedPost {
-                PostDetailFullScreenView(
-                    post: post,
-                    currentUserId: currentUserId,
-                    onBack: { showDetail = false },
-                    onPostUpdated: { updatedPost in
-                        selectedPost = updatedPost
-                        vm.updatePost(updatedPost)
-                    },
-                    onDelete: { p in await vm.deletePost(id: p.id) }
-                )
-                .environmentObject(authService)
-            }
+        .fullScreenCover(item: $selectedPost) { post in
+            PostDetailFullScreenView(
+                post: post,
+                currentUserId: currentUserId,
+                onBack: { selectedPost = nil },
+                onPostUpdated: { updatedPost in
+                    selectedPost = updatedPost
+                    vm.updatePost(updatedPost)
+                },
+                onDelete: { p in await vm.deletePost(id: p.id) }
+            )
+            .environmentObject(authService)
         }
     }
 
@@ -120,11 +117,9 @@ struct FeedView: View {
                         onAuthorTap: onAuthorTap,
                         onImageTap: { tappedPost in
                             selectedPost = tappedPost
-                            showDetail = true
                         },
                         onCommentTap: { tappedPost in
                             selectedPost = tappedPost
-                            showDetail = true
                         },
                         onDelete: { tappedPost in await vm.deletePost(id: tappedPost.id) }
                     )
