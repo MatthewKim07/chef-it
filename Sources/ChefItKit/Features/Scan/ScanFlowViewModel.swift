@@ -61,6 +61,7 @@ public final class ScanFlowViewModel: ObservableObject {
 
     private let ingredientStore: IngredientStore
     private let scanService: any ScanService
+    private let normalizer = IngredientNormalizer()
 
     public init(
         ingredientStore: IngredientStore,
@@ -110,11 +111,12 @@ public final class ScanFlowViewModel: ObservableObject {
         message = nil
     }
 
-    public func confirmSelected() {
+    @discardableResult
+    public func confirmSelected() -> Bool {
         let selected = candidates.filter(\.isSelected)
         guard !selected.isEmpty else {
             message = "Select at least one ingredient before adding to the board."
-            return
+            return false
         }
 
         let outcomes = ingredientStore.addMany(
@@ -123,6 +125,31 @@ public final class ScanFlowViewModel: ObservableObject {
         )
         lastConfirmFeedback = summarize(outcomes)
         clearSession(preserveFeedback: true)
+        return true
+    }
+
+    public func addManualCandidate(_ rawName: String) {
+        let trimmed = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let canonical = normalizer.canonicalize(trimmed)
+        guard !canonical.isEmpty else {
+            message = "Type an ingredient name before adding."
+            return
+        }
+
+        if let existingIndex = candidates.firstIndex(where: { $0.canonicalName == canonical }) {
+            candidates[existingIndex].isSelected = true
+            message = nil
+            return
+        }
+
+        let detected = DetectedIngredient(
+            rawName: trimmed,
+            canonicalName: canonical,
+            category: normalizer.category(for: canonical),
+            confidence: 1.0
+        )
+        candidates.append(ScanCandidate(detected: detected, isSelected: true))
+        message = nil
     }
 
     public func retry() async {
