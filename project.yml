@@ -43,6 +43,10 @@ targets:
         EDAMAM_APP_ID: $(EDAMAM_APP_ID)
         EDAMAM_APP_KEY: $(EDAMAM_APP_KEY)
         AUTH_BASE_URL: $(AUTH_BASE_URL)
+        GEMINI_API_KEY: $(GEMINI_API_KEY)
+        OPENAI_API_KEY: $(OPENAI_API_KEY)
+        NSCameraUsageDescription: "Chef It uses your camera to scan ingredients in your pantry."
+        NSPhotoLibraryUsageDescription: "Chef It can scan photos from your library to detect ingredients."
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
         UIApplicationSceneManifest:
