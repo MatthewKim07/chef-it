@@ -6,7 +6,7 @@ enum ChefitRoute: Hashable {
     case myIngredients
     case search
     case recipeDiscover(id: String)
-    case recipeDetails(id: String)
+    case recipeDetails(payload: ChefitRecipeDetailsPayload)
     case scan
     case detectedIngredients
     case recommendations
@@ -153,18 +153,19 @@ struct ChefitRootCoordinatorView: View {
             let recipe = homeFeed.recipeByID[id]
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
                 ?? ChefitSampleData.popularRecipes[0]
-            ChefitRecipeDiscoveryView(recipe: recipe) {
-                route = .recipeDetails(id: id)
+            ChefitRecipeDiscoveryView(recipe: recipe) { payload in
+                route = .recipeDetails(payload: payload)
             }
 
-        case .recipeDetails(let id):
-            let recipe = homeFeed.recipeByID[id]
-                ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
-                ?? ChefitSampleData.popularRecipes[0]
+        case .recipeDetails(let payload):
             ChefitRecipeDetailsView(
-                recipe: recipe,
-                onBack: { route = .recipeDiscover(id: id) },
-                onStartCooking: { route = .recipeDetails(id: "cooking-mode") }
+                recipe: payload,
+                onBack: {
+                    let hasMainRecipe = homeFeed.recipeByID[payload.id] != nil
+                        || ChefitSampleData.popularRecipes.contains(where: { $0.id == payload.id })
+                    route = hasMainRecipe ? .recipeDiscover(id: payload.id) : .recommendations
+                },
+                onStartCooking: { route = .recipeDetails(payload: payload) }
             )
 
         case .scan:
@@ -192,7 +193,7 @@ struct ChefitRootCoordinatorView: View {
             ChefitRecommendationsView(
                 vm: recommendationsVM,
                 onRecipeTap: { recipe in
-                    route = .recipeDiscover(id: recipe.id)
+                    route = .recipeDetails(payload: .fromRecipe(recipe))
                 }
             )
 
