@@ -34,3 +34,5 @@ reference/pantry-pal/
 # Agent handoff note
 CLAUDE.md
 AGENTS.md
+
+.env
