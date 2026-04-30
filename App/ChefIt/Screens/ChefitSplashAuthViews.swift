@@ -18,24 +18,22 @@ struct ChefitSplashView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 28)
 
-            ChefitSplashChefHatPlaceholder()
-                .padding(.bottom, 28)
+            Image("ChefitSplashMascot")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: 240, maxHeight: 240)
+                .accessibilityLabel("Chefit mascot, chef hat")
 
-            Text("chefit")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundStyle(ChefitColors.splashBrandGreen)
-                .tracking(-0.5)
-                .padding(.bottom, 14)
-
-            HStack(alignment: .center, spacing: 6) {
-                Text("scan. cook. enjoy.")
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(Color.black)
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(ChefitColors.splashButtonGradientTop)
-            }
-            .padding(.bottom, 36)
+            Image("ChefitSplashWordmark")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: 320)
+                .padding(.horizontal, ChefitSpacing.lg)
+                .padding(.top, 24)
+                .padding(.bottom, 36)
+                .accessibilityLabel("Chefit, scan cook enjoy")
 
             HStack(spacing: 14) {
                 ForEach(Array(ingredientPlaceholderSymbols.enumerated()), id: \.offset) { _, item in
@@ -89,103 +87,6 @@ struct ChefitSplashView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ChefitColors.splashBackground.ignoresSafeArea())
-    }
-}
-
-// MARK: - Chef hat placeholder (replace with asset when ready)
-
-private struct ChefitSplashChefHatPlaceholder: View {
-    private let outline: CGFloat = 5
-
-    var body: some View {
-        ZStack {
-            ZStack {
-                Ellipse()
-                    .fill(ChefitColors.white)
-                    .stroke(ChefitColors.splashHatOutline, lineWidth: outline)
-                    .frame(width: 168, height: 122)
-                    .offset(y: -44)
-
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(ChefitColors.white)
-                    .stroke(ChefitColors.splashHatOutline, lineWidth: outline)
-                    .frame(width: 178, height: 54)
-                    .offset(y: 36)
-            }
-
-            HStack(spacing: -2) {
-                ChefitSplashLeafShape()
-                    .fill(ChefitColors.splashLeafGreen)
-                    .frame(width: 24, height: 30)
-                    .rotationEffect(.degrees(-28))
-                ChefitSplashLeafShape()
-                    .fill(ChefitColors.splashLeafGreen)
-                    .frame(width: 24, height: 30)
-                    .rotationEffect(.degrees(28))
-            }
-            .offset(y: -72)
-
-            ZStack {
-                HStack(spacing: 56) {
-                    Circle()
-                        .fill(ChefitColors.splashBlush.opacity(0.55))
-                        .frame(width: 16, height: 16)
-                    Circle()
-                        .fill(ChefitColors.splashBlush.opacity(0.55))
-                        .frame(width: 16, height: 16)
-                }
-                .offset(y: 34)
-
-                HStack(spacing: 30) {
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 9, height: 9)
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 9, height: 9)
-                }
-                .offset(y: 24)
-
-                ChefitSplashSmileCurve()
-                    .stroke(Color.black, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .frame(width: 30, height: 14)
-                    .offset(y: 38)
-            }
-            .offset(y: 4)
-        }
-        .frame(width: 220, height: 210)
-        .accessibilityLabel("Chefit logo, chef hat with a smile")
-    }
-}
-
-private struct ChefitSplashLeafShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.maxY),
-            control: CGPoint(x: rect.maxX, y: rect.midY)
-        )
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.minY),
-            control: CGPoint(x: rect.minX, y: rect.midY)
-        )
-        path.closeSubpath()
-        return path
-    }
-}
-
-private struct ChefitSplashSmileCurve: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(
-            center: CGPoint(x: rect.midX, y: rect.minY),
-            radius: rect.width / 2,
-            startAngle: .degrees(180),
-            endAngle: .degrees(0),
-            clockwise: false
-        )
-        return path
     }
 }
 
