@@ -28,6 +28,8 @@ targets:
       Release: Secrets.xcconfig
     sources:
       - path: App/ChefIt
+      - path: App/ChefIt/Resources
+        buildPhase: resources
     info:
       path: App/ChefIt/Info.plist
       properties:

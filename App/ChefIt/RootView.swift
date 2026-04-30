@@ -6,7 +6,7 @@ struct RootView: View {
 
     var body: some View {
         if authService.isLoggedIn {
-            ChefItMilestoneOneView()
+            ChefitRootCoordinatorView()
         } else {
             LoginView()
                 .environmentObject(authService)
