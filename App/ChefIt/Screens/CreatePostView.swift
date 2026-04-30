@@ -18,10 +18,17 @@ struct CreatePostView: View {
     @State private var errorMessage: String?
 
     var onPosted: ((Post) -> Void)?
+    var initialRecipeId: String?
     private let previewHeight: CGFloat = 320
 
     private var canPost: Bool {
         imageData != nil && !caption.trimmingCharacters(in: .whitespaces).isEmpty && !isPosting
+    }
+
+    init(initialRecipeId: String? = nil, onPosted: ((Post) -> Void)? = nil) {
+        self.initialRecipeId = initialRecipeId
+        self.onPosted = onPosted
+        _recipeId = State(initialValue: initialRecipeId ?? "")
     }
 
     var body: some View {
