@@ -20,6 +20,28 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
     public let avatarURL: String?
     public let commentCount: Int
 
+    public init(
+        id: Int,
+        recipeId: String?,
+        caption: String?,
+        imageURL: String?,
+        createdAt: String,
+        userId: Int,
+        displayName: String?,
+        avatarURL: String?,
+        commentCount: Int
+    ) {
+        self.id = id
+        self.recipeId = recipeId
+        self.caption = caption
+        self.imageURL = imageURL
+        self.createdAt = createdAt
+        self.userId = userId
+        self.displayName = displayName
+        self.avatarURL = avatarURL
+        self.commentCount = commentCount
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case recipeId    = "recipe_id"
@@ -30,6 +52,20 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
         case displayName = "display_name"
         case avatarURL   = "avatar_url"
         case commentCount = "comment_count"
+    }
+
+    public func updatingCommentCount(_ commentCount: Int) -> Post {
+        Post(
+            id: id,
+            recipeId: recipeId,
+            caption: caption,
+            imageURL: imageURL,
+            createdAt: createdAt,
+            userId: userId,
+            displayName: displayName,
+            avatarURL: avatarURL,
+            commentCount: commentCount
+        )
     }
 }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import ChefItKit
 
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
@@ -88,15 +89,60 @@ struct ChefitRecipeDiscoveryView: View {
     }
 }
 
+@MainActor
+private final class RecipeReviewsViewModel: ObservableObject {
+    @Published var reviews: [Review] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+
+    func load(recipeId: String) async {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+        do {
+            reviews = try await ReviewService.shared.fetchReviews(recipeId: recipeId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    func upsert(_ review: Review) {
+        if let index = reviews.firstIndex(where: { $0.userId == review.userId }) {
+            reviews[index] = review
+        } else {
+            reviews.insert(review, at: 0)
+        }
+        reviews.sort { $0.createdAt > $1.createdAt }
+    }
+}
+
 struct ChefitRecipeDetailsView: View {
     enum RecipeTab: String, CaseIterable {
         case ingredients = "Ingredients"
         case steps = "Steps"
         case notes = "Notes"
+        case reviews = "Reviews"
     }
 
+    let recipe: ChefitRecipeItem
     let onStartCooking: () -> Void
+
+    @EnvironmentObject private var authService: AuthService
+    @StateObject private var reviewsVM = RecipeReviewsViewModel()
     @State private var selectedTab: RecipeTab = .ingredients
+    @State private var showReviewComposer = false
+
+    private var currentUserId: Int? { authService.currentUser?.id }
+    private var currentUserReview: Review? {
+        guard let currentUserId else { return nil }
+        return reviewsVM.reviews.first(where: { $0.userId == currentUserId })
+    }
+    private var averageRating: Double {
+        guard !reviewsVM.reviews.isEmpty else { return 0 }
+        let total = reviewsVM.reviews.reduce(0) { $0 + $1.rating }
+        return Double(total) / Double(reviewsVM.reviews.count)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -109,6 +155,7 @@ struct ChefitRecipeDetailsView: View {
                         .foregroundStyle(ChefitColors.sageGreen)
                 }
 
+                headerCard
                 tabSelector
 
                 ScrollView {
@@ -132,6 +179,38 @@ struct ChefitRecipeDetailsView: View {
             .background(ChefitColors.cream.ignoresSafeArea())
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+        .task { await reviewsVM.load(recipeId: recipe.id) }
+        .sheet(isPresented: $showReviewComposer) {
+            ReviewComposerSheet(
+                recipeId: recipe.id,
+                currentUserId: currentUserId
+            ) { review in
+                reviewsVM.upsert(review)
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            Text(recipe.title)
+                .font(ChefitTypography.h2())
+                .foregroundStyle(ChefitColors.sageGreen)
+
+            HStack(spacing: 6) {
+                Image(systemName: ChefitSymbol.clock)
+                Text("\(recipe.minutes) min")
+                Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
+                Image(systemName: ChefitSymbol.star)
+                Text(recipe.difficulty)
+                Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
+                Image(systemName: ChefitSymbol.personServings)
+                Text("2 servings")
+            }
+            .font(ChefitTypography.micro())
+            .foregroundStyle(ChefitColors.matcha)
+        }
     }
 
     private var tabSelector: some View {
@@ -192,6 +271,75 @@ struct ChefitRecipeDetailsView: View {
                 .foregroundStyle(ChefitColors.matcha)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, ChefitSpacing.sm)
+        case .reviews:
+            reviewsContent
         }
+    }
+
+    private var reviewsContent: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+            reviewSummaryCard
+
+            Button(currentUserReview == nil ? "Write Review" : "Update Review") {
+                showReviewComposer = true
+            }
+            .buttonStyle(ChefitSecondaryButtonStyle())
+
+            if reviewsVM.isLoading {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(ChefitColors.sageGreen)
+                    Spacer()
+                }
+                .padding(.vertical, ChefitSpacing.xl)
+            } else if let errorMessage = reviewsVM.errorMessage {
+                Text(errorMessage)
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.peach)
+            } else if reviewsVM.reviews.isEmpty {
+                VStack(spacing: ChefitSpacing.sm) {
+                    Image(systemName: "star.bubble")
+                        .font(.system(size: 30, weight: .thin))
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("No reviews yet")
+                        .font(ChefitTypography.h3())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                    Text("Be the first Chef to share how it tasted.")
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, ChefitSpacing.xl)
+            } else {
+                LazyVStack(spacing: ChefitSpacing.md) {
+                    ForEach(reviewsVM.reviews) { review in
+                        ReviewRowView(review: review)
+                    }
+                }
+            }
+        }
+    }
+
+    private var reviewSummaryCard: some View {
+        HStack(spacing: ChefitSpacing.md) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(reviewsVM.reviews.isEmpty ? "Recipe Reviews" : String(format: "%.1f ★", averageRating))
+                    .font(ChefitTypography.h3())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Text(reviewsVM.reviews.isEmpty ? "No ratings yet" : "\(reviewsVM.reviews.count) Chef reviews")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
+
+            Spacer()
+
+            Image(systemName: "star.fill")
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(ChefitColors.honey)
+        }
+        .padding(ChefitSpacing.md)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .chefitCardShadow()
     }
 }

@@ -59,6 +59,11 @@ final class FeedViewModel: ObservableObject {
             self.error = error.localizedDescription
         }
     }
+
+    func updatePost(_ post: Post) {
+        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        posts[index] = post
+    }
 }
 
 // MARK: - FeedView
@@ -94,6 +99,10 @@ struct FeedView: View {
                     post: post,
                     currentUserId: currentUserId,
                     onBack: { showDetail = false },
+                    onPostUpdated: { updatedPost in
+                        selectedPost = updatedPost
+                        vm.updatePost(updatedPost)
+                    },
                     onDelete: { p in await vm.deletePost(id: p.id) }
                 )
                 .environmentObject(authService)

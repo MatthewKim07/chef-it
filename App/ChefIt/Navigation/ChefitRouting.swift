@@ -78,8 +78,9 @@ struct ChefitRootCoordinatorView: View {
             ChefitRecipeDiscoveryView(recipe: recipe) {
                 route = .recipeDetails(id: id)
             }
-        case .recipeDetails:
-            ChefitRecipeDetailsView {
+        case .recipeDetails(let id):
+            let recipe = ChefitSampleData.popularRecipes.first(where: { $0.id == id }) ?? ChefitSampleData.popularRecipes[0]
+            ChefitRecipeDetailsView(recipe: recipe) {
                 route = .recipeDetails(id: "cooking-mode")
             }
         case .scan:

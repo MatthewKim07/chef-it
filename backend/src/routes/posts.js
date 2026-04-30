@@ -10,6 +10,12 @@ const POST_SELECT = `
     FROM posts p
     JOIN users u ON u.id = p.user_id`;
 
+const COMMENT_SELECT = `
+  SELECT c.id, c.body, c.created_at,
+         u.id AS user_id, u.display_name, u.avatar_url
+    FROM comments c
+    JOIN users u ON u.id = c.user_id`;
+
 // GET /api/posts  (optional ?user_id=, ?limit=, ?offset=)
 router.get('/', async (req, res) => {
   const parsedLimit = parseInt(req.query.limit, 10);
@@ -131,10 +137,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 router.get('/:id/comments', async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT c.id, c.body, c.created_at,
-              u.id AS user_id, u.display_name, u.avatar_url
-         FROM comments c
-         JOIN users u ON u.id = c.user_id
+      `${COMMENT_SELECT}
         WHERE c.post_id = $1
         ORDER BY c.created_at ASC`,
       [req.params.id]
@@ -156,7 +159,11 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
       'INSERT INTO comments (user_id, post_id, body) VALUES ($1, $2, $3) RETURNING *',
       [req.user.id, req.params.id, body]
     );
-    res.status(201).json(rows[0]);
+    const { rows: full } = await db.query(
+      `${COMMENT_SELECT} WHERE c.id = $1`,
+      [rows[0].id]
+    );
+    res.status(201).json(full[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

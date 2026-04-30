@@ -1,44 +1,101 @@
 import SwiftUI
 import ChefItKit
 
+@MainActor
+private final class PostDetailViewModel: ObservableObject {
+    @Published var comments: [Comment] = []
+    @Published var isLoadingComments = false
+    @Published var isSubmittingComment = false
+    @Published var errorMessage: String?
+
+    func loadComments(postId: Int) async {
+        guard !isLoadingComments else { return }
+        isLoadingComments = true
+        errorMessage = nil
+        do {
+            comments = try await CommentService.shared.fetchComments(postId: postId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoadingComments = false
+    }
+
+    func createComment(postId: Int, body: String) async throws -> Comment {
+        isSubmittingComment = true
+        defer { isSubmittingComment = false }
+
+        let comment = try await CommentService.shared.createComment(postId: postId, body: body)
+        comments.append(comment)
+        return comment
+    }
+}
+
 struct PostDetailFullScreenView: View {
     let post: Post
     let currentUserId: Int?
     let onBack: () -> Void
+    let onPostUpdated: (Post) -> Void
     let onDelete: ((Post) async -> Void)?
 
+    @StateObject private var vm = PostDetailViewModel()
+    @State private var activePost: Post
+    @State private var commentBody = ""
     @State private var showDeleteConfirm = false
     @State private var isDeleting = false
+    @State private var showReviewComposer = false
+
+    init(
+        post: Post,
+        currentUserId: Int?,
+        onBack: @escaping () -> Void,
+        onPostUpdated: @escaping (Post) -> Void,
+        onDelete: ((Post) async -> Void)?
+    ) {
+        self.post = post
+        self.currentUserId = currentUserId
+        self.onBack = onBack
+        self.onPostUpdated = onPostUpdated
+        self.onDelete = onDelete
+        _activePost = State(initialValue: post)
+    }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    Color.clear.frame(height: 56)
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Color.clear.frame(height: 56)
 
-                    postImage
+                        postImage
 
-                    VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                        authorRow
+                        VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+                            authorRow
 
-                        if let caption = post.caption, !caption.isEmpty {
-                            Text(caption)
-                                .font(ChefitTypography.body())
-                                .foregroundStyle(ChefitColors.text)
+                            if let caption = activePost.caption, !caption.isEmpty {
+                                Text(caption)
+                                    .font(ChefitTypography.body())
+                                    .foregroundStyle(ChefitColors.text)
+                            }
+
+                            commentSummary
+
+                            if let recipeId = activePost.recipeId, !recipeId.isEmpty {
+                                reviewCallout(recipeId: recipeId)
+                            }
+
+                            commentsSection
+
+                            if activePost.userId == currentUserId {
+                                deleteButton
+                            }
                         }
+                        .padding(ChefitSpacing.md)
 
-                        commentSummary
-
-                        commentsPlaceholder
-
-                        if post.userId == currentUserId {
-                            deleteButton
-                        }
+                        Color.clear.frame(height: ChefitSpacing.xl)
                     }
-                    .padding(ChefitSpacing.md)
-
-                    Color.clear.frame(height: ChefitSpacing.twoXL)
                 }
+
+                composerBar
             }
             .background(ChefitColors.cream.ignoresSafeArea())
 
@@ -55,12 +112,13 @@ struct PostDetailFullScreenView: View {
             .padding(.leading, ChefitSpacing.md)
             .padding(.top, ChefitSpacing.md)
         }
+        .task { await vm.loadComments(postId: activePost.id) }
         .background(ChefitColors.cream.ignoresSafeArea())
         .confirmationDialog("Delete this post?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
             Button("Delete", role: .destructive) {
                 Task {
                     isDeleting = true
-                    await onDelete?(post)
+                    await onDelete?(activePost)
                     isDeleting = false
                     onBack()
                 }
@@ -68,11 +126,21 @@ struct PostDetailFullScreenView: View {
         } message: {
             Text("This can't be undone.")
         }
+        .sheet(isPresented: $showReviewComposer) {
+            if let recipeId = activePost.recipeId {
+                ReviewComposerSheet(
+                    recipeId: recipeId,
+                    currentUserId: currentUserId
+                ) { _ in }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
+        }
     }
 
     private var postImage: some View {
         Group {
-            if let urlStr = post.imageURL, let url = URL(string: urlStr) {
+            if let urlStr = activePost.imageURL, let url = URL(string: urlStr) {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let image):
@@ -101,11 +169,11 @@ struct PostDetailFullScreenView: View {
             avatarView
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(post.displayName ?? "Chef")
+                Text(activePost.displayName ?? "Chef")
                     .font(ChefitTypography.label())
                     .foregroundStyle(ChefitColors.sageGreen)
 
-                Text(RelativePostDateFormatter.string(from: post.createdAt))
+                Text(RelativePostDateFormatter.string(from: activePost.createdAt))
                     .font(ChefitTypography.micro())
                     .foregroundStyle(ChefitColors.matcha)
             }
@@ -118,13 +186,39 @@ struct PostDetailFullScreenView: View {
         HStack(spacing: ChefitSpacing.xs) {
             Image(systemName: "bubble.left")
                 .font(.system(size: 14, weight: .regular))
-            Text("\(post.commentCount) comments")
+            Text("\(activePost.commentCount) comments")
                 .font(ChefitTypography.label())
         }
         .foregroundStyle(ChefitColors.sageGreen.opacity(0.82))
     }
 
-    private var commentsPlaceholder: some View {
+    private func reviewCallout(recipeId: String) -> some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            HStack {
+                Label("Recipe linked", systemImage: "fork.knife.circle")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
+                Button("Rate this recipe") {
+                    showReviewComposer = true
+                }
+                .font(ChefitTypography.label())
+                .foregroundStyle(ChefitColors.peach)
+                .buttonStyle(.plain)
+            }
+
+            Text(recipeId)
+                .font(ChefitTypography.micro())
+                .foregroundStyle(ChefitColors.matcha)
+                .lineLimit(1)
+        }
+        .padding(ChefitSpacing.md)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .chefitCardShadow()
+    }
+
+    private var commentsSection: some View {
         VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
             Divider()
                 .overlay(ChefitColors.pistachio)
@@ -133,19 +227,87 @@ struct PostDetailFullScreenView: View {
                 .font(ChefitTypography.h3())
                 .foregroundStyle(ChefitColors.sageGreen)
 
-            VStack(spacing: ChefitSpacing.sm) {
-                Image(systemName: "bubble.left.and.bubble.right")
-                    .font(.system(size: 30, weight: .thin))
-                    .foregroundStyle(ChefitColors.matcha)
+            if vm.isLoadingComments {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(ChefitColors.sageGreen)
+                    Spacer()
+                }
+                .padding(.vertical, ChefitSpacing.xl)
+            } else if let errorMessage = vm.errorMessage {
+                Text(errorMessage)
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.peach)
+            } else if vm.comments.isEmpty {
+                VStack(spacing: ChefitSpacing.sm) {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .font(.system(size: 30, weight: .thin))
+                        .foregroundStyle(ChefitColors.matcha)
 
-                Text("Comments will show up here next.")
-                    .font(ChefitTypography.body())
-                    .foregroundStyle(ChefitColors.matcha)
-                    .multilineTextAlignment(.center)
+                    Text("No comments yet")
+                        .font(ChefitTypography.h3())
+                        .foregroundStyle(ChefitColors.sageGreen)
+
+                    Text("Start the conversation, Chef.")
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, ChefitSpacing.xl)
+            } else {
+                LazyVStack(spacing: ChefitSpacing.md) {
+                    ForEach(vm.comments) { comment in
+                        CommentRowView(comment: comment)
+                    }
+                }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, ChefitSpacing.xl)
         }
+    }
+
+    private var composerBar: some View {
+        VStack(spacing: ChefitSpacing.sm) {
+            if let errorMessage = vm.errorMessage, !vm.isLoadingComments {
+                Text(errorMessage)
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.peach)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack(alignment: .bottom, spacing: ChefitSpacing.sm) {
+                TextField("Share a comment...", text: $commentBody, axis: .vertical)
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.text)
+                    .lineLimit(1...4)
+                    .padding(.horizontal, ChefitSpacing.md)
+                    .padding(.vertical, 12)
+                    .background(ChefitColors.white)
+                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.xl, style: .continuous))
+
+                Button {
+                    Task { await submitComment() }
+                } label: {
+                    if vm.isSubmittingComment {
+                        ProgressView().tint(ChefitColors.white)
+                            .frame(width: 48, height: 48)
+                    } else {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(ChefitColors.white)
+                            .frame(width: 48, height: 48)
+                    }
+                }
+                .buttonStyle(.plain)
+                .background(ChefitColors.peach)
+                .clipShape(Circle())
+                .disabled(commentBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || vm.isSubmittingComment)
+                .opacity(commentBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || vm.isSubmittingComment ? 0.6 : 1)
+            }
+        }
+        .padding(.horizontal, ChefitSpacing.md)
+        .padding(.top, ChefitSpacing.sm)
+        .padding(.bottom, ChefitSpacing.md)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 
     private var deleteButton: some View {
@@ -175,7 +337,7 @@ struct PostDetailFullScreenView: View {
 
     private var avatarView: some View {
         Group {
-            if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
+            if let urlStr = activePost.avatarURL, let url = URL(string: urlStr) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {
                         image.resizable().scaledToFill()
@@ -209,6 +371,81 @@ struct PostDetailFullScreenView: View {
             .overlay {
                 Image(systemName: "person")
                     .font(.system(size: 15, weight: .light))
+                    .foregroundStyle(ChefitColors.matcha)
+            }
+    }
+
+    private func submitComment() async {
+        let trimmed = commentBody.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        do {
+            _ = try await vm.createComment(postId: activePost.id, body: trimmed)
+            commentBody = ""
+            activePost = activePost.updatingCommentCount(activePost.commentCount + 1)
+            onPostUpdated(activePost)
+        } catch {
+            vm.errorMessage = error.localizedDescription
+        }
+    }
+}
+
+private struct CommentRowView: View {
+    let comment: Comment
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            HStack(spacing: ChefitSpacing.sm) {
+                avatarView
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(comment.displayName ?? "Chef")
+                        .font(ChefitTypography.label())
+                        .foregroundStyle(ChefitColors.sageGreen)
+
+                    Text(RelativePostDateFormatter.string(from: comment.createdAt))
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                }
+
+                Spacer()
+            }
+
+            Text(comment.body)
+                .font(ChefitTypography.body())
+                .foregroundStyle(ChefitColors.text)
+        }
+        .padding(ChefitSpacing.md)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .chefitCardShadow()
+    }
+
+    private var avatarView: some View {
+        Group {
+            if let urlStr = comment.avatarURL, let url = URL(string: urlStr) {
+                AsyncImage(url: url) { phase in
+                    if case .success(let image) = phase {
+                        image.resizable().scaledToFill()
+                    } else {
+                        avatarPlaceholder
+                    }
+                }
+            } else {
+                avatarPlaceholder
+            }
+        }
+        .frame(width: 38, height: 38)
+        .clipShape(Circle())
+        .overlay(Circle().stroke(ChefitColors.pistachio, lineWidth: 2))
+    }
+
+    private var avatarPlaceholder: some View {
+        Circle()
+            .fill(ChefitColors.pistachio)
+            .overlay {
+                Image(systemName: "person")
+                    .font(.system(size: 14, weight: .light))
                     .foregroundStyle(ChefitColors.matcha)
             }
     }
