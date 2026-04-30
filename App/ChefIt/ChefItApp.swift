@@ -6,6 +6,7 @@ import ChefItKit
 struct ChefItApp: App {
     @StateObject private var ingredientBoard = IngredientStore(persister: UserDefaultsIngredientPersister())
     @StateObject private var shoppingCart = ShoppingCartViewModel()
+    @StateObject private var homeFeed = HomeFeedViewModel()
 
     init() {
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -24,6 +25,7 @@ struct ChefItApp: App {
                     .environmentObject(AuthService.shared)
                     .environmentObject(ingredientBoard)
                     .environmentObject(shoppingCart)
+                    .environmentObject(homeFeed)
             }
             .preferredColorScheme(.light)
         }
