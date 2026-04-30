@@ -34,8 +34,6 @@ struct ChefitRootCoordinatorView: View {
                         switch tab {
                         case .home:
                             route = .home
-                        case .search:
-                            route = .search
                         case .scan:
                             route = .scan
                         case .saved:
@@ -48,8 +46,7 @@ struct ChefitRootCoordinatorView: View {
             }
         .onChange(of: route) { _, newValue in
             switch newValue {
-            case .home, .myIngredients: selectedTab = .home
-            case .search: selectedTab = .search
+            case .home, .myIngredients, .search: selectedTab = .home
             case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
             case .saved: selectedTab = .saved
             case .community: selectedTab = .community

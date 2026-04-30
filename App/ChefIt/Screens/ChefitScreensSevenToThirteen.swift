@@ -150,6 +150,8 @@ struct ChefitShoppingListView: View {
 
     var showDismissButton: Bool = false
 
+    @State private var selectedProviderId: String?
+
     private var groupedSections: [(categoryRaw: String, items: [ShoppingItem])] {
         let dict = Dictionary(grouping: cart.items) { $0.category ?? "other" }
         return dict.keys.sorted {
@@ -165,46 +167,38 @@ struct ChefitShoppingListView: View {
         }
     }
 
-    private var hasUnchecked: Bool {
-        cart.items.contains(where: { !$0.isChecked })
+    private var providerQuotes: [ShoppingProviderQuote] {
+        ShoppingProviderCatalog.quotes(for: cart.items)
+    }
+
+    private var recommendations: [SmartRecommendationCue] {
+        ShoppingProviderCatalog.recommendations(for: cart.items)
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        Group {
             if cart.items.isEmpty {
                 emptyState
             } else {
-                List {
-                    ForEach(groupedSections, id: \.categoryRaw) { section in
-                        Section {
-                            ForEach(section.items) { item in
-                                cartRow(item)
-                                    .listRowBackground(ChefitColors.white)
-                            }
-                            .onDelete { offsets in
-                                offsets.forEach { cart.removeItem(id: section.items[$0].id) }
-                            }
-                        } header: {
-                            Text(ShoppingListBuilder.sectionTitle(for: section.categoryRaw == "other" ? nil : section.categoryRaw))
-                                .font(ChefitTypography.label())
-                                .foregroundStyle(ChefitColors.sageGreen)
-                        }
-                    }
-                }
-                .listStyle(.insetGrouped)
-                .scrollContentBackground(.hidden)
-                .animation(.easeInOut(duration: 0.2), value: cart.items.map(\.isChecked))
-            }
+                ScrollView {
+                    VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
+                        BuyIngredientsSection(
+                            quotes: providerQuotes,
+                            recommendations: recommendations,
+                            selectedProviderId: selectedProviderId,
+                            onSelect: handleProviderSelect
+                        )
 
-            if !cart.items.isEmpty, hasUnchecked {
-                Button {
-                    cart.openInstacart()
-                } label: {
-                    Label("Order with Instacart", systemImage: "cart.fill")
+                        IngredientList(
+                            sections: groupedSections,
+                            onToggle: { cart.toggleItem($0) },
+                            onAdjust: { cart.updateQuantity($0, delta: $1) },
+                            onRemove: { cart.removeItem(id: $0.id) }
+                        )
+                    }
+                    .padding(.horizontal, ChefitSpacing.md)
+                    .padding(.vertical, ChefitSpacing.md)
                 }
-                .buttonStyle(ChefitPrimaryButtonStyle())
-                .padding(ChefitSpacing.md)
-                .background(ChefitColors.cream.ignoresSafeArea(edges: .bottom))
             }
         }
         .background(ChefitColors.cream.ignoresSafeArea())
@@ -221,6 +215,11 @@ struct ChefitShoppingListView: View {
                 }
             }
         }
+    }
+
+    private func handleProviderSelect(_ provider: ShoppingProvider) {
+        selectedProviderId = provider.id
+        cart.open(provider: provider)
     }
 
     private var emptyState: some View {
@@ -241,48 +240,315 @@ struct ChefitShoppingListView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
 
-    private func cartRow(_ item: ShoppingItem) -> some View {
-        HStack(spacing: ChefitSpacing.sm) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    cart.toggleItem(item)
+// MARK: - Buy Ingredients Section
+
+private struct BuyIngredientsSection: View {
+    let quotes: [ShoppingProviderQuote]
+    let recommendations: [SmartRecommendationCue]
+    let selectedProviderId: String?
+    let onSelect: (ShoppingProvider) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Buy your ingredients")
+                    .font(ChefitTypography.h3())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Text("Compare delivery, price, and availability across stores.")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
+
+            if !recommendations.isEmpty {
+                SmartRecommendation(cues: recommendations)
+                    .padding(.top, 2)
+            }
+
+            ProviderList(
+                quotes: quotes,
+                selectedProviderId: selectedProviderId,
+                onSelect: onSelect
+            )
+        }
+    }
+}
+
+// MARK: - Smart Recommendation
+
+private struct SmartRecommendation: View {
+    let cues: [SmartRecommendationCue]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: ChefitSpacing.sm) {
+                ForEach(cues) { cue in
+                    HStack(spacing: 6) {
+                        Image(systemName: iconName(for: cue.label))
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(cue.label)
+                                .font(ChefitTypography.micro())
+                                .foregroundStyle(ChefitColors.matcha)
+                            Text(cue.detail)
+                                .font(ChefitTypography.label())
+                                .foregroundStyle(ChefitColors.sageGreen)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(ChefitColors.pistachio.opacity(0.6))
+                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
                 }
-            } label: {
+            }
+        }
+    }
+
+    private func iconName(for label: String) -> String {
+        if label.localizedCaseInsensitiveContains("price") { return "tag.fill" }
+        if label.localizedCaseInsensitiveContains("coverage") { return "checklist" }
+        return "bolt.fill"
+    }
+}
+
+// MARK: - Provider List
+
+private struct ProviderList: View {
+    let quotes: [ShoppingProviderQuote]
+    let selectedProviderId: String?
+    let onSelect: (ShoppingProvider) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: ChefitSpacing.sm) {
+                ForEach(quotes, id: \.provider.id) { quote in
+                    ProviderCard(
+                        quote: quote,
+                        isSelected: quote.provider.id == selectedProviderId
+                    ) {
+                        onSelect(quote.provider)
+                    }
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+}
+
+// MARK: - Provider Card
+
+private struct ProviderCard: View {
+    let quote: ShoppingProviderQuote
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+                HStack(alignment: .center, spacing: ChefitSpacing.sm) {
+                    ProviderLogo(provider: quote.provider)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(quote.provider.name)
+                            .font(ChefitTypography.label())
+                            .foregroundStyle(ChefitColors.text)
+                        Text(quote.provider.deliveryEstimate)
+                            .font(ChefitTypography.micro())
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                Text(quote.formattedTotal)
+                    .font(.custom("Nunito-Bold", size: 22))
+                    .foregroundStyle(ChefitColors.sageGreen)
+
+                AvailabilityBadge(quote: quote)
+            }
+            .padding(ChefitSpacing.md)
+            .frame(width: 196, alignment: .leading)
+            .background(ChefitColors.white)
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous)
+                    .stroke(
+                        isSelected ? ChefitColors.peach : ChefitColors.text.opacity(0.07),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+            .chefitCardShadow()
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct ProviderLogo: View {
+    let provider: ShoppingProvider
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(provider.logoBackground)
+            Image(systemName: provider.logoSymbol)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(provider.brandColor)
+        }
+        .frame(width: 36, height: 36)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(provider.brandColor.opacity(0.18), lineWidth: 1)
+        )
+    }
+}
+
+private struct AvailabilityBadge: View {
+    let quote: ShoppingProviderQuote
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: quote.hasAll ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(quote.hasAll ? ChefitColors.sageGreen : ChefitColors.peach)
+            Text(quote.availabilityLabel)
+                .font(ChefitTypography.micro())
+                .fontWeight(.semibold)
+                .foregroundStyle(quote.hasAll ? ChefitColors.sageGreen : ChefitColors.text.opacity(0.75))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(quote.hasAll ? ChefitColors.matcha.opacity(0.18) : ChefitColors.pistachio.opacity(0.55))
+        .clipShape(Capsule(style: .continuous))
+    }
+}
+
+// MARK: - Ingredient List
+
+private struct IngredientList: View {
+    let sections: [(categoryRaw: String, items: [ShoppingItem])]
+    let onToggle: (ShoppingItem) -> Void
+    let onAdjust: (ShoppingItem, Int) -> Void
+    let onRemove: (ShoppingItem) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+            HStack {
+                Text("Your list")
+                    .font(ChefitTypography.h3())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
+                Text("\(sections.flatMap(\.items).filter { !$0.isChecked }.count) to buy")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
+
+            VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+                ForEach(sections, id: \.categoryRaw) { section in
+                    VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+                        Text(ShoppingListBuilder.sectionTitle(for: section.categoryRaw == "other" ? nil : section.categoryRaw))
+                            .font(ChefitTypography.micro())
+                            .fontWeight(.semibold)
+                            .foregroundStyle(ChefitColors.matcha)
+                            .textCase(.uppercase)
+                            .tracking(0.6)
+
+                        VStack(spacing: 0) {
+                            ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                                IngredientItem(
+                                    item: item,
+                                    onToggle: { onToggle(item) },
+                                    onAdjust: { delta in onAdjust(item, delta) },
+                                    onRemove: { onRemove(item) }
+                                )
+                                if index < section.items.count - 1 {
+                                    Divider().overlay(ChefitColors.pistachio).padding(.leading, 44)
+                                }
+                            }
+                        }
+                        .padding(.vertical, ChefitSpacing.xs)
+                        .padding(.horizontal, ChefitSpacing.sm)
+                        .background(ChefitColors.white)
+                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct IngredientItem: View {
+    let item: ShoppingItem
+    let onToggle: () -> Void
+    let onAdjust: (Int) -> Void
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: ChefitSpacing.sm) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { onToggle() } }) {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 22, weight: .regular))
                     .foregroundStyle(item.isChecked ? ChefitColors.matcha : ChefitColors.pistachio)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(item.isChecked ? "Marked as already have" : "Mark as already have")
 
-            Text(item.name)
-                .font(ChefitTypography.body())
-                .foregroundStyle(item.isChecked ? ChefitColors.matcha : ChefitColors.sageGreen)
-                .strikethrough(item.isChecked)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.name)
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(item.isChecked ? ChefitColors.matcha : ChefitColors.text)
+                    .strikethrough(item.isChecked)
+                if item.isChecked {
+                    Text("Already in pantry")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                }
+            }
 
             Spacer(minLength: ChefitSpacing.sm)
 
-            HStack(spacing: ChefitSpacing.sm) {
-                quantityButton(icon: "minus.circle.fill") {
-                    cart.updateQuantity(item, delta: -1)
-                }
-                Text("\(item.quantity)")
-                    .font(ChefitTypography.label())
-                    .foregroundStyle(ChefitColors.text)
-                    .frame(minWidth: 22)
-                quantityButton(icon: "plus.circle.fill") {
-                    cart.updateQuantity(item, delta: 1)
+            QuantityStepper(value: item.quantity) { delta in
+                if item.quantity + delta < 1 {
+                    onRemove()
+                } else {
+                    onAdjust(delta)
                 }
             }
+            .opacity(item.isChecked ? 0.4 : 1)
+            .disabled(item.isChecked)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 10)
+    }
+}
+
+private struct QuantityStepper: View {
+    let value: Int
+    let onChange: (Int) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            stepperButton(systemName: "minus") { onChange(-1) }
+            Text("\(value)")
+                .font(ChefitTypography.label())
+                .foregroundStyle(ChefitColors.text)
+                .frame(minWidth: 22)
+            stepperButton(systemName: "plus") { onChange(1) }
+        }
+        .padding(.horizontal, 4)
+        .frame(height: 32)
+        .background(ChefitColors.pistachio.opacity(0.5))
+        .clipShape(Capsule(style: .continuous))
     }
 
-    private func quantityButton(icon: String, action: @escaping () -> Void) -> some View {
+    private func stepperButton(systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 22))
-                .foregroundStyle(ChefitColors.peach)
+            Image(systemName: systemName)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(ChefitColors.sageGreen)
+                .frame(width: 28, height: 28)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

@@ -59,6 +59,11 @@ final class ShoppingCartViewModel: ObservableObject {
         UIApplication.shared.open(url)
     }
 
+    func open(provider: ShoppingProvider) {
+        guard let url = provider.searchURL(for: items) else { return }
+        UIApplication.shared.open(url)
+    }
+
     private func merge(_ incoming: [ShoppingItem]) {
         var copy = items
         for item in incoming {
