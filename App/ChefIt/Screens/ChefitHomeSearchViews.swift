@@ -198,7 +198,7 @@ private struct ChefitHomeRecipeCard: View {
                     .font(.custom("Nunito-Bold", size: 14))
                     .foregroundStyle(ChefitColors.text)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(2)
+                    .lineLimit(2, reservesSpace: true)
 
                 HStack(spacing: 6) {
                     Image(systemName: "clock")
@@ -218,17 +218,16 @@ private struct ChefitHomeRecipeCard: View {
                     Spacer(minLength: 0)
                 }
 
-                if let expiring = model.expiringIngredient {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.orange)
-                            .frame(width: 6, height: 6)
-                            .scaleEffect(pulseWarning ? 1.2 : 0.8)
-                        Text("\(expiring) expiring")
-                            .font(.custom("Nunito-Bold", size: 11))
-                            .foregroundStyle(Color.orange)
-                    }
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 6, height: 6)
+                        .scaleEffect(pulseWarning ? 1.2 : 0.8)
+                    Text("\(model.expiringIngredient ?? "") expiring")
+                        .font(.custom("Nunito-Bold", size: 11))
+                        .foregroundStyle(Color.orange)
                 }
+                .opacity(model.expiringIngredient == nil ? 0 : 1)
             }
             .padding(10)
             .background(ChefitColors.white)
