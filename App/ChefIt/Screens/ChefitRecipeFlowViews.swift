@@ -1,9 +1,49 @@
 import ChefItKit
 import SwiftUI
 
+struct ChefitRecipeDetailsPayload: Hashable {
+    let id: String
+    let title: String
+    let imageURL: URL?
+    let minutes: Int
+    let difficulty: String
+    let servings: Int
+    let ingredients: [String]
+    let blurb: String
+    let sourceURL: URL?
+
+    static func fromSample(_ recipe: ChefitRecipeItem) -> ChefitRecipeDetailsPayload {
+        ChefitRecipeDetailsPayload(
+            id: recipe.id,
+            title: recipe.title,
+            imageURL: recipe.imageURL,
+            minutes: recipe.minutes,
+            difficulty: recipe.difficulty,
+            servings: 2,
+            ingredients: ChefitSampleData.recipeDetailIngredients.map(\.1),
+            blurb: "A chef-it favorite built from your pantry-ready picks.",
+            sourceURL: nil
+        )
+    }
+
+    static func fromRecipe(_ recipe: Recipe) -> ChefitRecipeDetailsPayload {
+        ChefitRecipeDetailsPayload(
+            id: recipe.id,
+            title: recipe.title,
+            imageURL: recipe.imageURL,
+            minutes: recipe.cookingMinutes,
+            difficulty: recipe.difficulty.rawValue.capitalized,
+            servings: recipe.servings,
+            ingredients: recipe.ingredients,
+            blurb: recipe.blurb,
+            sourceURL: recipe.sourceURL
+        )
+    }
+}
+
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
-    let onViewRecipe: () -> Void
+    let onViewRecipe: (ChefitRecipeDetailsPayload) -> Void
 
     @EnvironmentObject private var shoppingCart: ShoppingCartViewModel
     @EnvironmentObject private var ingredientStore: IngredientStore
@@ -314,7 +354,9 @@ struct ChefitRecipeDiscoveryView: View {
     private var actionStack: some View {
         VStack(spacing: ChefitSpacing.sm) {
             if hasEverything {
-                Button(action: onViewRecipe) {
+                Button {
+                    onViewRecipe(.fromSample(recipe))
+                } label: {
                     HStack {
                         Image(systemName: "play.fill")
                         Text("Start Cooking")
@@ -337,7 +379,9 @@ struct ChefitRecipeDiscoveryView: View {
                 .buttonStyle(ChefitPrimaryButtonStyle())
             }
 
-            Button(action: onViewRecipe) {
+            Button {
+                onViewRecipe(.fromSample(recipe))
+            } label: {
                 Text("View Recipe")
             }
             .buttonStyle(ChefitSecondaryButtonStyle())
@@ -381,14 +425,14 @@ struct ChefitRecipeDetailsView: View {
         case reviews = "Reviews"
     }
 
-    let recipe: ChefitRecipeItem
+    let recipe: ChefitRecipeDetailsPayload
     let onBack: () -> Void
-    let onStartCooking: () -> Void
 
     @EnvironmentObject private var authService: AuthService
     @StateObject private var reviewsVM = RecipeReviewsViewModel()
     @State private var selectedTab: RecipeTab = .ingredients
     @State private var showReviewComposer = false
+    @State private var showCreatePost = false
 
     private var currentUserId: Int? { authService.currentUser?.id }
     private var currentUserReview: Review? {
@@ -417,6 +461,16 @@ struct ChefitRecipeDetailsView: View {
                         .foregroundStyle(ChefitColors.sageGreen)
                 }
 
+                if let imageURL = recipe.imageURL {
+                    AsyncImage(url: imageURL) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
+                    }
+                    .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+                }
+
                 headerCard
                 tabSelector
 
@@ -429,12 +483,12 @@ struct ChefitRecipeDetailsView: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
-                onStartCooking()
+                showCreatePost = true
             } label: {
                 HStack {
-                    Text("Start Cooking")
+                    Text("Create Post")
                     Spacer()
-                    Image(systemName: "play.fill")
+                    Image(systemName: "square.and.pencil")
                 }
                 .padding(.horizontal, ChefitSpacing.sm)
             }
@@ -444,6 +498,10 @@ struct ChefitRecipeDetailsView: View {
         }
         .background(ChefitColors.cream.ignoresSafeArea())
         .task { await reviewsVM.load(recipeId: recipe.id) }
+        .sheet(isPresented: $showCreatePost) {
+            CreatePostView(initialRecipeId: recipe.id)
+                .environmentObject(authService)
+        }
         .sheet(isPresented: $showReviewComposer) {
             ReviewComposerSheet(
                 recipeId: recipe.id,
@@ -462,6 +520,12 @@ struct ChefitRecipeDetailsView: View {
                 .font(ChefitTypography.h2())
                 .foregroundStyle(ChefitColors.sageGreen)
 
+            if !recipe.blurb.isEmpty {
+                Text(recipe.blurb)
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
+
             HStack(spacing: 6) {
                 Image(systemName: ChefitSymbol.clock)
                 Text("\(recipe.minutes) min")
@@ -470,7 +534,7 @@ struct ChefitRecipeDetailsView: View {
                 Text(recipe.difficulty)
                 Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
                 Image(systemName: ChefitSymbol.personServings)
-                Text("2 servings")
+                Text("\(recipe.servings) servings")
             }
             .font(ChefitTypography.micro())
             .foregroundStyle(ChefitColors.matcha)
@@ -503,18 +567,18 @@ struct ChefitRecipeDetailsView: View {
         switch selectedTab {
         case .ingredients:
             VStack(spacing: 0) {
-                ForEach(ChefitSampleData.recipeDetailIngredients, id: \.1) { item in
+                ForEach(Array(recipe.ingredients.enumerated()), id: \.offset) { item in
                     HStack {
-                        Image(systemName: item.0)
+                        Image(systemName: symbol(for: item.element))
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(ChefitColors.matcha)
                             .symbolRenderingMode(.hierarchical)
                             .frame(width: 28, alignment: .center)
-                        Text(item.1)
+                        Text(item.element.capitalized)
                             .font(ChefitTypography.body())
                             .foregroundStyle(ChefitColors.sageGreen)
                         Spacer()
-                        Text(item.2)
+                        Text("•")
                             .font(ChefitTypography.label())
                             .foregroundStyle(ChefitColors.matcha)
                     }
@@ -524,17 +588,28 @@ struct ChefitRecipeDetailsView: View {
             }
         case .steps:
             VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
-                ChefitStepRow(stepNumber: 1, text: "Boil the pasta", systemImage: ChefitSymbol.stepBoilPasta)
-                ChefitStepRow(stepNumber: 2, text: "Sauté garlic", systemImage: ChefitSymbol.stepSaute)
-                ChefitStepRow(stepNumber: 3, text: "Add tomatoes", systemImage: ChefitSymbol.stepTomatoes)
-                ChefitStepRow(stepNumber: 4, text: "Combine and serve", systemImage: ChefitSymbol.stepServe)
+                ChefitStepRow(stepNumber: 1, text: "Prep the ingredients from the list.", systemImage: ChefitSymbol.stepTomatoes)
+                ChefitStepRow(stepNumber: 2, text: "Cook based on the recipe source timing (\(recipe.minutes) min).", systemImage: ChefitSymbol.stepBoilPasta)
+                ChefitStepRow(stepNumber: 3, text: "Season and adjust with pantry staples.", systemImage: ChefitSymbol.stepSaute)
+                ChefitStepRow(stepNumber: 4, text: "Plate and serve \(recipe.servings) portion(s).", systemImage: ChefitSymbol.stepServe)
             }
         case .notes:
-            Text("No notes yet. Add your own tips here.")
-                .font(ChefitTypography.body())
-                .foregroundStyle(ChefitColors.matcha)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, ChefitSpacing.sm)
+            VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+                Text(recipe.blurb.isEmpty ? "No notes yet. Add your own tips here." : recipe.blurb)
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.matcha)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let sourceURL = recipe.sourceURL {
+                    Link(destination: sourceURL) {
+                        Label("Open recipe source", systemImage: "arrow.up.forward")
+                            .font(ChefitTypography.label())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, ChefitSpacing.sm)
         case .reviews:
             reviewsContent
         }
@@ -605,5 +680,21 @@ struct ChefitRecipeDetailsView: View {
         .background(ChefitColors.white)
         .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
         .chefitCardShadow()
+    }
+
+    private func symbol(for ingredient: String) -> String {
+        let lowered = ingredient.lowercased()
+        if lowered.contains("tomato") { return ChefitSymbol.tomato }
+        if lowered.contains("garlic") { return ChefitSymbol.garlic }
+        if lowered.contains("pasta") || lowered.contains("noodle") { return ChefitSymbol.pasta }
+        if lowered.contains("chicken") || lowered.contains("beef") || lowered.contains("shrimp") || lowered.contains("tofu") {
+            return ChefitSymbol.chicken
+        }
+        if lowered.contains("onion") { return ChefitSymbol.onion }
+        if lowered.contains("broccoli") { return ChefitSymbol.broccoli }
+        if lowered.contains("egg") { return ChefitSymbol.egg }
+        if lowered.contains("oil") { return ChefitSymbol.oliveOil }
+        if lowered.contains("milk") || lowered.contains("cream") || lowered.contains("butter") { return ChefitSymbol.milk }
+        return "leaf.fill"
     }
 }

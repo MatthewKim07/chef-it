@@ -8,6 +8,7 @@ struct PostCardView: View {
     let onImageTap: (Post) -> Void
     let onCommentTap: (Post) -> Void
     let onDelete: (Post) async -> Void
+    private let mediaHeight: CGFloat = 280
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -50,6 +51,7 @@ struct PostCardView: View {
         .padding(.horizontal, ChefitSpacing.md)
         .padding(.top, ChefitSpacing.md)
         .padding(.bottom, ChefitSpacing.sm)
+        .frame(minHeight: 64)
     }
 
     private var postImage: some View {
@@ -63,7 +65,7 @@ struct PostCardView: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .scaledToFill()
+                                .scaledToFit()
                         case .failure:
                             imagePlaceholder
                         default:
@@ -78,7 +80,8 @@ struct PostCardView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 280)
+            .frame(height: mediaHeight)
+            .background(ChefitColors.pistachio.opacity(0.35))
             .clipped()
             .contentShape(Rectangle())
         }
@@ -92,6 +95,7 @@ struct PostCardView: View {
                 Text(caption)
                     .font(ChefitTypography.body())
                     .foregroundStyle(ChefitColors.text)
+                    .lineLimit(3)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }

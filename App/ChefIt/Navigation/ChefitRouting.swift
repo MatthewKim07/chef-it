@@ -6,7 +6,7 @@ enum ChefitRoute: Hashable {
     case myIngredients
     case search
     case recipeDiscover(id: String)
-    case recipeDetails(id: String)
+    case recipeDetails(payload: ChefitRecipeDetailsPayload)
     case scan
     case detectedIngredients
     case recommendations
@@ -23,6 +23,18 @@ struct ChefitRootCoordinatorView: View {
     @EnvironmentObject private var homeFeed: HomeFeedViewModel
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
+    @State private var showCamera = false
+    @State private var showPhotoLibrary = false
+    @State private var pendingImageData: Data?
+    @State private var pendingSource: ScanSourceKind = .camera
+    @State private var scanErrorMessage: String?
+    @StateObject private var scanVM = ScanFlowViewModel(
+        ingredientStore: IngredientStore.live(),
+        scanService: VisionScanService()
+    )
+    @StateObject private var recommendationsVM = RecommendationsViewModel(
+        ingredientStore: IngredientStore.live()
+    )
 
     var body: some View {
         routeView
@@ -45,15 +57,66 @@ struct ChefitRootCoordinatorView: View {
                     }
                 }
             }
-        .onChange(of: route) { _, newValue in
-            switch newValue {
-            case .home, .myIngredients, .search: selectedTab = .home
-            case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
-            case .community, .userProfile: selectedTab = .community
-            case .profile: selectedTab = .profile
-            default: break
+            .fullScreenCover(isPresented: $showCamera, onDismiss: startPendingScan) {
+                CameraCapture(
+                    sourceType: .camera,
+                    onImageCaptured: { imageData in
+                        pendingImageData = imageData
+                        pendingSource = .camera
+                        showCamera = false
+                    },
+                    onCancel: { showCamera = false }
+                )
+                .ignoresSafeArea()
             }
-        }
+            .sheet(isPresented: $showPhotoLibrary, onDismiss: startPendingScan) {
+                CameraCapture(
+                    sourceType: .photoLibrary,
+                    onImageCaptured: { imageData in
+                        pendingImageData = imageData
+                        pendingSource = .photoLibrary
+                        showPhotoLibrary = false
+                    },
+                    onCancel: { showPhotoLibrary = false }
+                )
+            }
+            .onChange(of: route) { _, newValue in
+                switch newValue {
+                case .home, .myIngredients, .search: selectedTab = .home
+                case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
+                case .community, .userProfile: selectedTab = .community
+                case .profile: selectedTab = .profile
+                default: break
+                }
+                if case .recommendations = newValue {
+                    Task { await recommendationsVM.refresh() }
+                }
+            }
+            .onChange(of: scanVM.phase) { _, phase in
+                switch phase {
+                case .review, .empty:
+                    route = .detectedIngredients
+                case .failed:
+                    scanErrorMessage = scanVM.message ?? "Scan failed. Check Xcode console for details."
+                default:
+                    break
+                }
+            }
+            .alert("Scan Failed", isPresented: Binding(
+                get: { scanErrorMessage != nil },
+                set: { if !$0 { scanErrorMessage = nil; scanVM.reset() } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(scanErrorMessage ?? "")
+            }
+    }
+
+    private func startPendingScan() {
+        guard let data = pendingImageData else { return }
+        let source = pendingSource
+        pendingImageData = nil
+        Task { await scanVM.beginScan(imageData: data, source: source) }
     }
 
     private var showsBottomNav: Bool {
@@ -70,10 +133,12 @@ struct ChefitRootCoordinatorView: View {
                 onIngredientsTap: { route = .myIngredients },
                 onCartTap: { route = .shoppingList }
             )
+
         case .myIngredients:
             ChefitMyIngredientsView {
                 route = .home
             }
+
         case .search:
             ChefitSearchView(
                 onResultTap: { recipeID in
@@ -83,57 +148,76 @@ struct ChefitRootCoordinatorView: View {
                     route = .home
                 }
             )
+
         case .recipeDiscover(let id):
             let recipe = homeFeed.recipeByID[id]
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
                 ?? ChefitSampleData.popularRecipes[0]
-            ChefitRecipeDiscoveryView(recipe: recipe) {
-                route = .recipeDetails(id: id)
+            ChefitRecipeDiscoveryView(recipe: recipe) { payload in
+                route = .recipeDetails(payload: payload)
             }
-        case .recipeDetails(let id):
-            let recipe = homeFeed.recipeByID[id]
-                ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
-                ?? ChefitSampleData.popularRecipes[0]
+
+        case .recipeDetails(let payload):
             ChefitRecipeDetailsView(
-                recipe: recipe,
-                onBack: { route = .recipeDiscover(id: id) },
-                onStartCooking: { route = .recipeDetails(id: "cooking-mode") }
+                recipe: payload,
+                onBack: {
+                    let hasMainRecipe = homeFeed.recipeByID[payload.id] != nil
+                        || ChefitSampleData.popularRecipes.contains(where: { $0.id == payload.id })
+                    route = hasMainRecipe ? .recipeDiscover(id: payload.id) : .recommendations
+                }
             )
+
         case .scan:
             ChefitScanPantryView(
-                onScanNow: {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        route = .detectedIngredients
-                    }
-                },
-                onAddManually: { route = .home }
+                previewImageData: pendingImageData ?? scanVM.draft?.imageData,
+                isAnalyzing: scanVM.phase == .analyzing,
+                onScanNow: { showCamera = true },
+                onAddManually: { showPhotoLibrary = true }
             )
+
         case .detectedIngredients:
-            ChefitDetectedIngredientsView {
-                route = .recommendations
-            }
+            ChefitDetectedIngredientsView(
+                candidates: scanVM.candidates,
+                message: scanVM.message,
+                onToggleCandidate: scanVM.toggleCandidate,
+                onAddManualCandidate: scanVM.addManualCandidate,
+                onFindRecipes: {
+                    if scanVM.confirmSelected() {
+                        route = .recommendations
+                    }
+                }
+            )
+
         case .recommendations:
-            ChefitRecommendationsView { recipeID in
-                route = .recipeDiscover(id: recipeID)
-            }
+            ChefitRecommendationsView(
+                vm: recommendationsVM,
+                onRecipeTap: { recipe in
+                    route = .recipeDetails(payload: .fromRecipe(recipe))
+                }
+            )
+
         case .shoppingList:
             NavigationStack {
                 ChefitShoppingListView()
             }
+
         case .saved:
             ChefitSavedView { recipeID in
                 route = .recipeDiscover(id: recipeID)
             }
+
         case .profile:
             ChefitProfileView(
                 onShoppingTap: { route = .shoppingList },
                 onPantryTap: { route = .scan },
                 onLogout: { AuthService.shared.logout() }
             )
+
         case .community:
             ChefitCommunityView(
                 onAuthorTap: { userId in route = .userProfile(id: userId) }
             )
+
         case .userProfile(let userId):
             OtherUserProfileView(userId: userId, onBack: { route = .community })
         }
@@ -168,11 +252,11 @@ private final class OtherUserProfileViewModel: ObservableObject {
         isLoading = true
         error = nil
         async let profileTask = UserService.shared.fetchProfile(id: userId)
-        async let postsTask   = PostService.shared.fetchPosts(userId: userId)
+        async let postsTask = PostService.shared.fetchPosts(userId: userId)
         do {
             let (p, pg) = try await (profileTask, postsTask)
             profile = p
-            posts   = pg.posts
+            posts = pg.posts
         } catch {
             self.error = error.localizedDescription
         }
@@ -192,15 +276,18 @@ struct OtherUserProfileView: View {
                 VStack(spacing: ChefitSpacing.lg) {
                     Color.clear.frame(height: 44)
 
-                    // Avatar
                     Group {
                         if let urlStr = vm.profile?.avatarURL, let url = URL(string: urlStr) {
                             AsyncImage(url: url) { phase in
                                 if case .success(let img) = phase {
                                     img.resizable().scaledToFill()
-                                } else { avatarPlaceholder }
+                                } else {
+                                    avatarPlaceholder
+                                }
                             }
-                        } else { avatarPlaceholder }
+                        } else {
+                            avatarPlaceholder
+                        }
                     }
                     .frame(width: 90, height: 90)
                     .clipShape(Circle())
@@ -230,11 +317,12 @@ struct OtherUserProfileView: View {
                             .foregroundStyle(ChefitColors.peach)
                     }
 
-                    // Posts grid
                     if !vm.posts.isEmpty {
-                        let cols = [GridItem(.flexible(), spacing: 2),
-                                    GridItem(.flexible(), spacing: 2),
-                                    GridItem(.flexible(), spacing: 2)]
+                        let cols = [
+                            GridItem(.flexible(), spacing: 2),
+                            GridItem(.flexible(), spacing: 2),
+                            GridItem(.flexible(), spacing: 2)
+                        ]
                         LazyVGrid(columns: cols, spacing: 2) {
                             ForEach(vm.posts) { post in
                                 postCell(post)
@@ -274,9 +362,13 @@ struct OtherUserProfileView: View {
                     AsyncImage(url: url) { phase in
                         if case .success(let img) = phase {
                             img.resizable().scaledToFill()
-                        } else { cellPlaceholder }
+                        } else {
+                            cellPlaceholder
+                        }
                     }
-                } else { cellPlaceholder }
+                } else {
+                    cellPlaceholder
+                }
             }
             .frame(width: geo.size.width, height: geo.size.width)
             .clipped()

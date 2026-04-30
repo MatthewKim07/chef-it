@@ -18,10 +18,17 @@ struct CreatePostView: View {
     @State private var errorMessage: String?
 
     var onPosted: ((Post) -> Void)?
+    var initialRecipeId: String?
     private let previewHeight: CGFloat = 320
 
     private var canPost: Bool {
         imageData != nil && !caption.trimmingCharacters(in: .whitespaces).isEmpty && !isPosting
+    }
+
+    init(initialRecipeId: String? = nil, onPosted: ((Post) -> Void)? = nil) {
+        self.initialRecipeId = initialRecipeId
+        self.onPosted = onPosted
+        _recipeId = State(initialValue: initialRecipeId ?? "")
     }
 
     var body: some View {
@@ -306,7 +313,7 @@ struct PostDetailSheet: View {
                 if let urlStr = post.imageURL, let url = URL(string: urlStr) {
                     AsyncImage(url: url) { phase in
                         if case .success(let img) = phase {
-                            img.resizable().scaledToFill()
+                            img.resizable().scaledToFit()
                         } else {
                             RoundedRectangle(cornerRadius: ChefitRadius.lg)
                                 .fill(ChefitColors.pistachio)
@@ -316,7 +323,8 @@ struct PostDetailSheet: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 340)
+                    .frame(height: 260)
+                    .background(ChefitColors.pistachio.opacity(0.35))
                     .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
                 }
 

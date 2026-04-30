@@ -17,6 +17,11 @@ public final class AuthService: ObservableObject {
         currentUser = nil
         isLoggedIn = false
 
+        #if DEBUG
+        // Testing convenience: always start logged-out in debug builds.
+        deleteToken()
+        #endif
+
         if let token = retrieveToken() {
             currentUser = Self.userFromToken(token)
             isLoggedIn = true
