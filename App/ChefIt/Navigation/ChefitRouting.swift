@@ -1,4 +1,5 @@
 import SwiftUI
+import ChefItKit
 
 enum ChefitRoute: Hashable {
     case splash
@@ -121,7 +122,8 @@ struct ChefitRootCoordinatorView: View {
         case .profile:
             ChefitProfileView(
                 onShoppingTap: { route = .shoppingList },
-                onPantryTap: { route = .scan }
+                onPantryTap: { route = .scan },
+                onLogout: { AuthService.shared.logout() }
             )
         case .community:
             ChefitCommunityView()
