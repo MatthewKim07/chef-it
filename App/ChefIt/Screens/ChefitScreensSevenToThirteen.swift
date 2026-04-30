@@ -34,8 +34,12 @@ struct ChefitScanPantryView: View {
             }
             .buttonStyle(ChefitPrimaryButtonStyle())
 
-            Button("Add Manually", action: onAddManually)
-                .buttonStyle(ChefitSecondaryButtonStyle())
+            Button {
+                onAddManually()
+            } label: {
+                Label("Upload Photo", systemImage: "photo.on.rectangle")
+            }
+            .buttonStyle(ChefitSecondaryButtonStyle())
 
             Spacer()
         }
@@ -45,7 +49,17 @@ struct ChefitScanPantryView: View {
 }
 
 struct ChefitDetectedIngredientsView: View {
+    var candidates: [ScanCandidate] = []
     let onFindRecipes: () -> Void
+
+    private var displayItems: [(String, String)] {
+        if candidates.isEmpty {
+            return ChefitSampleData.detectedIngredients
+        }
+        return candidates.map { candidate in
+            (symbolName(for: candidate.category), candidate.canonicalName.capitalized)
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -55,13 +69,13 @@ struct ChefitDetectedIngredientsView: View {
                         .font(ChefitTypography.h2())
                         .foregroundStyle(ChefitColors.sageGreen)
                     Spacer()
-                    Text("Edit")
+                    Text("\(displayItems.count) found")
                         .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.peach)
+                        .foregroundStyle(ChefitColors.matcha)
                 }
 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: ChefitSpacing.md) {
-                    ForEach(ChefitSampleData.detectedIngredients, id: \.1) { item in
+                    ForEach(displayItems, id: \.1) { item in
                         VStack(spacing: ChefitSpacing.xs) {
                             Image(systemName: item.0)
                                 .font(.system(size: 26, weight: .medium))
@@ -73,6 +87,8 @@ struct ChefitDetectedIngredientsView: View {
                             Text(item.1)
                                 .font(ChefitTypography.micro())
                                 .foregroundStyle(ChefitColors.sageGreen)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
                         }
                     }
                 }
@@ -84,6 +100,19 @@ struct ChefitDetectedIngredientsView: View {
             .padding(ChefitSpacing.md)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+    }
+
+    private func symbolName(for category: IngredientCategory) -> String {
+        switch category {
+        case .produce:   return "carrot.fill"
+        case .protein:   return "bird.fill"
+        case .dairy:     return "cup.and.saucer.fill"
+        case .pantry:    return "drop.fill"
+        case .spice:     return "sparkles"
+        case .grain:     return "takeoutbag.and.cup.and.straw.fill"
+        case .condiment: return "drop.triangle.fill"
+        case .other:     return "circle.fill"
+        }
     }
 }
 

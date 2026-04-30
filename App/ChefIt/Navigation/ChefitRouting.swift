@@ -16,43 +16,116 @@ enum ChefitRoute: Hashable {
 }
 
 struct ChefitRootCoordinatorView: View {
-    // RootView already owns unauthenticated entry. The coordinator should start
-    // inside the authenticated app shell rather than replaying placeholder auth.
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
+    @State private var showCamera = false
+    @State private var showPhotoLibrary = false
+    @State private var pendingImageData: Data?
+    @State private var pendingSource: ScanSourceKind = .camera
+    @State private var scanErrorMessage: String?
+    @StateObject private var scanVM = ScanFlowViewModel(
+        ingredientStore: IngredientStore.live(),
+        scanService: VisionScanService()
+    )
 
     var body: some View {
-        routeView
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(ChefitColors.cream.ignoresSafeArea(edges: .all))
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if showsBottomNav {
-                    ChefitBottomNavBar(activeTab: selectedTab) { tab in
-                        selectedTab = tab
-                        switch tab {
-                        case .home:
-                            route = .home
-                        case .search:
-                            route = .search
-                        case .scan:
-                            route = .scan
-                        case .community:
-                            route = .community
-                        case .profile:
-                            route = .profile
-                        }
+        ZStack {
+            routeView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if scanVM.phase == .analyzing {
+                scanningOverlay
+            }
+        }
+        .background(ChefitColors.cream.ignoresSafeArea(edges: .all))
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if showsBottomNav {
+                ChefitBottomNavBar(activeTab: selectedTab) { tab in
+                    selectedTab = tab
+                    switch tab {
+                    case .home:      route = .home
+                    case .search:    route = .search
+                    case .scan:      route = .scan
+                    case .community: route = .community
+                    case .profile:   route = .profile
                     }
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showCamera, onDismiss: startPendingScan) {
+            CameraCapture(
+                sourceType: .camera,
+                onImageCaptured: { imageData in
+                    pendingImageData = imageData
+                    pendingSource = .camera
+                    showCamera = false
+                },
+                onCancel: { showCamera = false }
+            )
+            .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showPhotoLibrary, onDismiss: startPendingScan) {
+            CameraCapture(
+                sourceType: .photoLibrary,
+                onImageCaptured: { imageData in
+                    pendingImageData = imageData
+                    pendingSource = .photoLibrary
+                    showPhotoLibrary = false
+                },
+                onCancel: { showPhotoLibrary = false }
+            )
+        }
         .onChange(of: route) { _, newValue in
             switch newValue {
-            case .home: selectedTab = .home
-            case .search: selectedTab = .search
+            case .home:     selectedTab = .home
+            case .search:   selectedTab = .search
             case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
             case .community: selectedTab = .community
-            case .profile: selectedTab = .profile
+            case .profile:  selectedTab = .profile
             default: break
             }
+        }
+        .onChange(of: scanVM.phase) { _, phase in
+            switch phase {
+            case .review, .empty:
+                route = .detectedIngredients
+            case .failed:
+                scanErrorMessage = scanVM.message ?? "Scan failed. Check Xcode console for details."
+            default: break
+            }
+        }
+        .alert("Scan Failed", isPresented: Binding(
+            get: { scanErrorMessage != nil },
+            set: { if !$0 { scanErrorMessage = nil; scanVM.reset() } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(scanErrorMessage ?? "")
+        }
+    }
+
+    private func startPendingScan() {
+        guard let data = pendingImageData else { return }
+        let source = pendingSource
+        pendingImageData = nil
+        Task { await scanVM.beginScan(imageData: data, source: source) }
+    }
+
+    private var scanningOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4).ignoresSafeArea()
+            VStack(spacing: ChefitSpacing.md) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(ChefitColors.white)
+                    .scaleEffect(1.4)
+                Text("Scanning ingredients…")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.white)
+            }
+            .padding(ChefitSpacing.twoXL)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
         }
     }
 
@@ -83,17 +156,14 @@ struct ChefitRootCoordinatorView: View {
             }
         case .scan:
             ChefitScanPantryView(
-                onScanNow: {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        route = .detectedIngredients
-                    }
-                },
-                onAddManually: { route = .home }
+                onScanNow: { showCamera = true },
+                onAddManually: { showPhotoLibrary = true }
             )
         case .detectedIngredients:
-            ChefitDetectedIngredientsView {
-                route = .recommendations
-            }
+            ChefitDetectedIngredientsView(
+                candidates: scanVM.candidates,
+                onFindRecipes: { route = .recommendations }
+            )
         case .recommendations:
             ChefitRecommendationsView { recipeID in
                 route = .recipeDiscover(id: recipeID)
