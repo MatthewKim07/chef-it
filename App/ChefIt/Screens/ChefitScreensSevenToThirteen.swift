@@ -694,6 +694,7 @@ struct ChefitProfileView: View {
     let onLogout: () -> Void
 
     @EnvironmentObject private var authService: AuthService
+    @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
     @StateObject private var vm = ProfileViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var showCreatePost = false
@@ -721,6 +722,15 @@ struct ChefitProfileView: View {
                 await vm.load(userId: id)
                 await vm.loadPosts(userId: id)
             }
+        }
+        .onChange(of: vm.profile?.id) { _, _ in
+            userProfileStore.update(vm.profile)
+        }
+        .onChange(of: vm.profile?.displayName) { _, _ in
+            userProfileStore.update(vm.profile)
+        }
+        .onChange(of: vm.profile?.avatarURL) { _, _ in
+            userProfileStore.update(vm.profile)
         }
         .onChange(of: selectedPhotoItem) { _, item in
             guard let item, let id = userId else { return }

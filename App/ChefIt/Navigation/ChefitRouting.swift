@@ -21,8 +21,14 @@ struct ChefitRootCoordinatorView: View {
     // RootView already owns unauthenticated entry. The coordinator should start
     // inside the authenticated app shell rather than replaying placeholder auth.
     @EnvironmentObject private var homeFeed: HomeFeedViewModel
+    @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
+
+    private var profileAvatarURL: URL? {
+        guard let urlStr = userProfileStore.profile?.avatarURL else { return nil }
+        return URL(string: urlStr)
+    }
 
     var body: some View {
         routeView
@@ -30,7 +36,10 @@ struct ChefitRootCoordinatorView: View {
             .background(ChefitColors.cream.ignoresSafeArea(edges: .all))
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 if showsBottomNav {
-                    ChefitBottomNavBar(activeTab: selectedTab) { tab in
+                    ChefitBottomNavBar(
+                        activeTab: selectedTab,
+                        profileAvatarURL: profileAvatarURL
+                    ) { tab in
                         selectedTab = tab
                         switch tab {
                         case .home:

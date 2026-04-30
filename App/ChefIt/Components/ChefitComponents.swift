@@ -9,6 +9,7 @@ enum ChefitTab: Hashable {
 
 struct ChefitBottomNavBar: View {
     let activeTab: ChefitTab
+    var profileAvatarURL: URL? = nil
     let onTap: (ChefitTab) -> Void
 
     var body: some View {
@@ -41,9 +42,7 @@ struct ChefitBottomNavBar: View {
             onTap(tab)
         } label: {
             VStack(spacing: 5) {
-                Image(systemName: icon)
-                    .font(.system(size: 21, weight: .regular))
-                    .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
+                navIcon(icon: icon, tab: tab, isActive: isActive)
                     .frame(height: Self.iconRowHeight)
                 Text(title)
                     .font(.custom("Nunito-SemiBold", size: 12))
@@ -52,6 +51,30 @@ struct ChefitBottomNavBar: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func navIcon(icon: String, tab: ChefitTab, isActive: Bool) -> some View {
+        if tab == .profile, let url = profileAvatarURL {
+            AsyncImage(url: url) { phase in
+                if case .success(let img) = phase {
+                    img.resizable().scaledToFill()
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 21, weight: .regular))
+                        .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
+                }
+            }
+            .frame(width: 28, height: 28)
+            .clipShape(Circle())
+            .overlay(
+                Circle().stroke(isActive ? ChefitColors.peach : Color.clear, lineWidth: 2)
+            )
+        } else {
+            Image(systemName: icon)
+                .font(.system(size: 21, weight: .regular))
+                .foregroundStyle(isActive ? ChefitColors.peach : ChefitColors.text.opacity(0.65))
+        }
     }
 
     private var scanButton: some View {

@@ -4,11 +4,19 @@ import SwiftUI
 struct ChefitHomeView: View {
     @EnvironmentObject private var ingredientStore: IngredientStore
     @EnvironmentObject private var homeFeed: HomeFeedViewModel
+    @EnvironmentObject private var authService: AuthService
+    @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
 
     let onSearchTap: () -> Void
     let onRecipeTap: (String) -> Void
     let onIngredientsTap: () -> Void
     let onCartTap: () -> Void
+
+    private var greetingName: String {
+        let trimmed = userProfileStore.profile?.displayName?.trimmingCharacters(in: .whitespaces)
+        if let trimmed, !trimmed.isEmpty { return trimmed }
+        return "Chef"
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -17,7 +25,7 @@ struct ChefitHomeView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(alignment: .center, spacing: 6) {
-                        Text("Hello Chef!")
+                        Text("Hello \(greetingName)!")
                             .font(.custom("Nunito-Bold", size: 37))
                             .foregroundStyle(ChefitColors.text)
                         Image("ChefitSplashMascot")
