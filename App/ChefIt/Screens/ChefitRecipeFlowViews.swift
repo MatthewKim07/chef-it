@@ -1,6 +1,46 @@
 import ChefItKit
 import SwiftUI
 
+struct ChefitRecipeDetailsPayload: Hashable {
+    let id: String
+    let title: String
+    let imageURL: URL?
+    let minutes: Int
+    let difficulty: String
+    let servings: Int
+    let ingredients: [String]
+    let blurb: String
+    let sourceURL: URL?
+
+    static func fromSample(_ recipe: ChefitRecipeItem) -> ChefitRecipeDetailsPayload {
+        ChefitRecipeDetailsPayload(
+            id: recipe.id,
+            title: recipe.title,
+            imageURL: recipe.imageURL,
+            minutes: recipe.minutes,
+            difficulty: recipe.difficulty,
+            servings: 2,
+            ingredients: ChefitSampleData.recipeDetailIngredients.map(\.1),
+            blurb: "A chef-it favorite built from your pantry-ready picks.",
+            sourceURL: nil
+        )
+    }
+
+    static func fromRecipe(_ recipe: Recipe) -> ChefitRecipeDetailsPayload {
+        ChefitRecipeDetailsPayload(
+            id: recipe.id,
+            title: recipe.title,
+            imageURL: recipe.imageURL,
+            minutes: recipe.cookingMinutes,
+            difficulty: recipe.difficulty.rawValue.capitalized,
+            servings: recipe.servings,
+            ingredients: recipe.ingredients,
+            blurb: recipe.blurb,
+            sourceURL: recipe.sourceURL
+        )
+    }
+}
+
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
     let onViewRecipe: () -> Void

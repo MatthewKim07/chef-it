@@ -19,6 +19,10 @@ Package.resolved
 # Secrets (never commit)
 Secrets.xcconfig
 
+# Agent handoff note
+CLAUDE.md
+AGENTS.md
+
 # Generated
 ChefIt.xcodeproj/
 .next/
@@ -30,10 +34,6 @@ archive/web-scaffold/.next/
 
 # Read-only imported reference repo
 reference/pantry-pal/
-
-# Agent handoff note
-CLAUDE.md
-AGENTS.md
 
 # Backend
 backend/.env

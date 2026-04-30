@@ -24,11 +24,19 @@
 	<string>$(EDAMAM_APP_ID)</string>
 	<key>EDAMAM_APP_KEY</key>
 	<string>$(EDAMAM_APP_KEY)</string>
+	<key>GEMINI_API_KEY</key>
+	<string>$(GEMINI_API_KEY)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Chef It uses your camera to scan ingredients in your pantry.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chef It can scan photos from your library to detect ingredients.</string>
+	<key>OPENAI_API_KEY</key>
+	<string>$(OPENAI_API_KEY)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Nunito-Variable.ttf</string>
