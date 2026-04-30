@@ -3,6 +3,7 @@ import ChefItKit
 
 enum ChefitRoute: Hashable {
     case home
+    case myIngredients
     case search
     case recipeDiscover(id: String)
     case recipeDetails(id: String)
@@ -46,7 +47,7 @@ struct ChefitRootCoordinatorView: View {
             }
         .onChange(of: route) { _, newValue in
             switch newValue {
-            case .home: selectedTab = .home
+            case .home, .myIngredients: selectedTab = .home
             case .search: selectedTab = .search
             case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
             case .saved: selectedTab = .saved
@@ -66,8 +67,14 @@ struct ChefitRootCoordinatorView: View {
         case .home:
             ChefitHomeView(
                 onSearchTap: { route = .search },
-                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) }
+                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) },
+                onIngredientsTap: { route = .myIngredients },
+                onCartTap: { route = .shoppingList }
             )
+        case .myIngredients:
+            ChefitMyIngredientsView {
+                route = .home
+            }
         case .search:
             ChefitSearchView { recipeID in
                 route = .recipeDiscover(id: recipeID)
@@ -99,7 +106,9 @@ struct ChefitRootCoordinatorView: View {
                 route = .recipeDiscover(id: recipeID)
             }
         case .shoppingList:
-            ChefitShoppingListView()
+            NavigationStack {
+                ChefitShoppingListView()
+            }
         case .saved:
             ChefitSavedView { recipeID in
                 route = .recipeDiscover(id: recipeID)

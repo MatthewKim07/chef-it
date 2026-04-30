@@ -145,83 +145,144 @@ struct ChefitRecommendationsView: View {
 }
 
 struct ChefitShoppingListView: View {
-    @State private var checkedToBuy: Set<String> = []
-    @State private var showToast = false
+    @EnvironmentObject private var cart: ShoppingCartViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var showDismissButton: Bool = false
+
+    private var groupedSections: [(categoryRaw: String, items: [ShoppingItem])] {
+        let dict = Dictionary(grouping: cart.items) { $0.category ?? "other" }
+        return dict.keys.sorted {
+            ShoppingListBuilder.categorySortIndex($0 == "other" ? nil : $0)
+                < ShoppingListBuilder.categorySortIndex($1 == "other" ? nil : $1)
+        }.map { raw in
+            (
+                raw,
+                dict[raw]!.sorted {
+                    $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+            )
+        }
+    }
+
+    private var hasUnchecked: Bool {
+        cart.items.contains(where: { !$0.isChecked })
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                    HStack {
-                        Text("Shopping List")
-                            .font(ChefitTypography.h2())
-                            .foregroundStyle(ChefitColors.sageGreen)
-                        Spacer()
-                        Text("Edit")
-                            .font(ChefitTypography.label())
-                            .foregroundStyle(ChefitColors.peach)
-                    }
-
-                    section("To Buy")
-                    ForEach(ChefitSampleData.shoppingToBuy, id: \.self) { item in
-                        checkRow(item: item, isChecked: checkedToBuy.contains(item)) {
-                            if checkedToBuy.contains(item) { checkedToBuy.remove(item) }
-                            else { checkedToBuy.insert(item) }
+            if cart.items.isEmpty {
+                emptyState
+            } else {
+                List {
+                    ForEach(groupedSections, id: \.categoryRaw) { section in
+                        Section {
+                            ForEach(section.items) { item in
+                                cartRow(item)
+                                    .listRowBackground(ChefitColors.white)
+                            }
+                            .onDelete { offsets in
+                                offsets.forEach { cart.removeItem(id: section.items[$0].id) }
+                            }
+                        } header: {
+                            Text(ShoppingListBuilder.sectionTitle(for: section.categoryRaw == "other" ? nil : section.categoryRaw))
+                                .font(ChefitTypography.label())
+                                .foregroundStyle(ChefitColors.sageGreen)
                         }
                     }
-
-                    section("Pantry")
-                    ForEach(ChefitSampleData.shoppingPantry, id: \.self) { item in
-                        checkRow(item: item, isChecked: true) {}
-                    }
                 }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .animation(.easeInOut(duration: 0.2), value: cart.items.map(\.isChecked))
+            }
+
+            if !cart.items.isEmpty, hasUnchecked {
+                Button {
+                    cart.openInstacart()
+                } label: {
+                    Label("Order with Instacart", systemImage: "cart.fill")
+                }
+                .buttonStyle(ChefitPrimaryButtonStyle())
                 .padding(ChefitSpacing.md)
-            }
-
-            Button {
-                showToast = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                    showToast = false
-                }
-            } label: {
-                Label("Add All to Cart", systemImage: "bag")
-            }
-            .buttonStyle(ChefitPrimaryButtonStyle())
-            .padding(ChefitSpacing.md)
-            .background(ChefitColors.cream.ignoresSafeArea())
-            .overlay(alignment: .top) {
-                if showToast {
-                    Text("Added to cart!")
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.white)
-                        .padding(.horizontal, ChefitSpacing.md)
-                        .padding(.vertical, ChefitSpacing.sm)
-                        .background(ChefitColors.sageGreen)
-                        .clipShape(Capsule())
-                        .padding(.top, -46)
-                }
+                .background(ChefitColors.cream.ignoresSafeArea(edges: .bottom))
             }
         }
         .background(ChefitColors.cream.ignoresSafeArea())
-    }
-
-    private func section(_ title: String) -> some View {
-        Text(title)
-            .font(ChefitTypography.label())
-            .foregroundStyle(ChefitColors.sageGreen)
-    }
-
-    private func checkRow(item: String, isChecked: Bool, tap: @escaping () -> Void) -> some View {
-        Button(action: tap) {
-            HStack {
-                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isChecked ? ChefitColors.matcha : ChefitColors.pistachio)
-                Text(item)
-                    .font(ChefitTypography.body())
-                    .foregroundStyle(isChecked ? ChefitColors.matcha : ChefitColors.sageGreen)
-                    .strikethrough(isChecked)
-                Spacer()
+        .navigationTitle("Shopping List")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            if showDismissButton {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                }
             }
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: ChefitSpacing.md) {
+            Spacer()
+            Image(systemName: "cart")
+                .font(.system(size: 44))
+                .foregroundStyle(ChefitColors.matcha)
+            Text("Your cart is empty")
+                .font(ChefitTypography.h3())
+                .foregroundStyle(ChefitColors.sageGreen)
+            Text("Open a recipe and add missing ingredients.")
+                .font(ChefitTypography.body())
+                .foregroundStyle(ChefitColors.matcha)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, ChefitSpacing.lg)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func cartRow(_ item: ShoppingItem) -> some View {
+        HStack(spacing: ChefitSpacing.sm) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    cart.toggleItem(item)
+                }
+            } label: {
+                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundStyle(item.isChecked ? ChefitColors.matcha : ChefitColors.pistachio)
+            }
+            .buttonStyle(.plain)
+
+            Text(item.name)
+                .font(ChefitTypography.body())
+                .foregroundStyle(item.isChecked ? ChefitColors.matcha : ChefitColors.sageGreen)
+                .strikethrough(item.isChecked)
+
+            Spacer(minLength: ChefitSpacing.sm)
+
+            HStack(spacing: ChefitSpacing.sm) {
+                quantityButton(icon: "minus.circle.fill") {
+                    cart.updateQuantity(item, delta: -1)
+                }
+                Text("\(item.quantity)")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.text)
+                    .frame(minWidth: 22)
+                quantityButton(icon: "plus.circle.fill") {
+                    cart.updateQuantity(item, delta: 1)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func quantityButton(icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 22))
+                .foregroundStyle(ChefitColors.peach)
         }
         .buttonStyle(.plain)
     }
