@@ -18,4 +18,6 @@ struct RootView: View {
 #Preview {
     RootView()
         .environmentObject(AuthService.shared)
+        .environmentObject(IngredientStore())
+        .environmentObject(ShoppingCartViewModel())
 }

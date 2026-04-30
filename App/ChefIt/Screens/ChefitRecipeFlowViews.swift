@@ -1,9 +1,22 @@
+import ChefItKit
 import SwiftUI
 
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
     let onViewRecipe: () -> Void
+
+    @EnvironmentObject private var shoppingCart: ShoppingCartViewModel
+    @EnvironmentObject private var ingredientStore: IngredientStore
+
     @State private var isFavorite: Bool = false
+    @State private var showCartSheet = false
+
+    private var missingIngredientNames: [String] {
+        ShoppingListBuilder.missingIngredientDisplayNames(
+            recipeIngredientNames: ChefitSampleData.ingredientDisplayNames(forRecipeId: recipe.id),
+            pantryCanonical: ingredientStore.canonicalSet
+        )
+    }
 
     var body: some View {
         ScrollView {
@@ -60,6 +73,8 @@ struct ChefitRecipeDiscoveryView: View {
                 .font(ChefitTypography.micro())
                 .foregroundStyle(ChefitColors.matcha)
 
+                missingIngredientsSection
+
                 HStack {
                     Text("Ingredients")
                         .font(ChefitTypography.h3())
@@ -72,7 +87,7 @@ struct ChefitRecipeDiscoveryView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: ChefitSpacing.sm) {
-                        ForEach(ChefitSampleData.ingredientChips, id: \.0) { item in
+                        ForEach(ChefitSampleData.ingredientChips(forRecipeId: recipe.id), id: \.0) { item in
                             ChefitIngredientChip(label: item.0, systemImage: item.1)
                         }
                     }
@@ -85,6 +100,48 @@ struct ChefitRecipeDiscoveryView: View {
             .padding(ChefitSpacing.md)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+        .sheet(isPresented: $showCartSheet) {
+            NavigationStack {
+                ChefitShoppingListView(showDismissButton: true)
+                    .environmentObject(shoppingCart)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var missingIngredientsSection: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            Text("Missing Ingredients")
+                .font(ChefitTypography.h3())
+                .foregroundStyle(ChefitColors.sageGreen)
+
+            if missingIngredientNames.isEmpty {
+                Text("You've got what this recipe needs in your pantry.")
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.matcha)
+            } else {
+                FlowLayout(spacing: ChefitSpacing.sm) {
+                    ForEach(missingIngredientNames, id: \.self) { name in
+                        Text(name)
+                            .font(ChefitTypography.label())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .padding(.horizontal, ChefitSpacing.sm)
+                            .padding(.vertical, ChefitSpacing.xs)
+                            .background(ChefitColors.pistachio)
+                            .clipShape(Capsule())
+                    }
+                }
+
+                Button {
+                    shoppingCart.loadFromRecipe(recipeId: recipe.id, pantryCanonical: ingredientStore.canonicalSet)
+                    showCartSheet = true
+                } label: {
+                    Label("Add to Cart", systemImage: "cart.badge.plus")
+                }
+                .buttonStyle(ChefitSecondaryButtonStyle())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
