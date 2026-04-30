@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 import ChefItKit
 
 // MARK: - Create Post
@@ -17,24 +18,30 @@ struct CreatePostView: View {
     @State private var errorMessage: String?
 
     var onPosted: ((Post) -> Void)?
+    private let previewHeight: CGFloat = 320
 
     private var canPost: Bool {
         imageData != nil && !caption.trimmingCharacters(in: .whitespaces).isEmpty && !isPosting
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: ChefitSpacing.md) {
-                navBar
-                imagePicker
-                captionField
-                recipeField
-                if let msg = errorMessage { errorBanner(msg) }
-                postButton
-                    .padding(.bottom, ChefitSpacing.twoXL)
+        GeometryReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: ChefitSpacing.md) {
+                    navBar
+                    imagePicker
+                    captionField
+                    recipeField
+                    if let msg = errorMessage { errorBanner(msg) }
+                    postButton
+                        .padding(.bottom, ChefitSpacing.twoXL)
+                }
+                .frame(width: proxy.size.width)
             }
+            .scrollClipDisabled(false)
+            .scrollBounceBehavior(.basedOnSize)
+            .background(ChefitColors.cream.ignoresSafeArea())
         }
-        .background(ChefitColors.cream.ignoresSafeArea())
     }
 
     // MARK: Nav
@@ -72,10 +79,9 @@ struct CreatePostView: View {
                 if let previewImage {
                     previewImage
                         .resizable()
-                        .scaledToFill()
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 320)
-                        .clipped()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(ChefitColors.pistachio.opacity(0.35))
 
                     VStack {
                         HStack {
@@ -104,7 +110,7 @@ struct CreatePostView: View {
                             .foregroundStyle(ChefitColors.matcha.opacity(0.7))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 320)
+                    .frame(maxHeight: .infinity)
                     .background(ChefitColors.pistachio.opacity(0.5))
                     .overlay(
                         RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous)
@@ -113,20 +119,15 @@ struct CreatePostView: View {
                     )
                 }
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: previewHeight)
             .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
             .padding(.horizontal, ChefitSpacing.md)
         }
         .buttonStyle(.plain)
         .onChange(of: selectedPhotoItem) { _, item in
             guard let item else { return }
-            Task {
-                if let data = try? await item.loadTransferable(type: Data.self) {
-                    imageData = data
-                    if let uiImage = UIImage(data: data) {
-                        previewImage = Image(uiImage: uiImage)
-                    }
-                }
-            }
+            Task { await loadSelectedImage(item) }
         }
     }
 
@@ -238,6 +239,37 @@ struct CreatePostView: View {
             errorMessage = error.localizedDescription
         }
         isPosting = false
+    }
+
+    private func loadSelectedImage(_ item: PhotosPickerItem) async {
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let (uiImage, normalizedData) = normalizeImageData(data) else { return }
+        imageData = normalizedData
+        previewImage = Image(uiImage: uiImage)
+    }
+
+    private func normalizeImageData(_ data: Data) -> (UIImage, Data)? {
+        guard let sourceImage = UIImage(data: data) else { return nil }
+
+        // Force a stable orientation and cap large dimensions so preview/upload
+        // behave consistently across image types and aspect ratios.
+        let maxDimension: CGFloat = 1600
+        let largestSide = max(sourceImage.size.width, sourceImage.size.height)
+        let scale = largestSide > 0 ? min(1, maxDimension / largestSide) : 1
+        let targetSize = CGSize(
+            width: max(1, sourceImage.size.width * scale),
+            height: max(1, sourceImage.size.height * scale)
+        )
+
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        let normalizedImage = renderer.image { _ in
+            sourceImage.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+        let normalizedData = normalizedImage.jpegData(compressionQuality: 0.9) ?? data
+
+        return (normalizedImage, normalizedData)
     }
 }
 
