@@ -3,6 +3,7 @@ import ChefItKit
 
 enum ChefitRoute: Hashable {
     case home
+    case myIngredients
     case search
     case recipeDiscover(id: String)
     case recipeDetails(id: String)
@@ -18,6 +19,7 @@ enum ChefitRoute: Hashable {
 struct ChefitRootCoordinatorView: View {
     // RootView already owns unauthenticated entry. The coordinator should start
     // inside the authenticated app shell rather than replaying placeholder auth.
+    @EnvironmentObject private var homeFeed: HomeFeedViewModel
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
 
@@ -32,8 +34,6 @@ struct ChefitRootCoordinatorView: View {
                         switch tab {
                         case .home:
                             route = .home
-                        case .search:
-                            route = .search
                         case .scan:
                             route = .scan
                         case .community:
@@ -46,8 +46,7 @@ struct ChefitRootCoordinatorView: View {
             }
         .onChange(of: route) { _, newValue in
             switch newValue {
-            case .home: selectedTab = .home
-            case .search: selectedTab = .search
+            case .home, .myIngredients, .search: selectedTab = .home
             case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
             case .community: selectedTab = .community
             case .profile: selectedTab = .profile
@@ -66,21 +65,35 @@ struct ChefitRootCoordinatorView: View {
         case .home:
             ChefitHomeView(
                 onSearchTap: { route = .search },
-                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) }
+                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) },
+                onIngredientsTap: { route = .myIngredients },
+                onCartTap: { route = .shoppingList }
             )
-        case .search:
-            ChefitSearchView { recipeID in
-                route = .recipeDiscover(id: recipeID)
+        case .myIngredients:
+            ChefitMyIngredientsView {
+                route = .home
             }
+        case .search:
+            ChefitSearchView(
+                onResultTap: { recipeID in
+                    route = .recipeDiscover(id: recipeID)
+                },
+                onBack: {
+                    route = .home
+                }
+            )
         case .recipeDiscover(let id):
-            let recipe = ChefitSampleData.popularRecipes.first(where: { $0.id == id }) ?? ChefitSampleData.popularRecipes[0]
+            let recipe = homeFeed.recipeByID[id]
+                ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
+                ?? ChefitSampleData.popularRecipes[0]
             ChefitRecipeDiscoveryView(recipe: recipe) {
                 route = .recipeDetails(id: id)
             }
-        case .recipeDetails:
-            ChefitRecipeDetailsView {
-                route = .recipeDetails(id: "cooking-mode")
-            }
+        case .recipeDetails(let id):
+            ChefitRecipeDetailsView(
+                onBack: { route = .recipeDiscover(id: id) },
+                onStartCooking: { route = .recipeDetails(id: "cooking-mode") }
+            )
         case .scan:
             ChefitScanPantryView(
                 onScanNow: {
@@ -99,7 +112,9 @@ struct ChefitRootCoordinatorView: View {
                 route = .recipeDiscover(id: recipeID)
             }
         case .shoppingList:
-            ChefitShoppingListView()
+            NavigationStack {
+                ChefitShoppingListView()
+            }
         case .saved:
             ChefitSavedView { recipeID in
                 route = .recipeDiscover(id: recipeID)

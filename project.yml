@@ -32,6 +32,7 @@ targets:
       - path: App/ChefIt/Components
       - path: App/ChefIt/Design
       - path: App/ChefIt/Navigation
+      - path: App/ChefIt/Cart
       - path: App/ChefIt/Screens
       - path: App/ChefIt/Assets.xcassets
         buildPhase: resources

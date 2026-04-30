@@ -1,13 +1,18 @@
+import ChefItKit
 import SwiftUI
 
 struct ChefitHomeView: View {
+    @EnvironmentObject private var ingredientStore: IngredientStore
+    @EnvironmentObject private var homeFeed: HomeFeedViewModel
+
     let onSearchTap: () -> Void
     let onRecipeTap: (String) -> Void
+    let onIngredientsTap: () -> Void
+    let onCartTap: () -> Void
 
     var body: some View {
         GeometryReader { proxy in
             let horizontalInset = max(18, proxy.size.width * 0.06)
-            let cardHeight = proxy.size.height * 0.145
             let recipeCardWidth = (proxy.size.width - (horizontalInset * 2) - 12) / 2
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
@@ -15,9 +20,11 @@ struct ChefitHomeView: View {
                         Text("Hello Chef!")
                             .font(.custom("Nunito-Bold", size: 37))
                             .foregroundStyle(ChefitColors.text)
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(ChefitColors.peach)
+                        Image("ChefitSplashMascot")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
                         Spacer()
                         Image(systemName: "bell")
                             .font(.system(size: 24, weight: .regular))
@@ -45,119 +52,281 @@ struct ChefitHomeView: View {
                     }
                     .buttonStyle(.plain)
 
-                    HStack {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("What's for\ndinner?")
-                                .font(.custom("PlayfairDisplay-Bold", size: 26))
-                                .foregroundStyle(ChefitColors.text)
-                                .lineSpacing(1)
-                            Text("Get ideas")
-                                .font(.custom("Nunito-Bold", size: 13))
-                                .foregroundStyle(ChefitColors.sageGreen)
+                    HStack(alignment: .top, spacing: 32) {
+                        Button(action: onIngredientsTap) {
+                            iconPairColumn(
+                                imageName: "ChefitPantryIcon",
+                                label: "Ingredients"
+                            )
                         }
-                        Spacer()
-                        Circle()
-                            .fill(ChefitColors.white)
-                            .frame(width: 104, height: 104)
-                            .overlay {
-                                Image(systemName: "bowl.fill")
-                                    .font(.system(size: 56))
-                                    .foregroundStyle(ChefitColors.honey)
-                            }
-                            .overlay(alignment: .top) {
-                                Image(systemName: "leaf.fill")
-                                    .font(.system(size: 26))
-                                    .foregroundStyle(ChefitColors.matcha)
-                                    .offset(y: -8)
-                            }
-                    }
-                    .padding(.horizontal, 18)
-                    .frame(height: cardHeight)
-                    .background(ChefitColors.pistachio)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .buttonStyle(.plain)
 
-                    HStack {
-                        Text("Popular Recipes")
-                            .font(.custom("Nunito-Bold", size: 40))
-                            .foregroundStyle(ChefitColors.text)
-                        Spacer()
-                        Text("See all")
-                            .font(.custom("Nunito-Bold", size: 13))
-                            .foregroundStyle(ChefitColors.sageGreen)
-                    }
-                    .padding(.top, 4)
-
-                    HStack(spacing: 12) {
-                        ForEach(ChefitSampleData.popularRecipes.prefix(2)) { recipe in
-                            ChefitHomeRecipeCard(
-                                title: recipe.title,
-                                accentColor: recipe.id == "creamy-pasta" ? ChefitColors.honey : ChefitColors.matcha
-                            ) {
-                                onRecipeTap(recipe.id)
-                            }
-                            .frame(width: recipeCardWidth)
+                        Button(action: onCartTap) {
+                            iconPairColumn(
+                                imageName: "ChefitCartIcon",
+                                label: "My Cart"
+                            )
                         }
+                        .buttonStyle(.plain)
                     }
+
+                    forYouSection(recipeCardWidth: recipeCardWidth)
                 }
                 .padding(.horizontal, horizontalInset)
                 .padding(.bottom, 20)
             }
             .background(ChefitColors.cream.ignoresSafeArea())
+            .onAppear {
+                homeFeed.scheduleLoad(pantryItems: ingredientStore.ingredients)
+            }
+            .onChange(of: ingredientStore.ingredients) { _, newValue in
+                homeFeed.scheduleLoad(pantryItems: newValue)
+            }
         }
     }
+
+    @ViewBuilder
+    private func iconPairColumn(imageName: String, label: String) -> some View {
+        VStack(spacing: 8) {
+            Image(imageName)
+                .renderingMode(.original)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            Text(label)
+                .font(.custom("Nunito-Bold", size: 13))
+                .foregroundStyle(ChefitColors.sageGreen)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private func forYouSection(recipeCardWidth: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("For You")
+                .font(.custom("Nunito-Bold", size: 36))
+                .foregroundStyle(ChefitColors.text)
+
+            Text(homeFeed.forYouSubtitle)
+                .font(.custom("Nunito-SemiBold", size: 13))
+                .foregroundStyle(ChefitColors.sageGreen)
+
+            if homeFeed.isLoading && homeFeed.forYouRecipes.isEmpty {
+                ProgressView()
+                    .tint(ChefitColors.sageGreen)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(homeFeed.forYouRecipes) { model in
+                            ChefitHomeRecipeCard(model: model) {
+                                onRecipeTap(model.id)
+                            }
+                            .frame(width: recipeCardWidth)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.top, 4)
+    }
+
 }
 
 private struct ChefitHomeRecipeCard: View {
-    let title: String
-    let accentColor: Color
+    let model: RecipeUIModel
+    var isUseSoonCard: Bool = false
     let onTap: () -> Void
+
+    @State private var pulseWarning: Bool = false
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(ChefitColors.cream)
                     .frame(height: 130)
                     .overlay {
-                        Circle()
-                            .fill(ChefitColors.white)
-                            .frame(width: 126, height: 82)
-                            .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 3)
-                            .overlay(
-                                Image(systemName: "takeoutbag.and.cup.and.straw.fill")
-                                    .font(.system(size: 54))
-                                    .foregroundStyle(accentColor)
-                            )
+                        if let imageURL = model.recipe.imageURL {
+                            AsyncImage(url: imageURL) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Circle()
+                                    .fill(ChefitColors.white)
+                                    .overlay {
+                                        Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                                            .font(.system(size: 50))
+                                            .foregroundStyle(ChefitColors.honey)
+                                    }
+                            }
+                        } else {
+                            Circle()
+                                .fill(ChefitColors.white)
+                                .overlay {
+                                    Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundStyle(ChefitColors.honey)
+                                }
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .overlay(alignment: .topLeading) {
+                        Text("🥦 \(model.matchPercentText)")
+                            .font(.custom("Nunito-Bold", size: 11))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(ChefitColors.white.opacity(0.95))
+                            .clipShape(Capsule())
+                            .padding(8)
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        Text(model.contextBadge)
+                            .font(.custom("Nunito-Bold", size: 11))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(ChefitColors.white.opacity(0.95))
+                            .clipShape(Capsule())
+                            .padding(8)
                     }
 
-                Text(title.replacingOccurrences(of: " ", with: "\n"))
+                Text(model.recipe.title)
                     .font(.custom("Nunito-Bold", size: 14))
                     .foregroundStyle(ChefitColors.text)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
-                    .padding(.horizontal, 10)
-                    .padding(.bottom, 10)
+
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                    Text("\(model.recipe.cookingMinutes) min")
+                    Text("•")
+                    Text(model.badges.contains(.onePan) ? "1 pan" : model.recipe.difficulty.rawValue.capitalized)
+                }
+                .font(.custom("Nunito-SemiBold", size: 11))
+                .foregroundStyle(ChefitColors.matcha)
+
+                HStack(spacing: 6) {
+                    ForEach(model.previewIngredients, id: \.self) { ingredient in
+                        Image(systemName: symbol(for: ingredient))
+                            .font(.system(size: 13))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                if let expiring = model.expiringIngredient {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.orange)
+                            .frame(width: 6, height: 6)
+                            .scaleEffect(pulseWarning ? 1.2 : 0.8)
+                        Text("\(expiring) expiring")
+                            .font(.custom("Nunito-Bold", size: 11))
+                            .foregroundStyle(Color.orange)
+                    }
+                }
             }
+            .padding(10)
             .background(ChefitColors.white)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(ChefitColors.text.opacity(0.12), lineWidth: 1)
+                    .stroke(
+                        isUseSoonCard
+                            ? Color.orange.opacity(0.35)
+                            : ChefitColors.text.opacity(0.12),
+                        lineWidth: 1
+                    )
             }
         }
         .buttonStyle(.plain)
+        .onAppear {
+            if isUseSoonCard {
+                withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                    pulseWarning = true
+                }
+            }
+        }
+    }
+
+    private func symbol(for ingredient: String) -> String {
+        switch ingredient.lowercased() {
+        case "tomato": return ChefitSymbol.tomato
+        case "garlic": return ChefitSymbol.garlic
+        case "olive oil": return ChefitSymbol.oliveOil
+        case "pasta": return ChefitSymbol.pasta
+        case "broccoli": return ChefitSymbol.broccoli
+        case "milk": return ChefitSymbol.milk
+        case "chicken": return ChefitSymbol.chicken
+        case "onion": return ChefitSymbol.onion
+        default: return "leaf.fill"
+        }
+    }
+}
+
+struct ChefitMyIngredientsView: View {
+    let onBack: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                Text("My Ingredients")
+                    .font(.custom("Nunito-Bold", size: 22))
+                    .foregroundStyle(ChefitColors.text)
+
+                HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
+                    Spacer()
+                }
+            }
+            .padding(.horizontal, ChefitSpacing.md)
+            .padding(.top, ChefitSpacing.sm)
+            .padding(.bottom, ChefitSpacing.md)
+
+            Spacer(minLength: 8)
+
+            Image("ChefitIngredientsPantryHero")
+                .renderingMode(.original)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, ChefitSpacing.md)
+
+            Spacer(minLength: 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }
 
 struct ChefitSearchView: View {
     let onResultTap: (String) -> Void
+    let onBack: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
                 HStack(spacing: ChefitSpacing.sm) {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(ChefitColors.sageGreen)
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     ChefitSearchBar(
                         placeholder: "Search recipes, ingredients…",
                         showsFilter: true,
