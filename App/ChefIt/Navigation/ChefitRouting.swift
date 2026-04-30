@@ -5,7 +5,7 @@ enum ChefitRoute: Hashable {
     case home
     case search
     case recipeDiscover(id: String)
-    case recipeDetails(id: String)
+    case recipeDetails(payload: ChefitRecipeDetailsPayload)
     case scan
     case detectedIngredients
     case recommendations
@@ -129,13 +129,11 @@ struct ChefitRootCoordinatorView: View {
             }
         case .recipeDiscover(let id):
             let recipe = ChefitSampleData.popularRecipes.first(where: { $0.id == id }) ?? ChefitSampleData.popularRecipes[0]
-            ChefitRecipeDiscoveryView(recipe: recipe) {
-                route = .recipeDetails(id: id)
+            ChefitRecipeDiscoveryView(recipe: recipe) { payload in
+                route = .recipeDetails(payload: payload)
             }
-        case .recipeDetails:
-            ChefitRecipeDetailsView {
-                route = .recipeDetails(id: "cooking-mode")
-            }
+        case .recipeDetails(let payload):
+            ChefitRecipeDetailsView(recipe: payload)
         case .scan:
             ChefitScanPantryView(
                 previewImageData: pendingImageData ?? scanVM.draft?.imageData,
@@ -158,7 +156,9 @@ struct ChefitRootCoordinatorView: View {
         case .recommendations:
             ChefitRecommendationsView(
                 vm: recommendationsVM,
-                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) }
+                onRecipeTap: { recipe in
+                    route = .recipeDetails(payload: .fromRecipe(recipe))
+                }
             )
         case .shoppingList:
             ChefitShoppingListView()

@@ -213,7 +213,7 @@ struct ChefitDetectedIngredientsView: View {
 
 struct ChefitRecommendationsView: View {
     @ObservedObject var vm: RecommendationsViewModel
-    let onRecipeTap: (String) -> Void
+    let onRecipeTap: (Recipe) -> Void
     @State private var favorites: Set<String> = []
 
     var body: some View {
@@ -281,7 +281,7 @@ struct ChefitRecommendationsView: View {
         VStack(spacing: ChefitSpacing.md) {
             ForEach(matches) { match in
                 recipeCard(match)
-                    .onTapGesture { onRecipeTap(match.recipe.id) }
+                    .onTapGesture { onRecipeTap(match.recipe) }
             }
         }
     }
