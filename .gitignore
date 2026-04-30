@@ -20,7 +20,6 @@ Package.resolved
 Secrets.xcconfig
 
 # Generated
-ChefIt.xcodeproj/
 .next/
 
 # Web archive (kept for reference, do not rebuild)
