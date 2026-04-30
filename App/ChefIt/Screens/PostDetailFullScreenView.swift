@@ -43,6 +43,7 @@ struct PostDetailFullScreenView: View {
     @State private var showDeleteConfirm = false
     @State private var isDeleting = false
     @State private var showReviewComposer = false
+    @FocusState private var isCommentFieldFocused: Bool
 
     init(
         post: Post,
@@ -275,14 +276,28 @@ struct PostDetailFullScreenView: View {
             }
 
             HStack(alignment: .bottom, spacing: ChefitSpacing.sm) {
-                TextField("Share a comment...", text: $commentBody, axis: .vertical)
-                    .font(ChefitTypography.body())
-                    .foregroundStyle(ChefitColors.text)
-                    .lineLimit(1...4)
-                    .padding(.horizontal, ChefitSpacing.md)
-                    .padding(.vertical, 12)
-                    .background(ChefitColors.white)
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.xl, style: .continuous))
+                ZStack(alignment: .topLeading) {
+                    if commentBody.isEmpty {
+                        Text("Share a comment...")
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.matcha)
+                            .padding(.horizontal, ChefitSpacing.md)
+                            .padding(.vertical, 14)
+                            .allowsHitTesting(false)
+                    }
+
+                    TextEditor(text: $commentBody)
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.text)
+                        .focused($isCommentFieldFocused)
+                        .frame(minHeight: 48, maxHeight: 96)
+                        .scrollContentBackground(.hidden)
+                        .padding(.horizontal, ChefitSpacing.sm)
+                        .padding(.vertical, ChefitSpacing.xs)
+                        .background(Color.clear)
+                }
+                .background(ChefitColors.white)
+                .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.xl, style: .continuous))
 
                 Button {
                     Task { await submitComment() }
@@ -382,6 +397,7 @@ struct PostDetailFullScreenView: View {
         do {
             _ = try await vm.createComment(postId: activePost.id, body: trimmed)
             commentBody = ""
+            isCommentFieldFocused = false
             activePost = activePost.updatingCommentCount(activePost.commentCount + 1)
             onPostUpdated(activePost)
         } catch {
