@@ -27,7 +27,14 @@ targets:
       Debug: Secrets.xcconfig
       Release: Secrets.xcconfig
     sources:
-      - path: App/ChefIt
+      - path: App/ChefIt/ChefItApp.swift
+      - path: App/ChefIt/RootView.swift
+      - path: App/ChefIt/Components
+      - path: App/ChefIt/Design
+      - path: App/ChefIt/Navigation
+      - path: App/ChefIt/Screens
+      - path: App/ChefIt/Assets.xcassets
+        buildPhase: resources
       - path: App/ChefIt/Resources
         buildPhase: resources
     info:
@@ -38,6 +45,14 @@ targets:
         AUTH_BASE_URL: $(AUTH_BASE_URL)
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations: {}
+        UILaunchScreen:
+          UIColorName: ChefitLaunchCream
+        UIAppFonts:
+          - Nunito-Variable.ttf
+          - PlayfairDisplay-Variable.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chefit.app

@@ -87,7 +87,7 @@ public final class AuthService: ObservableObject {
             return try JSONDecoder().decode(T.self, from: data)
         }
 
-        let message = (try? JSONDecoder().decode(ErrorBody.self, from: data))?.error ?? "Unknown error"
+        let message = (try? JSONDecoder().decode(ErrorBody.self, from: data))?.error ?? "HTTP \(status)"
 
         switch status {
         case 401: throw AuthError.invalidCredentials

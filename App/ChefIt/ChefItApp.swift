@@ -14,12 +14,8 @@ struct ChefItApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                ChefitColors.cream
-                    .ignoresSafeArea(edges: .all)
-                RootView()
-            }
-            .preferredColorScheme(.light)
+            RootView()
+                .preferredColorScheme(.light)
         }
     }
 }

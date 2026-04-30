@@ -1,4 +1,5 @@
 import SwiftUI
+import ChefItKit
 
 enum ChefitRoute: Hashable {
     case splash
@@ -17,7 +18,9 @@ enum ChefitRoute: Hashable {
 }
 
 struct ChefitRootCoordinatorView: View {
-    @State private var route: ChefitRoute = .splash
+    // RootView already owns unauthenticated entry. The coordinator should start
+    // inside the authenticated app shell rather than replaying placeholder auth.
+    @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
 
     var body: some View {
@@ -119,7 +122,8 @@ struct ChefitRootCoordinatorView: View {
         case .profile:
             ChefitProfileView(
                 onShoppingTap: { route = .shoppingList },
-                onPantryTap: { route = .scan }
+                onPantryTap: { route = .scan },
+                onLogout: { AuthService.shared.logout() }
             )
         case .community:
             ChefitCommunityView()

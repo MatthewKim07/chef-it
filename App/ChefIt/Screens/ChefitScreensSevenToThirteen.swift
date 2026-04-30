@@ -283,6 +283,7 @@ struct ChefitSavedView: View {
 struct ChefitProfileView: View {
     let onShoppingTap: () -> Void
     let onPantryTap: () -> Void
+    let onLogout: () -> Void
 
     var body: some View {
         ScrollView {
@@ -312,6 +313,7 @@ struct ChefitProfileView: View {
                 ChefitProfileMenuRow(label: "Pantry", onTap: onPantryTap)
                 ChefitProfileMenuRow(label: "Settings", onTap: {})
                 ChefitProfileMenuRow(label: "Help & Support", onTap: {})
+                ChefitProfileMenuRow(label: "Sign Out", onTap: onLogout)
             }
             .padding(ChefitSpacing.md)
         }
