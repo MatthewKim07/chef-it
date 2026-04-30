@@ -24,16 +24,21 @@ struct ChefitHomeView: View {
             let recipeCardWidth = (proxy.size.width - (horizontalInset * 2) - 12) / 2
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack(alignment: .center, spacing: 6) {
-                        Text("Hello \(greetingName)!")
-                            .font(.custom("Nunito-Bold", size: 37))
-                            .foregroundStyle(ChefitColors.text)
-                        Image("ChefitSplashMascot")
-                            .renderingMode(.original)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                        Spacer()
+                    HStack(alignment: .center, spacing: 12) {
+                        HStack(alignment: .center, spacing: 6) {
+                            Text("Hello \(greetingName)!")
+                                .font(.custom("Nunito-Bold", size: 37))
+                                .foregroundStyle(ChefitColors.text)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
+                            Image("ChefitSplashMascot")
+                                .renderingMode(.original)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .layoutPriority(1)
+                        }
+                        Spacer(minLength: 8)
                         Image(systemName: "bell")
                             .font(.system(size: 24, weight: .regular))
                             .foregroundStyle(ChefitColors.text.opacity(0.85))

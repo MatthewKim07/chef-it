@@ -1016,6 +1016,8 @@ private struct PostThumbnailCell: View {
 // MARK: - Edit Sheet
 
 private struct ProfileEditSheet: View {
+    static let displayNameLimit = 20
+
     @ObservedObject var vm: ProfileViewModel
     let userId: Int
     @FocusState private var focused: EditField?
@@ -1036,12 +1038,23 @@ private struct ProfileEditSheet: View {
                 }
             }
 
-            fieldLabel("Display Name")
+            HStack {
+                fieldLabel("Display Name")
+                Spacer()
+                Text("\(vm.editDisplayName.count)/\(ProfileEditSheet.displayNameLimit)")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
             TextField("Your name", text: $vm.editDisplayName)
                 .font(ChefitTypography.body())
                 .foregroundStyle(ChefitColors.text)
                 .focused($focused, equals: .name)
                 .profileTextField(isFocused: focused == .name)
+                .onChange(of: vm.editDisplayName) { _, newValue in
+                    if newValue.count > ProfileEditSheet.displayNameLimit {
+                        vm.editDisplayName = String(newValue.prefix(ProfileEditSheet.displayNameLimit))
+                    }
+                }
 
             fieldLabel("Bio")
             TextEditor(text: $vm.editBio)
