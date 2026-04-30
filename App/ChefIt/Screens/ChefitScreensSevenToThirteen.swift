@@ -294,6 +294,8 @@ private final class ProfileViewModel: ObservableObject {
     @Published var showEditSheet = false
     @Published var editDisplayName = ""
     @Published var editBio = ""
+    @Published var posts: [Post] = []
+    @Published var isLoadingPosts = false
 
     func load(userId: Int) async {
         isLoading = true
@@ -342,6 +344,19 @@ private final class ProfileViewModel: ObservableObject {
         }
         isUploadingAvatar = false
     }
+
+    func loadPosts(userId: Int) async {
+        isLoadingPosts = true
+        defer { isLoadingPosts = false }
+        do { posts = try await PostService.shared.fetchPosts(userId: userId) } catch { }
+    }
+
+    func deletePost(id: Int) async {
+        do {
+            try await PostService.shared.deletePost(id: id)
+            posts.removeAll { $0.id == id }
+        } catch { }
+    }
 }
 
 // MARK: - Profile View
@@ -354,6 +369,8 @@ struct ChefitProfileView: View {
     @EnvironmentObject private var authService: AuthService
     @StateObject private var vm = ProfileViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var showCreatePost = false
+    @State private var selectedPost: Post?
 
     private var userId: Int? { authService.currentUser?.id }
     private var displayName: String {
@@ -365,6 +382,7 @@ struct ChefitProfileView: View {
             VStack(spacing: ChefitSpacing.lg) {
                 profileHeaderCard
                 if let msg = vm.errorMessage { errorBanner(msg) }
+                postsSection
                 menuCard
             }
             .padding(ChefitSpacing.md)
@@ -372,7 +390,10 @@ struct ChefitProfileView: View {
         }
         .background(ChefitColors.cream.ignoresSafeArea())
         .task {
-            if let id = userId { await vm.load(userId: id) }
+            if let id = userId {
+                await vm.load(userId: id)
+                await vm.loadPosts(userId: id)
+            }
         }
         .onChange(of: selectedPhotoItem) { _, item in
             guard let item, let id = userId else { return }
@@ -387,6 +408,20 @@ struct ChefitProfileView: View {
                 ProfileEditSheet(vm: vm, userId: id)
                     .presentationDetents([.medium])
                     .presentationDragIndicator(.visible)
+            }
+        }
+        .sheet(isPresented: $showCreatePost) {
+            CreatePostView { newPost in
+                vm.posts.insert(newPost, at: 0)
+            }
+            .environmentObject(authService)
+        }
+        .sheet(item: $selectedPost) { post in
+            PostDetailSheet(
+                post: post,
+                isOwnPost: post.userId == userId
+            ) {
+                await vm.deletePost(id: post.id)
             }
         }
     }
@@ -517,6 +552,67 @@ struct ChefitProfileView: View {
         .chefitCardShadow()
     }
 
+    // MARK: Posts Section
+
+    private var postsSection: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            HStack {
+                Text("Posts")
+                    .font(ChefitTypography.h2())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
+                Button {
+                    showCreatePost = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(ChefitColors.white)
+                        .frame(width: 32, height: 32)
+                        .background(ChefitColors.peach)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            if vm.isLoadingPosts {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(ChefitColors.sageGreen)
+                    Spacer()
+                }
+                .frame(height: 80)
+            } else if vm.posts.isEmpty {
+                VStack(spacing: ChefitSpacing.sm) {
+                    Image(systemName: "fork.knife")
+                        .font(.system(size: 32, weight: .thin))
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("No posts yet")
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("Tap + to share your first dish!")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha.opacity(0.8))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, ChefitSpacing.twoXL)
+            } else {
+                let columns = [
+                    GridItem(.flexible(), spacing: 2),
+                    GridItem(.flexible(), spacing: 2),
+                    GridItem(.flexible(), spacing: 2)
+                ]
+                LazyVGrid(columns: columns, spacing: 2) {
+                    ForEach(vm.posts) { post in
+                        PostThumbnailCell(post: post) {
+                            selectedPost = post
+                        }
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+            }
+        }
+    }
+
     // MARK: Error banner
 
     private func errorBanner(_ message: String) -> some View {
@@ -536,6 +632,47 @@ struct ChefitProfileView: View {
         .padding(ChefitSpacing.md)
         .background(ChefitColors.peach.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
+    }
+}
+
+// MARK: - Post Thumbnail Cell
+
+private struct PostThumbnailCell: View {
+    let post: Post
+    let onTap: () -> Void
+
+    var body: some View {
+        GeometryReader { geo in
+            Button(action: onTap) {
+                Group {
+                    if let urlStr = post.imageURL, let url = URL(string: urlStr) {
+                        AsyncImage(url: url) { phase in
+                            if case .success(let img) = phase {
+                                img.resizable().scaledToFill()
+                            } else {
+                                thumbnailPlaceholder
+                            }
+                        }
+                    } else {
+                        thumbnailPlaceholder
+                    }
+                }
+                .frame(width: geo.size.width, height: geo.size.width)
+                .clipped()
+            }
+            .buttonStyle(.plain)
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+
+    private var thumbnailPlaceholder: some View {
+        Rectangle()
+            .fill(ChefitColors.pistachio)
+            .overlay {
+                Image(systemName: "fork.knife")
+                    .font(.system(size: 18, weight: .thin))
+                    .foregroundStyle(ChefitColors.matcha)
+            }
     }
 }
 
