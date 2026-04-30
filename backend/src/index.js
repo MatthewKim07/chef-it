@@ -10,6 +10,15 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+const userRoutes = require('./routes/users');
+app.use('/api/users', userRoutes);
+
+const postRoutes = require('./routes/posts');
+app.use('/api/posts', postRoutes);
+
+const reviewRoutes = require('./routes/reviews');
+app.use('/api/recipes/:recipeId/reviews', reviewRoutes);
+
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3000;

@@ -14,8 +14,13 @@ public final class AuthService: ObservableObject {
 
     public init() {
         baseURL = Self.resolvedBaseURL()
+        currentUser = nil
         isLoggedIn = false
-        isLoggedIn = retrieveToken() != nil
+
+        if let token = retrieveToken() {
+            currentUser = Self.userFromToken(token)
+            isLoggedIn = true
+        }
     }
 
     // MARK: - Public API
@@ -63,6 +68,10 @@ public final class AuthService: ObservableObject {
     // MARK: - Network
 
     private struct ErrorBody: Decodable { let error: String }
+    private struct TokenPayload: Decodable {
+        let id: Int
+        let email: String
+    }
 
     private func post<T: Decodable>(path: String, body: [String: String]) async throws -> T {
         guard let url = URL(string: baseURL + path) else {
@@ -114,29 +123,51 @@ public final class AuthService: ObservableObject {
             }
     }
 
-    /// Clearer than raw URLError when the API isn't reachable (backend down, wrong host, device + localhost).
-    private static func connectionHint(for error: URLError, baseURL: String) -> String {
-        switch error.code {
-        case .cannotConnectToHost, .cannotFindHost, .timedOut, .networkConnectionLost:
-            var parts: [String] = ["can't reach \(baseURL)."]
-            #if os(iOS)
-            if !ProcessInfo.processInfo.isiOSAppOnMac {
-                #if !targetEnvironment(simulator)
-                let lower = baseURL.lowercased()
-                if lower.contains("127.0.0.1") || lower.contains("localhost") {
-                    parts.append(
-                        "On a real iPhone/iPad, localhost is the device itself — set AUTH_BASE_URL in Secrets.xcconfig to your Mac's LAN IP (e.g. http://192.168.x.x:3000)."
-                    )
-                }
-                #endif
+private static func userFromToken(_ token: String) -> AuthUser? {
+    let segments = token.split(separator: ".")
+    guard segments.count >= 2,
+          let payloadData = decodeBase64URL(String(segments[1])),
+          let payload = try? JSONDecoder().decode(TokenPayload.self, from: payloadData) else {
+        return nil
+    }
+    return AuthUser(id: payload.id, email: payload.email, displayName: nil)
+}
+
+private static func decodeBase64URL(_ value: String) -> Data? {
+    var base64 = value
+        .replacingOccurrences(of: "-", with: "+")
+        .replacingOccurrences(of: "_", with: "/")
+    let remainder = base64.count % 4
+    if remainder != 0 {
+        base64 += String(repeating: "=", count: 4 - remainder)
+    }
+    return Data(base64Encoded: base64)
+}
+
+/// Clearer than raw URLError when the API isn't reachable (backend down, wrong host, device + localhost).
+private static func connectionHint(for error: URLError, baseURL: String) -> String {
+    switch error.code {
+    case .cannotConnectToHost, .cannotFindHost, .timedOut, .networkConnectionLost:
+        var parts: [String] = ["can't reach \(baseURL)."]
+        #if os(iOS)
+        if !ProcessInfo.processInfo.isiOSAppOnMac {
+            #if !targetEnvironment(simulator)
+            let lower = baseURL.lowercased()
+            if lower.contains("127.0.0.1") || lower.contains("localhost") {
+                parts.append(
+                    "On a real iPhone/iPad, localhost is the device itself — set AUTH_BASE_URL in Secrets.xcconfig to your Mac's LAN IP (e.g. http://192.168.x.x:3000)."
+                )
             }
             #endif
-            parts.append("Start the API from the repo: cd backend && npm install && npm run dev")
-            return parts.joined(separator: " ")
-        default:
-            return error.localizedDescription
         }
+        #endif
+        parts.append("Start the API from the repo: cd backend && npm install && npm run dev")
+        return parts.joined(separator: " ")
+    default:
+        return error.localizedDescription
     }
+}
+    
 
     // MARK: - Keychain
 
