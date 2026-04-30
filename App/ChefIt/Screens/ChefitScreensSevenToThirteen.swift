@@ -1,8 +1,12 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 import ChefItKit
 
 struct ChefitScanPantryView: View {
+    private let previewBoxHeight: CGFloat = 340
+    let previewImageData: Data?
+    let isAnalyzing: Bool
     let onScanNow: () -> Void
     let onAddManually: () -> Void
 
@@ -12,15 +16,44 @@ struct ChefitScanPantryView: View {
                 .font(ChefitTypography.label())
                 .foregroundStyle(ChefitColors.sageGreen)
 
-            VStack(spacing: ChefitSpacing.sm) {
-                Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 42))
-                    .foregroundStyle(ChefitColors.matcha)
-                Text("We'll find recipes you can make!")
-                    .font(ChefitTypography.body())
-                    .foregroundStyle(ChefitColors.sageGreen)
+            ZStack {
+                if let previewImage = previewImage {
+                    Image(uiImage: previewImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .blur(radius: isAnalyzing ? 10 : 0)
+                } else {
+                    VStack(spacing: ChefitSpacing.sm) {
+                        Image(systemName: "camera.viewfinder")
+                            .font(.system(size: 42))
+                            .foregroundStyle(ChefitColors.matcha)
+                        Text("We'll find recipes you can make!")
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+
+                if isAnalyzing {
+                    ZStack {
+                        Color.black.opacity(0.35)
+                        VStack(spacing: ChefitSpacing.sm) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(ChefitColors.white)
+                                .scaleEffect(1.2)
+                            Text("Scanning…")
+                                .font(ChefitTypography.label())
+                                .foregroundStyle(ChefitColors.white)
+                        }
+                    }
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 340)
+            .frame(maxWidth: .infinity, minHeight: previewBoxHeight, maxHeight: previewBoxHeight)
+            .background(ChefitColors.pistachio.opacity(0.2))
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous)
                     .stroke(style: StrokeStyle(lineWidth: 2, dash: [8, 8]))
@@ -46,19 +79,23 @@ struct ChefitScanPantryView: View {
         .padding(ChefitSpacing.md)
         .background(ChefitColors.cream.ignoresSafeArea())
     }
+
+    private var previewImage: UIImage? {
+        guard let previewImageData else { return nil }
+        return UIImage(data: previewImageData)
+    }
 }
 
 struct ChefitDetectedIngredientsView: View {
-    var candidates: [ScanCandidate] = []
+    let candidates: [ScanCandidate]
+    let message: String?
+    let onToggleCandidate: (UUID) -> Void
+    let onAddManualCandidate: (String) -> Void
     let onFindRecipes: () -> Void
+    @State private var manualIngredientDraft = ""
 
-    private var displayItems: [(String, String)] {
-        if candidates.isEmpty {
-            return ChefitSampleData.detectedIngredients
-        }
-        return candidates.map { candidate in
-            (symbolName(for: candidate.category), candidate.canonicalName.capitalized)
-        }
+    private var selectedCount: Int {
+        candidates.filter(\.isSelected).count
     }
 
     var body: some View {
@@ -69,37 +106,95 @@ struct ChefitDetectedIngredientsView: View {
                         .font(ChefitTypography.h2())
                         .foregroundStyle(ChefitColors.sageGreen)
                     Spacer()
-                    Text("\(displayItems.count) found")
+                    Text("\(selectedCount)/\(candidates.count) active")
                         .font(ChefitTypography.label())
                         .foregroundStyle(ChefitColors.matcha)
                 }
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: ChefitSpacing.md) {
-                    ForEach(displayItems, id: \.1) { item in
-                        VStack(spacing: ChefitSpacing.xs) {
-                            Image(systemName: item.0)
-                                .font(.system(size: 26, weight: .medium))
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(ChefitColors.sageGreen)
-                                .frame(width: 60, height: 60)
-                                .background(ChefitColors.pistachio)
-                                .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-                            Text(item.1)
-                                .font(ChefitTypography.micro())
-                                .foregroundStyle(ChefitColors.sageGreen)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.center)
+                if let message, !message.isEmpty {
+                    Text(message)
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.peach)
+                }
+
+                HStack(spacing: ChefitSpacing.sm) {
+                    TextField("Add missing ingredient", text: $manualIngredientDraft)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .padding(.horizontal, ChefitSpacing.sm)
+                        .padding(.vertical, ChefitSpacing.sm)
+                        .background(ChefitColors.white)
+                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous)
+                                .stroke(ChefitColors.pistachio, lineWidth: 1)
+                        )
+                    Button("Add") {
+                        let draft = manualIngredientDraft
+                        onAddManualCandidate(draft)
+                        manualIngredientDraft = ""
+                    }
+                    .buttonStyle(ChefitSecondaryButtonStyle())
+                }
+
+                if candidates.isEmpty {
+                    Text("No ingredients detected yet. Add manually to continue.")
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: ChefitSpacing.sm)], spacing: ChefitSpacing.sm) {
+                        ForEach(candidates) { candidate in
+                            candidateCard(candidate)
+                                .onTapGesture {
+                                    onToggleCandidate(candidate.id)
+                                }
                         }
                     }
                 }
 
+                Text("Tap an ingredient to exclude/include it. Excluded items stay visible in red so you can restore them.")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+
                 Button("Find Recipes", action: onFindRecipes)
                     .buttonStyle(ChefitPrimaryButtonStyle())
                     .padding(.top, ChefitSpacing.md)
+                    .disabled(selectedCount == 0)
             }
             .padding(ChefitSpacing.md)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private func candidateCard(_ candidate: ScanCandidate) -> some View {
+        let isActive = candidate.isSelected
+        VStack(spacing: ChefitSpacing.xs) {
+            HStack(spacing: 6) {
+                Image(systemName: symbolName(for: candidate.category))
+                    .font(.system(size: 18, weight: .medium))
+                if !isActive {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14, weight: .bold))
+                }
+            }
+            .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
+
+            Text(candidate.canonicalName.capitalized)
+                .font(ChefitTypography.micro())
+                .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .padding(.vertical, ChefitSpacing.sm)
+        .padding(.horizontal, ChefitSpacing.xs)
+        .frame(maxWidth: .infinity, minHeight: 78)
+        .background(isActive ? ChefitColors.pistachio : ChefitColors.peach.opacity(0.22))
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous)
+                .stroke(isActive ? ChefitColors.sageGreen.opacity(0.35) : ChefitColors.peach, lineWidth: 1)
+        )
     }
 
     private func symbolName(for category: IngredientCategory) -> String {
@@ -117,6 +212,7 @@ struct ChefitDetectedIngredientsView: View {
 }
 
 struct ChefitRecommendationsView: View {
+    @ObservedObject var vm: RecommendationsViewModel
     let onRecipeTap: (String) -> Void
     @State private var favorites: Set<String> = []
 
@@ -126,52 +222,111 @@ struct ChefitRecommendationsView: View {
                 Text("Recipes you can make")
                     .font(ChefitTypography.h2())
                     .foregroundStyle(ChefitColors.sageGreen)
-                Text("Based on your ingredients")
+                Text("Based on your \(vm.ingredientCount) ingredient\(vm.ingredientCount == 1 ? "" : "s")")
                     .font(ChefitTypography.label())
                     .foregroundStyle(ChefitColors.matcha)
 
-                VStack(spacing: ChefitSpacing.md) {
-                    ForEach(ChefitSampleData.popularRecipes) { recipe in
-                        HStack(spacing: ChefitSpacing.sm) {
-                            AsyncImage(url: recipe.imageURL) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
-                            }
-                            .frame(width: 60, height: 60)
-                            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(recipe.title)
-                                    .font(ChefitTypography.h3())
-                                    .foregroundStyle(ChefitColors.sageGreen)
-                                Text("\(recipe.minutes) min · \(recipe.difficulty)")
-                                    .font(ChefitTypography.micro())
-                                    .foregroundStyle(ChefitColors.matcha)
-                            }
-                            Spacer()
-                            Button {
-                                if favorites.contains(recipe.id) { favorites.remove(recipe.id) }
-                                else { favorites.insert(recipe.id) }
-                            } label: {
-                                Image(systemName: favorites.contains(recipe.id) ? "heart.fill" : "heart")
-                                    .foregroundStyle(favorites.contains(recipe.id) ? ChefitColors.peach : ChefitColors.matcha)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(ChefitSpacing.sm)
-                        .background(ChefitColors.white)
-                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-                        .chefitCardShadow()
-                        .onTapGesture {
-                            onRecipeTap(recipe.id)
-                        }
+                if vm.isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(ChefitColors.sageGreen)
+                            .padding(ChefitSpacing.twoXL)
+                        Spacer()
+                    }
+                } else if let error = vm.errorMessage {
+                    Text(error)
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                        .multilineTextAlignment(.center)
+                        .padding(ChefitSpacing.md)
+                } else if vm.readyMatches.isEmpty && vm.almostMatches.isEmpty {
+                    VStack(spacing: ChefitSpacing.sm) {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 32))
+                            .foregroundStyle(ChefitColors.pistachio)
+                        Text(vm.ingredientCount == 0
+                             ? "Add ingredients to see recipe matches."
+                             : "No matches found. Try adding more ingredients.")
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.matcha)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(ChefitSpacing.twoXL)
+                } else {
+                    if !vm.readyMatches.isEmpty {
+                        Text("Ready to make")
+                            .font(ChefitTypography.h3())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                        recipeList(vm.readyMatches)
+                    }
+                    if !vm.almostMatches.isEmpty {
+                        Text("Almost there")
+                            .font(ChefitTypography.h3())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .padding(.top, ChefitSpacing.sm)
+                        recipeList(vm.almostMatches)
                     }
                 }
             }
             .padding(ChefitSpacing.md)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private func recipeList(_ matches: [RecipeMatch]) -> some View {
+        VStack(spacing: ChefitSpacing.md) {
+            ForEach(matches) { match in
+                recipeCard(match)
+                    .onTapGesture { onRecipeTap(match.recipe.id) }
+            }
+        }
+    }
+
+    private func recipeCard(_ match: RecipeMatch) -> some View {
+        HStack(spacing: ChefitSpacing.sm) {
+            AsyncImage(url: match.recipe.imageURL) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
+            }
+            .frame(width: 60, height: 60)
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(match.recipe.title)
+                    .font(ChefitTypography.h3())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                    .lineLimit(1)
+                HStack(spacing: ChefitSpacing.xs) {
+                    Text("\(match.recipe.cookingMinutes) min · \(match.recipe.difficulty.rawValue.capitalized)")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("·")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("\(match.coveragePercent)% match")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(match.status == .ready ? ChefitColors.sageGreen : ChefitColors.peach)
+                }
+            }
+            Spacer()
+            Button {
+                if favorites.contains(match.recipe.id) { favorites.remove(match.recipe.id) }
+                else { favorites.insert(match.recipe.id) }
+            } label: {
+                Image(systemName: favorites.contains(match.recipe.id) ? "heart.fill" : "heart")
+                    .foregroundStyle(favorites.contains(match.recipe.id) ? ChefitColors.peach : ChefitColors.matcha)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(ChefitSpacing.sm)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .chefitCardShadow()
     }
 }
 

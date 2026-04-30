@@ -27,16 +27,13 @@ struct ChefitRootCoordinatorView: View {
         ingredientStore: IngredientStore.live(),
         scanService: VisionScanService()
     )
+    @StateObject private var recommendationsVM = RecommendationsViewModel(
+        ingredientStore: IngredientStore.live()
+    )
 
     var body: some View {
-        ZStack {
-            routeView
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if scanVM.phase == .analyzing {
-                scanningOverlay
-            }
-        }
+        routeView
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ChefitColors.cream.ignoresSafeArea(edges: .all))
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if showsBottomNav {
@@ -84,6 +81,9 @@ struct ChefitRootCoordinatorView: View {
             case .profile:  selectedTab = .profile
             default: break
             }
+            if case .recommendations = newValue {
+                Task { await recommendationsVM.refresh() }
+            }
         }
         .onChange(of: scanVM.phase) { _, phase in
             switch phase {
@@ -109,24 +109,6 @@ struct ChefitRootCoordinatorView: View {
         let source = pendingSource
         pendingImageData = nil
         Task { await scanVM.beginScan(imageData: data, source: source) }
-    }
-
-    private var scanningOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.4).ignoresSafeArea()
-            VStack(spacing: ChefitSpacing.md) {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(ChefitColors.white)
-                    .scaleEffect(1.4)
-                Text("Scanning ingredients…")
-                    .font(ChefitTypography.label())
-                    .foregroundStyle(ChefitColors.white)
-            }
-            .padding(ChefitSpacing.twoXL)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
-        }
     }
 
     private var showsBottomNav: Bool {
@@ -156,18 +138,28 @@ struct ChefitRootCoordinatorView: View {
             }
         case .scan:
             ChefitScanPantryView(
+                previewImageData: pendingImageData ?? scanVM.draft?.imageData,
+                isAnalyzing: scanVM.phase == .analyzing,
                 onScanNow: { showCamera = true },
                 onAddManually: { showPhotoLibrary = true }
             )
         case .detectedIngredients:
             ChefitDetectedIngredientsView(
                 candidates: scanVM.candidates,
-                onFindRecipes: { route = .recommendations }
+                message: scanVM.message,
+                onToggleCandidate: scanVM.toggleCandidate,
+                onAddManualCandidate: scanVM.addManualCandidate,
+                onFindRecipes: {
+                    if scanVM.confirmSelected() {
+                        route = .recommendations
+                    }
+                }
             )
         case .recommendations:
-            ChefitRecommendationsView { recipeID in
-                route = .recipeDiscover(id: recipeID)
-            }
+            ChefitRecommendationsView(
+                vm: recommendationsVM,
+                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) }
+            )
         case .shoppingList:
             ChefitShoppingListView()
         case .saved:
