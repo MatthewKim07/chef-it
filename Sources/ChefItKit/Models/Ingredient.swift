@@ -7,6 +7,7 @@ public struct Ingredient: Identifiable, Hashable, Codable, Sendable {
     public let category: IngredientCategory
     public let source: IngredientSource
     public let addedAt: Date
+    public let expiresAt: Date?
 
     public init(
         id: UUID = UUID(),
@@ -14,7 +15,8 @@ public struct Ingredient: Identifiable, Hashable, Codable, Sendable {
         canonicalName: String,
         category: IngredientCategory = .other,
         source: IngredientSource = .manual,
-        addedAt: Date = Date()
+        addedAt: Date = Date(),
+        expiresAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -22,6 +24,17 @@ public struct Ingredient: Identifiable, Hashable, Codable, Sendable {
         self.category = category
         self.source = source
         self.addedAt = addedAt
+        self.expiresAt = expiresAt
+    }
+
+    /// Returns `1` when freshly added and trends toward `0` as it approaches expiry.
+    /// `nil` means this ingredient has no explicit expiry metadata.
+    public func freshness(now: Date = Date()) -> Double? {
+        guard let expiresAt else { return nil }
+        let total = expiresAt.timeIntervalSince(addedAt)
+        guard total > 0 else { return 0 }
+        let remaining = expiresAt.timeIntervalSince(now)
+        return min(max(remaining / total, 0), 1)
     }
 }
 

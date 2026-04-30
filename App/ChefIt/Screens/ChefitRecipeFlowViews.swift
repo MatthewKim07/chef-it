@@ -1,91 +1,347 @@
-import SwiftUI
 import ChefItKit
+import SwiftUI
 
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
     let onViewRecipe: () -> Void
+
+    @EnvironmentObject private var shoppingCart: ShoppingCartViewModel
+    @EnvironmentObject private var ingredientStore: IngredientStore
+
     @State private var isFavorite: Bool = false
+    @State private var showCartSheet = false
+
+    private struct IngredientStatus: Hashable {
+        let name: String
+        let symbol: String
+        let quantity: String
+        let isAvailable: Bool
+    }
+
+    private var ingredientStatuses: [IngredientStatus] {
+        let normalizer = IngredientNormalizer()
+        let pantry = ingredientStore.canonicalSet
+        var seen = Set<String>()
+        var rows: [IngredientStatus] = []
+        for (symbol, name, qty) in ChefitSampleData.ingredientRows(forRecipeId: recipe.id) {
+            let canonical = normalizer.canonicalize(name)
+            guard !seen.contains(canonical) else { continue }
+            seen.insert(canonical)
+            rows.append(
+                IngredientStatus(
+                    name: name,
+                    symbol: symbol,
+                    quantity: qty,
+                    isAvailable: pantry.contains(canonical)
+                )
+            )
+        }
+        return rows.sorted { ($0.isAvailable ? 0 : 1, $0.name) < ($1.isAvailable ? 0 : 1, $1.name) }
+    }
+
+    private var availableCount: Int { ingredientStatuses.filter(\.isAvailable).count }
+    private var totalCount: Int { ingredientStatuses.count }
+    private var missingCount: Int { totalCount - availableCount }
+    private var hasEverything: Bool { missingCount == 0 && totalCount > 0 }
+
+    private var matchPercent: Int {
+        guard totalCount > 0 else { return 0 }
+        return Int((Double(availableCount) / Double(totalCount) * 100).rounded())
+    }
+
+    private var heroBadgeText: String {
+        if hasEverything { return "Ready to cook" }
+        if matchPercent >= 60 { return "\(matchPercent)% Match" }
+        if recipe.minutes <= 20 { return "Quick" }
+        return "Popular"
+    }
+
+    private var pantryHeadline: String {
+        if totalCount == 0 { return "Pantry match" }
+        if hasEverything { return "You've got everything you need" }
+        if missingCount == 1 { return "You're 1 ingredient away" }
+        return "You're \(missingCount) ingredients away"
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                ZStack(alignment: .bottomLeading) {
-                    AsyncImage(url: recipe.imageURL) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
-                    }
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+            heroSection
+            metadataRow
+            pantrySection
+            actionStack
+        }
+        .padding(.horizontal, ChefitSpacing.md)
+        .padding(.top, ChefitSpacing.sm)
+        .padding(.bottom, ChefitSpacing.sm)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(ChefitColors.cream.ignoresSafeArea())
+        .sheet(isPresented: $showCartSheet) {
+            NavigationStack {
+                ChefitShoppingListView(showDismissButton: true)
+                    .environmentObject(shoppingCart)
+            }
+        }
+    }
 
-                    LinearGradient(
-                        colors: [.clear, .black.opacity(0.45)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+    private var heroSection: some View {
+        ZStack(alignment: .bottomLeading) {
+            AsyncImage(url: recipe.imageURL) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                RoundedRectangle(cornerRadius: ChefitRadius.lg).fill(ChefitColors.pistachio)
+            }
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
 
-                    Text(recipe.title)
-                        .font(ChefitTypography.h2())
-                        .foregroundStyle(ChefitColors.white)
-                        .padding(ChefitSpacing.md)
+            LinearGradient(
+                colors: [
+                    .clear,
+                    .black.opacity(0.05),
+                    .black.opacity(0.55)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
+
+            Text(recipe.title)
+                .font(ChefitTypography.h2())
+                .foregroundStyle(ChefitColors.white)
+                .shadow(color: .black.opacity(0.35), radius: 6, x: 0, y: 2)
+                .padding(.horizontal, ChefitSpacing.md)
+                .padding(.bottom, ChefitSpacing.sm)
+        }
+        .frame(height: 200)
+        .overlay(alignment: .topLeading) {
+            heroBadge
+                .padding(ChefitSpacing.md)
+        }
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: ChefitSpacing.sm) {
+                circularGlassButton(systemName: isFavorite ? "heart.fill" : "heart") {
+                    isFavorite.toggle()
                 }
-                .overlay(alignment: .topTrailing) {
-                    HStack(spacing: ChefitSpacing.sm) {
-                        Button { isFavorite.toggle() } label: {
-                            Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        }
-                        Button {} label: {
-                            Image(systemName: "ellipsis")
-                        }
-                    }
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(ChefitColors.white)
-                    .padding(ChefitSpacing.md)
-                }
-
-                Text(recipe.title)
-                    .font(ChefitTypography.h2())
-                    .foregroundStyle(ChefitColors.sageGreen)
-
-                HStack(spacing: 6) {
-                    Image(systemName: ChefitSymbol.clock)
-                    Text("\(recipe.minutes) min")
-                    Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
-                    Image(systemName: ChefitSymbol.star)
-                    Text(recipe.difficulty)
-                    Text("·").foregroundStyle(ChefitColors.matcha.opacity(0.55))
-                    Image(systemName: ChefitSymbol.personServings)
-                    Text("2 servings")
-                }
-                .font(ChefitTypography.micro())
-                .foregroundStyle(ChefitColors.matcha)
-
-                HStack {
-                    Text("Ingredients")
-                        .font(ChefitTypography.h3())
-                        .foregroundStyle(ChefitColors.sageGreen)
-                    Spacer()
-                    Text("See all")
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.peach)
-                }
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: ChefitSpacing.sm) {
-                        ForEach(ChefitSampleData.ingredientChips, id: \.0) { item in
-                            ChefitIngredientChip(label: item.0, systemImage: item.1)
-                        }
-                    }
-                }
-
-                Button("View Recipe", action: onViewRecipe)
-                    .buttonStyle(ChefitPrimaryButtonStyle())
-                    .padding(.top, ChefitSpacing.md)
+                circularGlassButton(systemName: "ellipsis") {}
             }
             .padding(ChefitSpacing.md)
         }
-        .background(ChefitColors.cream.ignoresSafeArea())
+    }
+
+    private var heroBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: hasEverything ? "checkmark.circle.fill" : "sparkles")
+                .font(.system(size: 11, weight: .bold))
+            Text(heroBadgeText)
+                .font(ChefitTypography.micro())
+                .fontWeight(.bold)
+        }
+        .foregroundStyle(ChefitColors.sageGreen)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(ChefitColors.white.opacity(0.92))
+        .clipShape(Capsule(style: .continuous))
+        .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 1)
+    }
+
+    private func circularGlassButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(ChefitColors.white)
+                .frame(width: 34, height: 34)
+                .background(.ultraThinMaterial, in: Circle())
+                .background(Color.black.opacity(0.18), in: Circle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var metadataRow: some View {
+        HStack(spacing: ChefitSpacing.sm) {
+            metadataPill(symbol: ChefitSymbol.clock, text: "\(recipe.minutes) min")
+            metadataPill(symbol: ChefitSymbol.star, text: recipe.difficulty)
+            metadataPill(symbol: ChefitSymbol.personServings, text: "2 servings")
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func metadataPill(symbol: String, text: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .semibold))
+            Text(text)
+                .font(ChefitTypography.label())
+        }
+        .foregroundStyle(ChefitColors.sageGreen)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(ChefitColors.pistachio.opacity(0.7))
+        .clipShape(Capsule(style: .continuous))
+    }
+
+    private var pantrySection: some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Based on your pantry")
+                    .font(ChefitTypography.micro())
+                    .fontWeight(.semibold)
+                    .foregroundStyle(ChefitColors.matcha)
+                    .textCase(.uppercase)
+                    .tracking(0.6)
+                Text(pantryHeadline)
+                    .font(ChefitTypography.h3())
+                    .foregroundStyle(ChefitColors.sageGreen)
+            }
+
+            progressIndicator
+
+            if availableCount > 0 {
+                ingredientGroup(
+                    title: "In your pantry",
+                    countText: "\(availableCount)",
+                    items: ingredientStatuses.filter(\.isAvailable),
+                    available: true
+                )
+            }
+
+            if missingCount > 0 {
+                ingredientGroup(
+                    title: "You're missing",
+                    countText: "\(missingCount)",
+                    items: ingredientStatuses.filter { !$0.isAvailable },
+                    available: false
+                )
+            }
+        }
+        .padding(ChefitSpacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.lg, style: .continuous))
+        .chefitCardShadow()
+    }
+
+    private var progressIndicator: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("\(availableCount)/\(totalCount) ingredients available")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
+                Text("\(matchPercent)%")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.peach)
+            }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(ChefitColors.pistachio)
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [ChefitColors.matcha, ChefitColors.sageGreen],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: geo.size.width * CGFloat(max(0, min(1, Double(availableCount) / Double(max(totalCount, 1))))))
+                }
+            }
+            .frame(height: 8)
+        }
+    }
+
+    private func ingredientGroup(
+        title: String,
+        countText: String,
+        items: [IngredientStatus],
+        available: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(available ? ChefitColors.sageGreen : ChefitColors.matcha)
+                Text(countText)
+                    .font(ChefitTypography.micro())
+                    .fontWeight(.bold)
+                    .foregroundStyle(available ? ChefitColors.sageGreen : ChefitColors.matcha)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule().fill(
+                            (available ? ChefitColors.matcha : ChefitColors.pistachio).opacity(available ? 0.35 : 1)
+                        )
+                    )
+                Spacer()
+            }
+            FlowLayout(spacing: ChefitSpacing.sm) {
+                ForEach(items, id: \.self) { item in
+                    statusChip(item)
+                }
+            }
+        }
+    }
+
+    private func statusChip(_ item: IngredientStatus) -> some View {
+        let foreground = item.isAvailable ? ChefitColors.sageGreen : ChefitColors.matcha
+        let background = item.isAvailable ? ChefitColors.matcha.opacity(0.22) : ChefitColors.pistachio.opacity(0.55)
+        let border = item.isAvailable ? ChefitColors.matcha.opacity(0.55) : ChefitColors.matcha.opacity(0.25)
+        return HStack(spacing: 6) {
+            Image(systemName: item.symbol)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(foreground)
+            Text(item.name)
+                .font(ChefitTypography.label())
+                .foregroundStyle(foreground)
+            Text(item.quantity)
+                .font(ChefitTypography.micro())
+                .foregroundStyle(foreground.opacity(0.75))
+            Image(systemName: item.isAvailable ? "checkmark.circle.fill" : "plus.circle")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(foreground.opacity(item.isAvailable ? 1 : 0.7))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(background)
+        .overlay(
+            Capsule(style: .continuous).stroke(border, lineWidth: 1)
+        )
+        .clipShape(Capsule(style: .continuous))
+        .opacity(item.isAvailable ? 1 : 0.95)
+    }
+
+    @ViewBuilder
+    private var actionStack: some View {
+        VStack(spacing: ChefitSpacing.sm) {
+            if hasEverything {
+                Button(action: onViewRecipe) {
+                    HStack {
+                        Image(systemName: "play.fill")
+                        Text("Start Cooking")
+                    }
+                }
+                .buttonStyle(ChefitPrimaryButtonStyle())
+            } else {
+                Button {
+                    shoppingCart.loadFromRecipe(
+                        recipeId: recipe.id,
+                        pantryCanonical: ingredientStore.canonicalSet
+                    )
+                    showCartSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "cart.badge.plus")
+                        Text("Grab what you're missing")
+                    }
+                }
+                .buttonStyle(ChefitPrimaryButtonStyle())
+            }
+
+            Button(action: onViewRecipe) {
+                Text("View Recipe")
+            }
+            .buttonStyle(ChefitSecondaryButtonStyle())
+        }
     }
 }
 
@@ -126,6 +382,7 @@ struct ChefitRecipeDetailsView: View {
     }
 
     let recipe: ChefitRecipeItem
+    let onBack: () -> Void
     let onStartCooking: () -> Void
 
     @EnvironmentObject private var authService: AuthService
@@ -148,8 +405,13 @@ struct ChefitRecipeDetailsView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: ChefitSpacing.md) {
                 HStack {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(ChefitColors.sageGreen)
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     Spacer()
                     Image(systemName: "ellipsis")
                         .foregroundStyle(ChefitColors.sageGreen)
@@ -164,7 +426,8 @@ struct ChefitRecipeDetailsView: View {
                 }
             }
             .padding(ChefitSpacing.md)
-
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
                 onStartCooking()
             } label: {
@@ -173,10 +436,11 @@ struct ChefitRecipeDetailsView: View {
                     Spacer()
                     Image(systemName: "play.fill")
                 }
+                .padding(.horizontal, ChefitSpacing.sm)
             }
             .buttonStyle(ChefitPrimaryButtonStyle())
             .padding(ChefitSpacing.md)
-            .background(ChefitColors.cream.ignoresSafeArea())
+            .background(ChefitColors.cream.ignoresSafeArea(edges: .bottom))
         }
         .background(ChefitColors.cream.ignoresSafeArea())
         .task { await reviewsVM.load(recipeId: recipe.id) }
