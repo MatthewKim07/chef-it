@@ -110,16 +110,16 @@ public final class IngredientStore: ObservableObject {
         persist()
     }
 
-    /// Convenience factory wired with the default persistence backing.
-    /// Use in app entry points; tests should construct the store directly
-    /// with an `InMemoryIngredientPersister` so they stay isolated.
-    public static func live(
-        normalizer: IngredientNormalizer = IngredientNormalizer()
-    ) -> IngredientStore {
-        IngredientStore(
-            normalizer: normalizer,
-            persister: UserDefaultsIngredientPersister()
-        )
+    /// Shared live store for the running app. Returns the same instance on
+    /// every call so scan, recommendations, and pantry all observe one source
+    /// of truth. Tests should construct their own store with InMemoryIngredientPersister.
+    @MainActor
+    public static func live() -> IngredientStore {
+        LiveStore.shared
+    }
+
+    private enum LiveStore {
+        @MainActor static let shared = IngredientStore(persister: UserDefaultsIngredientPersister())
     }
 
     /// Rename an existing ingredient. Re-runs canonicalization; if the new
