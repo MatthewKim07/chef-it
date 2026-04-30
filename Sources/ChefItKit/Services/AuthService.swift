@@ -78,7 +78,7 @@ public final class AuthService: ObservableObject {
         do {
             (data, response) = try await URLSession.shared.data(for: request)
         } catch let urlError as URLError {
-            throw AuthError.networkError(urlError.localizedDescription)
+            throw AuthError.networkError(Self.connectionHint(for: urlError, baseURL: baseURL))
         }
 
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -112,6 +112,30 @@ public final class AuthService: ObservableObject {
             .first { value in
                 !value.isEmpty && !value.hasPrefix("$(")
             }
+    }
+
+    /// Clearer than raw URLError when the API isn't reachable (backend down, wrong host, device + localhost).
+    private static func connectionHint(for error: URLError, baseURL: String) -> String {
+        switch error.code {
+        case .cannotConnectToHost, .cannotFindHost, .timedOut, .networkConnectionLost:
+            var parts: [String] = ["can't reach \(baseURL)."]
+            #if os(iOS)
+            if !ProcessInfo.processInfo.isiOSAppOnMac {
+                #if !targetEnvironment(simulator)
+                let lower = baseURL.lowercased()
+                if lower.contains("127.0.0.1") || lower.contains("localhost") {
+                    parts.append(
+                        "On a real iPhone/iPad, localhost is the device itself — set AUTH_BASE_URL in Secrets.xcconfig to your Mac's LAN IP (e.g. http://192.168.x.x:3000)."
+                    )
+                }
+                #endif
+            }
+            #endif
+            parts.append("Start the API from the repo: cd backend && npm install && npm run dev")
+            return parts.joined(separator: " ")
+        default:
+            return error.localizedDescription
+        }
     }
 
     // MARK: - Keychain

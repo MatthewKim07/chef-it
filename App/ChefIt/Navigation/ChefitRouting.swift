@@ -77,9 +77,14 @@ struct ChefitRootCoordinatorView: View {
                 route = .home
             }
         case .search:
-            ChefitSearchView { recipeID in
-                route = .recipeDiscover(id: recipeID)
-            }
+            ChefitSearchView(
+                onResultTap: { recipeID in
+                    route = .recipeDiscover(id: recipeID)
+                },
+                onBack: {
+                    route = .home
+                }
+            )
         case .recipeDiscover(let id):
             let recipe = homeFeed.recipeByID[id]
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
@@ -87,10 +92,11 @@ struct ChefitRootCoordinatorView: View {
             ChefitRecipeDiscoveryView(recipe: recipe) {
                 route = .recipeDetails(id: id)
             }
-        case .recipeDetails:
-            ChefitRecipeDetailsView {
-                route = .recipeDetails(id: "cooking-mode")
-            }
+        case .recipeDetails(let id):
+            ChefitRecipeDetailsView(
+                onBack: { route = .recipeDiscover(id: id) },
+                onStartCooking: { route = .recipeDetails(id: "cooking-mode") }
+            )
         case .scan:
             ChefitScanPantryView(
                 onScanNow: {

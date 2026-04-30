@@ -152,6 +152,7 @@ struct ChefitRecipeDetailsView: View {
         case notes = "Notes"
     }
 
+    let onBack: () -> Void
     let onStartCooking: () -> Void
     @State private var selectedTab: RecipeTab = .ingredients
 
@@ -159,8 +160,13 @@ struct ChefitRecipeDetailsView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: ChefitSpacing.md) {
                 HStack {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(ChefitColors.sageGreen)
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     Spacer()
                     Image(systemName: "ellipsis")
                         .foregroundStyle(ChefitColors.sageGreen)
@@ -174,7 +180,8 @@ struct ChefitRecipeDetailsView: View {
                 }
             }
             .padding(ChefitSpacing.md)
-
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
                 onStartCooking()
             } label: {
@@ -183,10 +190,11 @@ struct ChefitRecipeDetailsView: View {
                     Spacer()
                     Image(systemName: "play.fill")
                 }
+                .padding(.horizontal, ChefitSpacing.sm)
             }
             .buttonStyle(ChefitPrimaryButtonStyle())
             .padding(ChefitSpacing.md)
-            .background(ChefitColors.cream.ignoresSafeArea())
+            .background(ChefitColors.cream.ignoresSafeArea(edges: .bottom))
         }
         .background(ChefitColors.cream.ignoresSafeArea())
     }

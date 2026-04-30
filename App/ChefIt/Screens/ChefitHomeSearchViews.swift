@@ -20,9 +20,11 @@ struct ChefitHomeView: View {
                         Text("Hello Chef!")
                             .font(.custom("Nunito-Bold", size: 37))
                             .foregroundStyle(ChefitColors.text)
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(ChefitColors.peach)
+                        Image("ChefitSplashMascot")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
                         Spacer()
                         Image(systemName: "bell")
                             .font(.system(size: 24, weight: .regular))
@@ -69,7 +71,6 @@ struct ChefitHomeView: View {
                     }
 
                     forYouSection(recipeCardWidth: recipeCardWidth)
-                    useSoonSection(recipeCardWidth: recipeCardWidth)
                 }
                 .padding(.horizontal, horizontalInset)
                 .padding(.bottom, 20)
@@ -105,7 +106,7 @@ struct ChefitHomeView: View {
     @ViewBuilder
     private func forYouSection(recipeCardWidth: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("For You Tonight")
+            Text("For You")
                 .font(.custom("Nunito-Bold", size: 36))
                 .foregroundStyle(ChefitColors.text)
 
@@ -133,39 +134,6 @@ struct ChefitHomeView: View {
         .padding(.top, 4)
     }
 
-    @ViewBuilder
-    private func useSoonSection(recipeCardWidth: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Text("Use These Soon")
-                    .font(.custom("Nunito-Bold", size: 32))
-                    .foregroundStyle(ChefitColors.text)
-                Text("⚠️")
-                    .font(.system(size: 20))
-            }
-
-            Text("Before they go bad")
-                .font(.custom("Nunito-SemiBold", size: 13))
-                .foregroundStyle(ChefitColors.sageGreen)
-
-            if homeFeed.expiringRecipes.isEmpty {
-                Text("No expiring ingredients right now.")
-                    .font(.custom("Nunito-SemiBold", size: 13))
-                    .foregroundStyle(ChefitColors.matcha)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(homeFeed.expiringRecipes) { model in
-                            ChefitHomeRecipeCard(model: model, isUseSoonCard: true) {
-                                onRecipeTap(model.id)
-                            }
-                            .frame(width: recipeCardWidth)
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 private struct ChefitHomeRecipeCard: View {
@@ -346,13 +314,19 @@ struct ChefitMyIngredientsView: View {
 
 struct ChefitSearchView: View {
     let onResultTap: (String) -> Void
+    let onBack: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
                 HStack(spacing: ChefitSpacing.sm) {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(ChefitColors.sageGreen)
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     ChefitSearchBar(
                         placeholder: "Search recipes, ingredients…",
                         showsFilter: true,
