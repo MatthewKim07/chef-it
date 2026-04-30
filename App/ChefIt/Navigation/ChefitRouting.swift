@@ -2,8 +2,6 @@ import SwiftUI
 import ChefItKit
 
 enum ChefitRoute: Hashable {
-    case splash
-    case auth
     case home
     case search
     case recipeDiscover(id: String)
@@ -59,25 +57,12 @@ struct ChefitRootCoordinatorView: View {
     }
 
     private var showsBottomNav: Bool {
-        switch route {
-        case .splash, .auth:
-            return false
-        default:
-            return true
-        }
+        true
     }
 
     @ViewBuilder
     private var routeView: some View {
         switch route {
-        case .splash:
-            ChefitSplashView {
-                route = .auth
-            }
-        case .auth:
-            ChefitAuthView {
-                route = .home
-            }
         case .home:
             ChefitHomeView(
                 onSearchTap: { route = .search },

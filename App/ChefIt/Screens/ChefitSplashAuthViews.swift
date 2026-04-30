@@ -1,4 +1,5 @@
 import SwiftUI
+import ChefItKit
 
 struct ChefitSplashView: View {
     let onGetStarted: () -> Void
@@ -18,24 +19,23 @@ struct ChefitSplashView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 28)
 
-            ChefitSplashChefHatPlaceholder()
-                .padding(.bottom, 28)
+            Image("ChefitSplashMascot")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: 240, maxHeight: 240)
+                .padding(.bottom, 4)
+                .accessibilityLabel("Chefit mascot, chef hat")
 
-            Text("chefit")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundStyle(ChefitColors.splashBrandGreen)
-                .tracking(-0.5)
-                .padding(.bottom, 14)
-
-            HStack(alignment: .center, spacing: 6) {
-                Text("scan. cook. enjoy.")
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(Color.black)
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(ChefitColors.splashButtonGradientTop)
-            }
-            .padding(.bottom, 36)
+            Image("ChefitSplashWordmark")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: 320)
+                .padding(.horizontal, ChefitSpacing.lg)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
+                .accessibilityLabel("Chefit, scan cook enjoy")
 
             HStack(spacing: 14) {
                 ForEach(Array(ingredientPlaceholderSymbols.enumerated()), id: \.offset) { _, item in
@@ -47,6 +47,7 @@ struct ChefitSplashView: View {
                 }
             }
             .padding(.horizontal, ChefitSpacing.sm)
+            .padding(.top, 20)
             .padding(.bottom, 28)
 
             HStack(spacing: 10) {
@@ -92,158 +93,177 @@ struct ChefitSplashView: View {
     }
 }
 
-// MARK: - Chef hat placeholder (replace with asset when ready)
+// MARK: - Guest flow (welcome → sign-in options → email auth)
 
-private struct ChefitSplashChefHatPlaceholder: View {
-    private let outline: CGFloat = 5
+struct ChefitGuestFlowView: View {
+    @EnvironmentObject private var authService: AuthService
+
+    /// Linear stack avoids `fullScreenCover` presenting over the welcome screen on some OS versions.
+    @State private var path: [GuestDestination] = []
+
+    private enum GuestDestination: Hashable {
+        case authHub
+        case emailLogin
+        case register
+    }
 
     var body: some View {
-        ZStack {
-            ZStack {
-                Ellipse()
-                    .fill(ChefitColors.white)
-                    .stroke(ChefitColors.splashHatOutline, lineWidth: outline)
-                    .frame(width: 168, height: 122)
-                    .offset(y: -44)
-
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(ChefitColors.white)
-                    .stroke(ChefitColors.splashHatOutline, lineWidth: outline)
-                    .frame(width: 178, height: 54)
-                    .offset(y: 36)
+        NavigationStack(path: $path) {
+            ChefitSplashView {
+                path.append(.authHub)
             }
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: GuestDestination.self) { destination in
+                switch destination {
+                case .authHub:
+                    ChefitAuthView(
+                        onBack: {
+                            if !path.isEmpty { path.removeLast() }
+                        },
+                        onEmail: { path.append(.emailLogin) },
+                        onLogIn: { path.append(.emailLogin) }
+                    )
+                    .toolbar(.hidden, for: .navigationBar)
 
-            HStack(spacing: -2) {
-                ChefitSplashLeafShape()
-                    .fill(ChefitColors.splashLeafGreen)
-                    .frame(width: 24, height: 30)
-                    .rotationEffect(.degrees(-28))
-                ChefitSplashLeafShape()
-                    .fill(ChefitColors.splashLeafGreen)
-                    .frame(width: 24, height: 30)
-                    .rotationEffect(.degrees(28))
-            }
-            .offset(y: -72)
+                case .emailLogin:
+                    LoginView(onNavigateToRegister: {
+                        path.append(.register)
+                    })
+                    .environmentObject(authService)
 
-            ZStack {
-                HStack(spacing: 56) {
-                    Circle()
-                        .fill(ChefitColors.splashBlush.opacity(0.55))
-                        .frame(width: 16, height: 16)
-                    Circle()
-                        .fill(ChefitColors.splashBlush.opacity(0.55))
-                        .frame(width: 16, height: 16)
+                case .register:
+                    RegisterView()
+                        .environmentObject(authService)
                 }
-                .offset(y: 34)
-
-                HStack(spacing: 30) {
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 9, height: 9)
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 9, height: 9)
-                }
-                .offset(y: 24)
-
-                ChefitSplashSmileCurve()
-                    .stroke(Color.black, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .frame(width: 30, height: 14)
-                    .offset(y: 38)
             }
-            .offset(y: 4)
         }
-        .frame(width: 220, height: 210)
-        .accessibilityLabel("Chefit logo, chef hat with a smile")
     }
 }
 
-private struct ChefitSplashLeafShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.maxY),
-            control: CGPoint(x: rect.maxX, y: rect.midY)
-        )
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.minY),
-            control: CGPoint(x: rect.minX, y: rect.midY)
-        )
-        path.closeSubpath()
-        return path
-    }
-}
-
-private struct ChefitSplashSmileCurve: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(
-            center: CGPoint(x: rect.midX, y: rect.minY),
-            radius: rect.width / 2,
-            startAngle: .degrees(180),
-            endAngle: .degrees(0),
-            clockwise: false
-        )
-        return path
-    }
-}
-
-// MARK: - Auth
+// MARK: - Sign-in options (after Get Started)
 
 struct ChefitAuthView: View {
-    let onContinue: () -> Void
+    var onBack: (() -> Void)?
+    let onEmail: () -> Void
+    var onGoogle: () -> Void = {}
+    var onApple: () -> Void = {}
+    let onLogIn: () -> Void
+
+    private let outlineGray = Color(red: 0.78, green: 0.78, blue: 0.78)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-            HStack {
-                Image(systemName: "chevron.left")
-                Text("chefit")
-                    .font(ChefitTypography.label())
-                Spacer()
+        ScrollView {
+            VStack(spacing: 0) {
+                HStack {
+                    if let onBack {
+                        Button {
+                            onBack()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(ChefitColors.sageGreen)
+                        .accessibilityLabel("Back to welcome")
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, ChefitSpacing.md)
+                .padding(.top, 8)
+
+                Image("ChefitSplashMascot")
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(maxWidth: 200, maxHeight: 200)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, ChefitSpacing.md)
+                    .padding(.top, 12)
+                    .padding(.bottom, 16)
+                    .accessibilityLabel("Chefit mascot, chef hat")
+
+                Text("Welcome!")
+                    .font(.custom("PlayfairDisplay-Bold", size: 34))
+                    .foregroundStyle(ChefitColors.sageGreen)
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 28)
+
+                VStack(spacing: 12) {
+                    chefitAuthOutlineButton(
+                        title: "Continue with Email",
+                        icon: { Image(systemName: "envelope.fill").foregroundStyle(Color.primary) },
+                        action: onEmail
+                    )
+                    chefitAuthOutlineButton(
+                        title: "Continue with Google",
+                        icon: { googleGlyph },
+                        action: onGoogle
+                    )
+                    chefitAuthOutlineButton(
+                        title: "Continue with Apple",
+                        icon: { Image(systemName: "apple.logo").font(.system(size: 22, weight: .semibold)) },
+                        action: onApple
+                    )
+                }
+                .padding(.horizontal, ChefitSpacing.lg)
+
+                Button(action: onLogIn) {
+                    Text("Log in")
+                        .font(ChefitTypography.button())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                        .underline()
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 28)
+                .padding(.bottom, ChefitSpacing.twoXL)
             }
-            .foregroundStyle(ChefitColors.sageGreen)
-
-            Text("Welcome!")
-                .font(ChefitTypography.h1())
-                .foregroundStyle(ChefitColors.sageGreen)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("Let's get cooking")
-                    .font(ChefitTypography.body())
-                    .foregroundStyle(ChefitColors.matcha)
-                Image(systemName: ChefitSymbol.heart)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(ChefitColors.peach)
-            }
-
-            authButton(icon: "envelope", title: "Continue with Email")
-            authButton(icon: "g.circle", title: "Continue with Google")
-            authButton(icon: "apple.logo", title: "Continue with Apple")
-
-            HStack {
-                Rectangle().fill(ChefitColors.matcha.opacity(0.4)).frame(height: 1)
-                Text("or").font(ChefitTypography.label()).foregroundStyle(ChefitColors.matcha)
-                Rectangle().fill(ChefitColors.matcha.opacity(0.4)).frame(height: 1)
-            }
-
-            Button("Log In", action: onContinue)
-                .font(ChefitTypography.button())
-                .foregroundStyle(ChefitColors.sageGreen)
-                .underline()
-
-            Spacer()
+            .frame(maxWidth: .infinity)
         }
-        .padding(ChefitSpacing.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(ChefitColors.cream.ignoresSafeArea())
     }
 
-    private func authButton(icon: String, title: String) -> some View {
-        Button(action: onContinue) {
-            Label(title, systemImage: icon)
-                .frame(maxWidth: .infinity)
+    private var googleGlyph: some View {
+        Text("G")
+            .font(.system(size: 18, weight: .bold))
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.26, green: 0.52, blue: 0.96),
+                        Color(red: 0.92, green: 0.25, blue: 0.21),
+                        Color(red: 0.98, green: 0.74, blue: 0.18),
+                        Color(red: 0.20, green: 0.66, blue: 0.33)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 24, height: 24)
+    }
+
+    private func chefitAuthOutlineButton(
+        title: String,
+        @ViewBuilder icon: () -> some View,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                icon()
+                    .frame(width: 24, height: 24)
+                Text(title)
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.text)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(ChefitColors.white)
+            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous)
+                    .stroke(outlineGray, lineWidth: 1)
+            )
         }
-        .buttonStyle(ChefitSecondaryButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
@@ -251,4 +271,8 @@ struct ChefitAuthView: View {
     GeometryReader { _ in
         ChefitSplashView(onGetStarted: {})
     }
+}
+
+#Preview("Auth options") {
+    ChefitAuthView(onBack: {}, onEmail: {}, onLogIn: {})
 }
