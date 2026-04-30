@@ -878,10 +878,12 @@ struct ChefitProfileView: View {
     let onLogout: () -> Void
 
     @EnvironmentObject private var authService: AuthService
+    @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
     @StateObject private var vm = ProfileViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var showCreatePost = false
     @State private var selectedPost: Post?
+    @State private var showLogoutConfirm = false
 
     private var userId: Int? { authService.currentUser?.id }
     private var displayName: String {
@@ -895,16 +897,34 @@ struct ChefitProfileView: View {
                 if let msg = vm.errorMessage { errorBanner(msg) }
                 postsSection
                 menuCard
+                logoutButton
             }
             .padding(ChefitSpacing.md)
             .padding(.bottom, ChefitSpacing.twoXL)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+        .confirmationDialog(
+            "Sign out of Chefit?",
+            isPresented: $showLogoutConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Sign Out", role: .destructive, action: onLogout)
+            Button("Cancel", role: .cancel) {}
+        }
         .task {
             if let id = userId {
                 await vm.load(userId: id)
                 await vm.loadPosts(userId: id)
             }
+        }
+        .onChange(of: vm.profile?.id) { _, _ in
+            userProfileStore.update(vm.profile)
+        }
+        .onChange(of: vm.profile?.displayName) { _, _ in
+            userProfileStore.update(vm.profile)
+        }
+        .onChange(of: vm.profile?.avatarURL) { _, _ in
+            userProfileStore.update(vm.profile)
         }
         .onChange(of: selectedPhotoItem) { _, item in
             guard let item, let id = userId else { return }
@@ -1041,26 +1061,36 @@ struct ChefitProfileView: View {
             ChefitProfileMenuRow(label: "Pantry", onTap: onPantryTap)
             ChefitProfileMenuRow(label: "Settings", onTap: {})
             ChefitProfileMenuRow(label: "Help & Support", onTap: {})
-
-            Button(action: onLogout) {
-                HStack {
-                    Text("Sign Out")
-                        .font(ChefitTypography.body())
-                        .foregroundStyle(ChefitColors.peach)
-                    Spacer()
-                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                        .font(.system(size: 14, weight: .light))
-                        .foregroundStyle(ChefitColors.peach.opacity(0.8))
-                }
-                .padding(.vertical, 14)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, ChefitSpacing.md)
         .background(ChefitColors.white)
         .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
         .chefitCardShadow()
+    }
+
+    private var logoutButton: some View {
+        Button {
+            showLogoutConfirm = true
+        } label: {
+            HStack(spacing: ChefitSpacing.sm) {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                    .font(.system(size: 16, weight: .semibold))
+                Text("Sign Out")
+                    .font(ChefitTypography.button())
+            }
+            .foregroundStyle(ChefitColors.peach)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 52)
+            .background(
+                RoundedRectangle(cornerRadius: ChefitRadius.xl, style: .continuous)
+                    .fill(ChefitColors.white)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: ChefitRadius.xl, style: .continuous)
+                    .stroke(ChefitColors.peach, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Posts Section
@@ -1190,6 +1220,8 @@ private struct PostThumbnailCell: View {
 // MARK: - Edit Sheet
 
 private struct ProfileEditSheet: View {
+    static let displayNameLimit = 20
+
     @ObservedObject var vm: ProfileViewModel
     let userId: Int
     @FocusState private var focused: EditField?
@@ -1210,12 +1242,23 @@ private struct ProfileEditSheet: View {
                 }
             }
 
-            fieldLabel("Display Name")
+            HStack {
+                fieldLabel("Display Name")
+                Spacer()
+                Text("\(vm.editDisplayName.count)/\(ProfileEditSheet.displayNameLimit)")
+                    .font(ChefitTypography.micro())
+                    .foregroundStyle(ChefitColors.matcha)
+            }
             TextField("Your name", text: $vm.editDisplayName)
                 .font(ChefitTypography.body())
                 .foregroundStyle(ChefitColors.text)
                 .focused($focused, equals: .name)
                 .profileTextField(isFocused: focused == .name)
+                .onChange(of: vm.editDisplayName) { _, newValue in
+                    if newValue.count > ProfileEditSheet.displayNameLimit {
+                        vm.editDisplayName = String(newValue.prefix(ProfileEditSheet.displayNameLimit))
+                    }
+                }
 
             fieldLabel("Bio")
             TextEditor(text: $vm.editBio)

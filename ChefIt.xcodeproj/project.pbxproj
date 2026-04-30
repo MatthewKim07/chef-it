@@ -1,0 +1,694 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0117D4C37AEF9DC364A90F1E /* ChefitHomeSearchViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */; };
+		0297AD2D093EE4F6A9B4731A /* ShoppingListBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */; };
+		0B9D8E71D9840C6ED4EAEBAD /* IngredientStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */; };
+		0F2D85ACF2F7142AFC4640D0 /* RecipeDeduplicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */; };
+		2351BDE4A079B031BF8D72D9 /* IngredientPersistingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */; };
+		27175AB165AFCE66DF166861 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE6FBAF210E56C2A166565D9 /* Assets.xcassets */; };
+		294627FD986C952232649D90 /* MatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */; };
+		34C7CA0DF7482D8E62D50CA5 /* ChefItKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4895006B800D275E029B9E61 /* ChefItKit */; };
+		4889A75F6839F48976D30138 /* ChefitSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94370285F2F079AD8C032FF4 /* ChefitSampleData.swift */; };
+		4D8788170C7A8F0076F87E72 /* PostDetailFullScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08F9F112628201F55CD4D5C /* PostDetailFullScreenView.swift */; };
+		53404D12F98EEBE8D7C9AC11 /* ReviewComposerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */; };
+		5BEF47A5EA0B67C7428CB01D /* ChefItKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06D2747C84F39029B153F7B6 /* ChefItKit */; };
+		5C0229BCAE982C376C25BBE0 /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */; };
+		5FA0F1510FDDBE9C749231D7 /* Nunito-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7ABD46A4E43436514EF69B89 /* Nunito-Variable.ttf */; };
+		62D69A585073DB20BCB88BF9 /* ChefitScreensSevenToThirteen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAA9CACDB13A90D37963979 /* ChefitScreensSevenToThirteen.swift */; };
+		6BCD06B08738B18F69D40629 /* NormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1A0C314044C3F27D915395 /* NormalizerTests.swift */; };
+		6D698D77B9FE6292E5074D28 /* IngredientSuggesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E28336416D8342CD47A6700 /* IngredientSuggesterTests.swift */; };
+		7768EC12A450E33F1C3AB744 /* ShoppingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8857E427303DF570D2A704 /* ShoppingItem.swift */; };
+		8120B2CB94FA6F513106FCA4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC986BEBA1586448E69738A /* RootView.swift */; };
+		8B30FDB30C523447DD4B333E /* MatchRationaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */; };
+		95ABBFE7FDDC53DA9BD1342F /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC63472C872D506B2DCC2FBC /* FeedView.swift */; };
+		9F2E20E8880D1859C10FDEDA /* MatchRankingStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */; };
+		B12278EEF581AD118B8F3B47 /* ShoppingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B73880C06529EA6980EA1 /* ShoppingProvider.swift */; };
+		B56C46BAB5AECF5CDC433383 /* ChefitComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */; };
+		B647FB9276FF4869D2691327 /* ChefitRecipeFlowViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */; };
+		B81DDA876138B7D1E429D6D3 /* MatchingScenariosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */; };
+		B9B2208C7C797796ABCDE619 /* ChefItApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */; };
+		BA75FDA56F696748EB474304 /* ChefitSymbolIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */; };
+		C78B0BB595C4C6539D422402 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 626B30E20835CEF760C8DF25 /* CameraCapture.swift */; };
+		C952507EB70A0E96C7B7607D /* ScanFlowViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */; };
+		CB617A1D60F6BFCC0B3567D4 /* EdamamRecipeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */; };
+		D3A154961350511122E0CFD5 /* ShoppingCartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B209E7E8916A85C8CABDF33 /* ShoppingCartViewModel.swift */; };
+		D470BF4CD25D04B47A7E48CE /* ChefitSplashAuthViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */; };
+		D52C84D811AD27434B2B3CBD /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3077145A42CE90925B46473C /* CreatePostView.swift */; };
+		DD3ADCA9320F20269B9837E8 /* ChefitTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */; };
+		E45DEFB5B404106952016833 /* PlayfairDisplay-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66333996EBC4B3E2AC4181A5 /* PlayfairDisplay-Variable.ttf */; };
+		E76AAF31C66810D50FB59FE2 /* RecipeAPIConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D92078D4ADCCD2B140D4FE /* RecipeAPIConfigurationTests.swift */; };
+		E8F23FD2922B885914C940B7 /* MilestoneOneViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CDDEB034EF14A76D0A1F66 /* MilestoneOneViewModelTests.swift */; };
+		EF54CFC14DD824B69FF26B33 /* EdamamRecipeSearchServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CFE59EA87D15DB0961AB0E /* EdamamRecipeSearchServiceTests.swift */; };
+		F31973A5FC07D40B976A3466 /* FavoriteRecipeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */; };
+		F620267220731DB31DAE107A /* RecipeDiscoveryPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */; };
+		F98DA3277A015578D960E1DB /* ChefitRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF5F35DDD07536344D54EE4 /* ChefitRouting.swift */; };
+		FEA499B6D845BEC52B29C01F /* ChefitHomeFeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A6507DF2ADDB8C4E61F35B5 /* ChefitHomeFeedViewModel.swift */; };
+		FFA18B36961F9A34869E46AC /* RecommendationsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27F9679CA5504F8CDABEE85 /* RecommendationsViewModelTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientPersistingTests.swift; sourceTree = "<group>"; };
+		195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSplashAuthViews.swift; sourceTree = "<group>"; };
+		208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatcherTests.swift; sourceTree = "<group>"; };
+		28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchRationaleTests.swift; sourceTree = "<group>"; };
+		28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitTheme.swift; sourceTree = "<group>"; };
+		2E28336416D8342CD47A6700 /* IngredientSuggesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientSuggesterTests.swift; sourceTree = "<group>"; };
+		3077145A42CE90925B46473C /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
+		3AAA9CACDB13A90D37963979 /* ChefitScreensSevenToThirteen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitScreensSevenToThirteen.swift; sourceTree = "<group>"; };
+		3BC986BEBA1586448E69738A /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdamamRecipeAdapterTests.swift; sourceTree = "<group>"; };
+		420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListBuilder.swift; sourceTree = "<group>"; };
+		4A6507DF2ADDB8C4E61F35B5 /* ChefitHomeFeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitHomeFeedViewModel.swift; sourceTree = "<group>"; };
+		626B30E20835CEF760C8DF25 /* CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCapture.swift; sourceTree = "<group>"; };
+		65CDDEB034EF14A76D0A1F66 /* MilestoneOneViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneOneViewModelTests.swift; sourceTree = "<group>"; };
+		66333996EBC4B3E2AC4181A5 /* PlayfairDisplay-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Variable.ttf"; sourceTree = "<group>"; };
+		667948645BD748A7B80612F4 /* ChefIt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChefIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7581398749997A2257BE1FC4 /* ChefItKitTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ChefItKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7ABD46A4E43436514EF69B89 /* Nunito-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-Variable.ttf"; sourceTree = "<group>"; };
+		7B209E7E8916A85C8CABDF33 /* ShoppingCartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingCartViewModel.swift; sourceTree = "<group>"; };
+		7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitHomeSearchViews.swift; sourceTree = "<group>"; };
+		7F8857E427303DF570D2A704 /* ShoppingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingItem.swift; sourceTree = "<group>"; };
+		8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitRecipeFlowViews.swift; sourceTree = "<group>"; };
+		8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSymbolIcons.swift; sourceTree = "<group>"; };
+		932B73880C06529EA6980EA1 /* ShoppingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingProvider.swift; sourceTree = "<group>"; };
+		94370285F2F079AD8C032FF4 /* ChefitSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSampleData.swift; sourceTree = "<group>"; };
+		985B8B9198FE66EA86C2299A /* chef-it */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "chef-it"; path = .; sourceTree = SOURCE_ROOT; };
+		9CF5F35DDD07536344D54EE4 /* ChefitRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitRouting.swift; sourceTree = "<group>"; };
+		A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
+		A6CFE59EA87D15DB0961AB0E /* EdamamRecipeSearchServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdamamRecipeSearchServiceTests.swift; sourceTree = "<group>"; };
+		A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitComponents.swift; sourceTree = "<group>"; };
+		AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchingScenariosTests.swift; sourceTree = "<group>"; };
+		BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewComposerSheet.swift; sourceTree = "<group>"; };
+		BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFlowViewModelTests.swift; sourceTree = "<group>"; };
+		BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDeduplicatorTests.swift; sourceTree = "<group>"; };
+		D1D92078D4ADCCD2B140D4FE /* RecipeAPIConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeAPIConfigurationTests.swift; sourceTree = "<group>"; };
+		D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientStoreTests.swift; sourceTree = "<group>"; };
+		D27F9679CA5504F8CDABEE85 /* RecommendationsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationsViewModelTests.swift; sourceTree = "<group>"; };
+		E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchRankingStabilityTests.swift; sourceTree = "<group>"; };
+		EB1A0C314044C3F27D915395 /* NormalizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalizerTests.swift; sourceTree = "<group>"; };
+		EC63472C872D506B2DCC2FBC /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
+		EE6FBAF210E56C2A166565D9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F08F9F112628201F55CD4D5C /* PostDetailFullScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDetailFullScreenView.swift; sourceTree = "<group>"; };
+		F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefItApp.swift; sourceTree = "<group>"; };
+		F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteRecipeStoreTests.swift; sourceTree = "<group>"; };
+		FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDiscoveryPlannerTests.swift; sourceTree = "<group>"; };
+		"TEMP_52265151-4044-42A0-AB85-D8562F874676" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B1077DC7A2787787283B0786 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BEF47A5EA0B67C7428CB01D /* ChefItKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB37872307D31B1E87AA551E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34C7CA0DF7482D8E62D50CA5 /* ChefItKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		01C332EEB8B107F9BD18E787 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				4887B0C3FA2559566050BFC9 /* ChefIt */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		021856280DECA13B5345F78D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		03EB7FDA4E78A3EE02FBDFCB /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				4A6507DF2ADDB8C4E61F35B5 /* ChefitHomeFeedViewModel.swift */,
+				7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */,
+				8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */,
+				94370285F2F079AD8C032FF4 /* ChefitSampleData.swift */,
+				3AAA9CACDB13A90D37963979 /* ChefitScreensSevenToThirteen.swift */,
+				195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */,
+				3077145A42CE90925B46473C /* CreatePostView.swift */,
+				EC63472C872D506B2DCC2FBC /* FeedView.swift */,
+				A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */,
+				F08F9F112628201F55CD4D5C /* PostDetailFullScreenView.swift */,
+				BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		2B74F7463A3C1E888AA6A1A9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				90FE812F36E8D97AAC235C8A /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2E01F887927A27DD6F75CFE4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				667948645BD748A7B80612F4 /* ChefIt.app */,
+				7581398749997A2257BE1FC4 /* ChefItKitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4887B0C3FA2559566050BFC9 /* ChefIt */ = {
+			isa = PBXGroup;
+			children = (
+				EE6FBAF210E56C2A166565D9 /* Assets.xcassets */,
+				F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */,
+				3BC986BEBA1586448E69738A /* RootView.swift */,
+				C9B5B476E1B904D7B3FA114C /* Cart */,
+				021856280DECA13B5345F78D /* Components */,
+				8D52E220D2ED27CB5839DFFC /* Design */,
+				55B3B142280EF6310D48CFFF /* Navigation */,
+				2B74F7463A3C1E888AA6A1A9 /* Resources */,
+				03EB7FDA4E78A3EE02FBDFCB /* Screens */,
+			);
+			path = ChefIt;
+			sourceTree = "<group>";
+		};
+		4917C753D7EB053EDB2B6F83 /* ChefItKitTests */ = {
+			isa = PBXGroup;
+			children = (
+				3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */,
+				A6CFE59EA87D15DB0961AB0E /* EdamamRecipeSearchServiceTests.swift */,
+				F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */,
+				0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */,
+				D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */,
+				2E28336416D8342CD47A6700 /* IngredientSuggesterTests.swift */,
+				208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */,
+				AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */,
+				E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */,
+				28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */,
+				65CDDEB034EF14A76D0A1F66 /* MilestoneOneViewModelTests.swift */,
+				EB1A0C314044C3F27D915395 /* NormalizerTests.swift */,
+				D1D92078D4ADCCD2B140D4FE /* RecipeAPIConfigurationTests.swift */,
+				BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */,
+				FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */,
+				D27F9679CA5504F8CDABEE85 /* RecommendationsViewModelTests.swift */,
+				BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */,
+			);
+			path = ChefItKitTests;
+			sourceTree = "<group>";
+		};
+		55B3B142280EF6310D48CFFF /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				626B30E20835CEF760C8DF25 /* CameraCapture.swift */,
+				9CF5F35DDD07536344D54EE4 /* ChefitRouting.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		6B443C21C8AD2EF25E023D09 = {
+			isa = PBXGroup;
+			children = (
+				01C332EEB8B107F9BD18E787 /* App */,
+				E0FDC44E5F1813D858ED5141 /* Packages */,
+				923BC96718882A5AF8EBE1B6 /* Tests */,
+				2E01F887927A27DD6F75CFE4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8D52E220D2ED27CB5839DFFC /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */,
+				28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		90FE812F36E8D97AAC235C8A /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				7ABD46A4E43436514EF69B89 /* Nunito-Variable.ttf */,
+				66333996EBC4B3E2AC4181A5 /* PlayfairDisplay-Variable.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		923BC96718882A5AF8EBE1B6 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				4917C753D7EB053EDB2B6F83 /* ChefItKitTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		C9B5B476E1B904D7B3FA114C /* Cart */ = {
+			isa = PBXGroup;
+			children = (
+				7B209E7E8916A85C8CABDF33 /* ShoppingCartViewModel.swift */,
+				7F8857E427303DF570D2A704 /* ShoppingItem.swift */,
+				420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */,
+				932B73880C06529EA6980EA1 /* ShoppingProvider.swift */,
+			);
+			path = Cart;
+			sourceTree = "<group>";
+		};
+		E0FDC44E5F1813D858ED5141 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				985B8B9198FE66EA86C2299A /* chef-it */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		"TEMP_78BF2816-0D68-4F59-81D8-90ABBCC3FC0E" /* chef-it */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_52265151-4044-42A0-AB85-D8562F874676" /* Secrets.xcconfig */,
+			);
+			path = "chef-it";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5CB09AC005728D4D5967D5F6 /* ChefItKitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 945BAD2DA03CE7C3AE244DA0 /* Build configuration list for PBXNativeTarget "ChefItKitTests" */;
+			buildPhases = (
+				F43189FF849C56C9489FD9E7 /* Sources */,
+				DB37872307D31B1E87AA551E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChefItKitTests;
+			packageProductDependencies = (
+				4895006B800D275E029B9E61 /* ChefItKit */,
+			);
+			productName = ChefItKitTests;
+			productReference = 7581398749997A2257BE1FC4 /* ChefItKitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EFBF1FE3EE08882A0202D239 /* ChefIt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B59119840CB5ED620CE91864 /* Build configuration list for PBXNativeTarget "ChefIt" */;
+			buildPhases = (
+				A7D11A4F7896664867A66871 /* Sources */,
+				F00D23C649A83721E6A36868 /* Resources */,
+				B1077DC7A2787787283B0786 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChefIt;
+			packageProductDependencies = (
+				06D2747C84F39029B153F7B6 /* ChefItKit */,
+			);
+			productName = ChefIt;
+			productReference = 667948645BD748A7B80612F4 /* ChefIt.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A2EF052EDCA24F046953C5E3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					5CB09AC005728D4D5967D5F6 = {
+						DevelopmentTeam = "";
+					};
+					EFBF1FE3EE08882A0202D239 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 04A2A3CFE8BF906EE7872490 /* Build configuration list for PBXProject "ChefIt" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 6B443C21C8AD2EF25E023D09;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3EDF81ED688CE7C13C4EDFEF /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2E01F887927A27DD6F75CFE4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EFBF1FE3EE08882A0202D239 /* ChefIt */,
+				5CB09AC005728D4D5967D5F6 /* ChefItKitTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F00D23C649A83721E6A36868 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				27175AB165AFCE66DF166861 /* Assets.xcassets in Resources */,
+				5FA0F1510FDDBE9C749231D7 /* Nunito-Variable.ttf in Resources */,
+				E45DEFB5B404106952016833 /* PlayfairDisplay-Variable.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A7D11A4F7896664867A66871 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C78B0BB595C4C6539D422402 /* CameraCapture.swift in Sources */,
+				B9B2208C7C797796ABCDE619 /* ChefItApp.swift in Sources */,
+				B56C46BAB5AECF5CDC433383 /* ChefitComponents.swift in Sources */,
+				FEA499B6D845BEC52B29C01F /* ChefitHomeFeedViewModel.swift in Sources */,
+				0117D4C37AEF9DC364A90F1E /* ChefitHomeSearchViews.swift in Sources */,
+				B647FB9276FF4869D2691327 /* ChefitRecipeFlowViews.swift in Sources */,
+				F98DA3277A015578D960E1DB /* ChefitRouting.swift in Sources */,
+				4889A75F6839F48976D30138 /* ChefitSampleData.swift in Sources */,
+				62D69A585073DB20BCB88BF9 /* ChefitScreensSevenToThirteen.swift in Sources */,
+				D470BF4CD25D04B47A7E48CE /* ChefitSplashAuthViews.swift in Sources */,
+				BA75FDA56F696748EB474304 /* ChefitSymbolIcons.swift in Sources */,
+				DD3ADCA9320F20269B9837E8 /* ChefitTheme.swift in Sources */,
+				D52C84D811AD27434B2B3CBD /* CreatePostView.swift in Sources */,
+				95ABBFE7FDDC53DA9BD1342F /* FeedView.swift in Sources */,
+				5C0229BCAE982C376C25BBE0 /* PostCardView.swift in Sources */,
+				4D8788170C7A8F0076F87E72 /* PostDetailFullScreenView.swift in Sources */,
+				53404D12F98EEBE8D7C9AC11 /* ReviewComposerSheet.swift in Sources */,
+				8120B2CB94FA6F513106FCA4 /* RootView.swift in Sources */,
+				D3A154961350511122E0CFD5 /* ShoppingCartViewModel.swift in Sources */,
+				7768EC12A450E33F1C3AB744 /* ShoppingItem.swift in Sources */,
+				0297AD2D093EE4F6A9B4731A /* ShoppingListBuilder.swift in Sources */,
+				B12278EEF581AD118B8F3B47 /* ShoppingProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F43189FF849C56C9489FD9E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB617A1D60F6BFCC0B3567D4 /* EdamamRecipeAdapterTests.swift in Sources */,
+				EF54CFC14DD824B69FF26B33 /* EdamamRecipeSearchServiceTests.swift in Sources */,
+				F31973A5FC07D40B976A3466 /* FavoriteRecipeStoreTests.swift in Sources */,
+				2351BDE4A079B031BF8D72D9 /* IngredientPersistingTests.swift in Sources */,
+				0B9D8E71D9840C6ED4EAEBAD /* IngredientStoreTests.swift in Sources */,
+				6D698D77B9FE6292E5074D28 /* IngredientSuggesterTests.swift in Sources */,
+				9F2E20E8880D1859C10FDEDA /* MatchRankingStabilityTests.swift in Sources */,
+				8B30FDB30C523447DD4B333E /* MatchRationaleTests.swift in Sources */,
+				294627FD986C952232649D90 /* MatcherTests.swift in Sources */,
+				B81DDA876138B7D1E429D6D3 /* MatchingScenariosTests.swift in Sources */,
+				E8F23FD2922B885914C940B7 /* MilestoneOneViewModelTests.swift in Sources */,
+				6BCD06B08738B18F69D40629 /* NormalizerTests.swift in Sources */,
+				E76AAF31C66810D50FB59FE2 /* RecipeAPIConfigurationTests.swift in Sources */,
+				0F2D85ACF2F7142AFC4640D0 /* RecipeDeduplicatorTests.swift in Sources */,
+				F620267220731DB31DAE107A /* RecipeDiscoveryPlannerTests.swift in Sources */,
+				FFA18B36961F9A34869E46AC /* RecommendationsViewModelTests.swift in Sources */,
+				C952507EB70A0E96C7B7607D /* ScanFlowViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		12B4868F99CA77F40122D9AF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chefit.ChefItKitTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1E23C52136A1B3B072B78DB4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_52265151-4044-42A0-AB85-D8562F874676" /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/ChefIt/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chefit.app;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		211AE762A13972A342D68606 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chefit.ChefItKitTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3D85FD8B0B894E3A55E86E43 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				AUTH_BASE_URL = "http://127.0.0.1:3000";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				EDAMAM_APP_ID = "";
+				EDAMAM_APP_KEY = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+		7B3977A781468949F587C355 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_52265151-4044-42A0-AB85-D8562F874676" /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/ChefIt/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chefit.app;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9AD489AD49C1FFABCEE57069 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				AUTH_BASE_URL = "http://127.0.0.1:3000";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				EDAMAM_APP_ID = "";
+				EDAMAM_APP_KEY = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		04A2A3CFE8BF906EE7872490 /* Build configuration list for PBXProject "ChefIt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3D85FD8B0B894E3A55E86E43 /* Debug */,
+				9AD489AD49C1FFABCEE57069 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		945BAD2DA03CE7C3AE244DA0 /* Build configuration list for PBXNativeTarget "ChefItKitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				211AE762A13972A342D68606 /* Debug */,
+				12B4868F99CA77F40122D9AF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B59119840CB5ED620CE91864 /* Build configuration list for PBXNativeTarget "ChefIt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B3977A781468949F587C355 /* Debug */,
+				1E23C52136A1B3B072B78DB4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3EDF81ED688CE7C13C4EDFEF /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		06D2747C84F39029B153F7B6 /* ChefItKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChefItKit;
+		};
+		4895006B800D275E029B9E61 /* ChefItKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChefItKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A2EF052EDCA24F046953C5E3 /* Project object */;
+}
