@@ -675,7 +675,7 @@ private final class ProfileViewModel: ObservableObject {
     func loadPosts(userId: Int) async {
         isLoadingPosts = true
         defer { isLoadingPosts = false }
-        do { posts = try await PostService.shared.fetchPosts(userId: userId) } catch { }
+        do { posts = try await PostService.shared.fetchPosts(userId: userId).posts } catch { }
     }
 
     func deletePost(id: Int) async {
@@ -1099,129 +1099,26 @@ private extension View {
 }
 
 struct ChefitCommunityView: View {
-    @State private var feedTab = "For You"
+    let onAuthorTap: (Int) -> Void
 
     var body: some View {
-        GeometryReader { proxy in
-            let horizontalInset = max(14, proxy.size.width * 0.04)
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    HStack(spacing: 0) {
-                        ForEach(["For You", "Following", "Popular"], id: \.self) { tab in
-                            Button {
-                                feedTab = tab
-                            } label: {
-                                ZStack {
-                                    if feedTab == tab {
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(ChefitColors.peach.opacity(0.15))
-                                    }
-                                    Text(tab)
-                                        .font(.custom("Nunito-Bold", size: 13))
-                                        .foregroundStyle(feedTab == tab ? ChefitColors.text : ChefitColors.text.opacity(0.55))
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 34)
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 4)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.top, 10)
-                    .padding(.bottom, 8)
-
-                    Divider().overlay(ChefitColors.text.opacity(0.08))
-
-                    VStack(spacing: 0) {
-                        ForEach(Array(ChefitSampleData.communityPosts.prefix(2).enumerated()), id: \.offset) { index, post in
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack {
-                                    Circle()
-                                        .fill(ChefitColors.honey.opacity(0.4))
-                                        .frame(width: 24, height: 24)
-                                        .overlay {
-                                            Image(systemName: "person.fill")
-                                                .font(.system(size: 12))
-                                                .foregroundStyle(ChefitColors.text.opacity(0.75))
-                                        }
-                                    Text(post.user)
-                                        .font(.custom("Nunito-SemiBold", size: 12))
-                                        .foregroundStyle(ChefitColors.text)
-                                    Text(post.time)
-                                        .font(.custom("Nunito-Regular", size: 11))
-                                        .foregroundStyle(ChefitColors.text.opacity(0.45))
-                                    Spacer()
-                                    Text("\(index + 2)h")
-                                        .font(.custom("Nunito-Bold", size: 11))
-                                        .foregroundStyle(ChefitColors.text.opacity(0.5))
-                                }
-
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(ChefitColors.cream)
-                                    .frame(height: 150)
-                                    .overlay {
-                                        Image(systemName: "takeoutbag.and.cup.and.straw.fill")
-                                            .font(.system(size: 72))
-                                            .foregroundStyle(ChefitColors.honey)
-                                    }
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Made Creamy Tomato Pasta")
-                                        .font(.custom("Nunito-Bold", size: 16))
-                                        .foregroundStyle(ChefitColors.text)
-                                    Text("So easy and delicious!")
-                                        .font(.custom("Nunito-SemiBold", size: 13))
-                                        .foregroundStyle(ChefitColors.text)
-                                    Text("#dinner  #quickmeals")
-                                        .font(.custom("Nunito-SemiBold", size: 13))
-                                        .foregroundStyle(ChefitColors.sageGreen)
-                                }
-
-                                HStack(spacing: 24) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "heart.fill")
-                                            .foregroundStyle(ChefitColors.peach)
-                                        Text("\(post.likes)")
-                                    }
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "bubble.left")
-                                        Text("\(post.comments)")
-                                    }
-                                    Spacer()
-                                    Image(systemName: "bookmark")
-                                }
-                                .font(.custom("Nunito-Bold", size: 14))
-                                .foregroundStyle(ChefitColors.text.opacity(0.7))
-                            }
-                            .padding(12)
-                            .overlay(alignment: .bottom) {
-                                if index == 0 {
-                                    Divider().overlay(ChefitColors.text.opacity(0.08))
-                                }
-                            }
-                        }
-                    }
-                }
-                .background(ChefitColors.white)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(ChefitColors.text.opacity(0.09), lineWidth: 1)
-                }
-                .padding(.horizontal, horizontalInset)
-                .padding(.top, 10)
-                .padding(.bottom, 10)
-
-                Text("See what others cooked,\nget inspired and connect.")
-                    .font(.custom("Nunito-SemiBold", size: 13))
-                    .foregroundStyle(ChefitColors.text.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 20)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Community")
+                    .font(ChefitTypography.h2())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
             }
-            .background(ChefitColors.cream.ignoresSafeArea())
+            .padding(.horizontal, ChefitSpacing.md)
+            .padding(.top, ChefitSpacing.md)
+            .padding(.bottom, ChefitSpacing.sm)
+
+            Divider()
+                .overlay(ChefitColors.pistachio.opacity(0.8))
+
+            FeedView(onAuthorTap: onAuthorTap)
         }
+        .background(ChefitColors.cream.ignoresSafeArea())
     }
 }

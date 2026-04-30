@@ -5,26 +5,62 @@ const { upload, uploadBuffer } = require('../middleware/upload');
 
 const POST_SELECT = `
   SELECT p.id, p.recipe_id, p.caption, p.image_url, p.created_at,
-         u.id AS user_id, u.display_name, u.avatar_url
+         u.id AS user_id, u.display_name, u.avatar_url,
+         COUNT(c.id)::int AS comment_count
     FROM posts p
     JOIN users u ON u.id = p.user_id`;
 
-// GET /api/posts  (optional ?user_id= filter)
+const COMMENT_SELECT = `
+  SELECT c.id, c.body, c.created_at,
+         u.id AS user_id, u.display_name, u.avatar_url
+    FROM comments c
+    JOIN users u ON u.id = c.user_id`;
+
+// GET /api/posts  (optional ?user_id=, ?limit=, ?offset=)
 router.get('/', async (req, res) => {
-  const offset = parseInt(req.query.offset, 10) || 0;
-  const userId = req.query.user_id ? parseInt(req.query.user_id, 10) : null;
+  const parsedLimit = parseInt(req.query.limit, 10);
+  const parsedOffset = parseInt(req.query.offset, 10);
+  const parsedUserId = req.query.user_id ? parseInt(req.query.user_id, 10) : null;
+
+  const limit = Number.isInteger(parsedLimit) && parsedLimit > 0
+    ? Math.min(parsedLimit, 100)
+    : 20;
+  const offset = Number.isInteger(parsedOffset) && parsedOffset >= 0
+    ? parsedOffset
+    : 0;
+  const userId = Number.isInteger(parsedUserId) && parsedUserId > 0
+    ? parsedUserId
+    : null;
 
   try {
-    let query, params;
+    let postsQuery, postsParams, countQuery, countParams;
     if (userId) {
-      query = `${POST_SELECT} WHERE p.user_id = $1 ORDER BY p.created_at DESC LIMIT 50 OFFSET $2`;
-      params = [userId, offset];
+      postsQuery  = `${POST_SELECT}
+        LEFT JOIN comments c ON c.post_id = p.id
+        WHERE p.user_id = $1
+        GROUP BY p.id, u.id
+        ORDER BY p.created_at DESC
+        LIMIT $2 OFFSET $3`;
+      postsParams = [userId, limit, offset];
+      countQuery  = 'SELECT COUNT(*)::int AS total FROM posts WHERE user_id = $1';
+      countParams = [userId];
     } else {
-      query = `${POST_SELECT} ORDER BY p.created_at DESC LIMIT 20 OFFSET $1`;
-      params = [offset];
+      postsQuery  = `${POST_SELECT}
+        LEFT JOIN comments c ON c.post_id = p.id
+        GROUP BY p.id, u.id
+        ORDER BY p.created_at DESC
+        LIMIT $1 OFFSET $2`;
+      postsParams = [limit, offset];
+      countQuery  = 'SELECT COUNT(*)::int AS total FROM posts';
+      countParams = [];
     }
-    const { rows } = await db.query(query, params);
-    res.json(rows);
+
+    const [{ rows }, { rows: countRows }] = await Promise.all([
+      db.query(postsQuery, postsParams),
+      db.query(countQuery, countParams),
+    ]);
+
+    res.json({ posts: rows, total: countRows[0].total });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -35,7 +71,10 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { rows } = await db.query(
-      `${POST_SELECT} WHERE p.id = $1`,
+      `${POST_SELECT}
+        LEFT JOIN comments c ON c.post_id = p.id
+        WHERE p.id = $1
+        GROUP BY p.id, u.id`,
       [req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Post not found' });
@@ -66,7 +105,10 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 
     // Return full post with user info
     const { rows: full } = await db.query(
-      `${POST_SELECT} WHERE p.id = $1`,
+      `${POST_SELECT}
+        LEFT JOIN comments c ON c.post_id = p.id
+        WHERE p.id = $1
+        GROUP BY p.id, u.id`,
       [rows[0].id]
     );
     res.status(201).json(full[0]);
@@ -95,10 +137,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 router.get('/:id/comments', async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT c.id, c.body, c.created_at,
-              u.id AS user_id, u.display_name, u.avatar_url
-         FROM comments c
-         JOIN users u ON u.id = c.user_id
+      `${COMMENT_SELECT}
         WHERE c.post_id = $1
         ORDER BY c.created_at ASC`,
       [req.params.id]
@@ -120,7 +159,11 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
       'INSERT INTO comments (user_id, post_id, body) VALUES ($1, $2, $3) RETURNING *',
       [req.user.id, req.params.id, body]
     );
-    res.status(201).json(rows[0]);
+    const { rows: full } = await db.query(
+      `${COMMENT_SELECT} WHERE c.id = $1`,
+      [rows[0].id]
+    );
+    res.status(201).json(full[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

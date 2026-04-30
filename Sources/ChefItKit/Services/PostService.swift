@@ -1,5 +1,14 @@
 import Foundation
 
+public struct PostsPage: Decodable, Sendable {
+    public let posts: [Post]
+    public let total: Int
+
+    public var hasMore: Bool {
+        posts.count < total
+    }
+}
+
 public struct Post: Codable, Identifiable, Equatable, Sendable {
     public let id: Int
     public let recipeId: String?
@@ -9,6 +18,29 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
     public let userId: Int
     public let displayName: String?
     public let avatarURL: String?
+    public let commentCount: Int
+
+    public init(
+        id: Int,
+        recipeId: String?,
+        caption: String?,
+        imageURL: String?,
+        createdAt: String,
+        userId: Int,
+        displayName: String?,
+        avatarURL: String?,
+        commentCount: Int
+    ) {
+        self.id = id
+        self.recipeId = recipeId
+        self.caption = caption
+        self.imageURL = imageURL
+        self.createdAt = createdAt
+        self.userId = userId
+        self.displayName = displayName
+        self.avatarURL = avatarURL
+        self.commentCount = commentCount
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -19,6 +51,21 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
         case userId      = "user_id"
         case displayName = "display_name"
         case avatarURL   = "avatar_url"
+        case commentCount = "comment_count"
+    }
+
+    public func updatingCommentCount(_ commentCount: Int) -> Post {
+        Post(
+            id: id,
+            recipeId: recipeId,
+            caption: caption,
+            imageURL: imageURL,
+            createdAt: createdAt,
+            userId: userId,
+            displayName: displayName,
+            avatarURL: avatarURL,
+            commentCount: commentCount
+        )
     }
 }
 
@@ -46,12 +93,12 @@ public final class PostService {
     private let baseURL = "http://127.0.0.1:3000"
     private struct ErrorBody: Decodable { let error: String }
 
-    public func fetchPosts(userId: Int? = nil, offset: Int = 0) async throws -> [Post] {
-        var urlStr = "\(baseURL)/api/posts?offset=\(offset)"
+    public func fetchPosts(userId: Int? = nil, limit: Int = 20, offset: Int = 0) async throws -> PostsPage {
+        var urlStr = "\(baseURL)/api/posts?limit=\(limit)&offset=\(offset)"
         if let uid = userId { urlStr += "&user_id=\(uid)" }
         guard let url = URL(string: urlStr) else { throw PostServiceError.networkError("Invalid URL") }
         let (data, response) = try await URLSession.shared.data(from: url)
-        return try decode([Post].self, data: data, response: response)
+        return try decode(PostsPage.self, data: data, response: response)
     }
 
     public func fetchPost(id: Int) async throws -> Post {
@@ -60,6 +107,10 @@ public final class PostService {
         }
         let (data, response) = try await URLSession.shared.data(from: url)
         return try decode(Post.self, data: data, response: response)
+    }
+
+    public func hasMorePosts(loadedCount: Int, totalCount: Int) -> Bool {
+        loadedCount < totalCount
     }
 
     public func createPost(caption: String, imageData: Data, recipeId: String? = nil) async throws -> Post {
