@@ -4,8 +4,8 @@ enum ChefitTab: Hashable {
     case home
     case search
     case scan
-    case saved
     case community
+    case profile
 }
 
 struct ChefitBottomNavBar: View {
@@ -17,8 +17,8 @@ struct ChefitBottomNavBar: View {
             navItem(title: "Home", icon: "house", tab: .home)
             navItem(title: "Search", icon: "magnifyingglass", tab: .search)
             scanButton
-            navItem(title: "Saved", icon: "bookmark", tab: .saved)
             navItem(title: "Community", icon: "person.2", tab: .community)
+            navItem(title: "Profile", icon: "person.crop.circle", tab: .profile)
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
