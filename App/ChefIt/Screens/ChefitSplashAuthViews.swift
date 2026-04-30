@@ -248,5 +248,7 @@ struct ChefitAuthView: View {
 }
 
 #Preview("Splash") {
-    ChefitSplashView(onGetStarted: {})
+    GeometryReader { _ in
+        ChefitSplashView(onGetStarted: {})
+    }
 }

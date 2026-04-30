@@ -29,12 +29,22 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Nunito-Variable.ttf</string>
+		<string>PlayfairDisplay-Variable.ttf</string>
+	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
 		<string>ChefitLaunchCream</string>
 	</dict>
-	<key>UIRequiresFullScreen</key>
-	<true/>
 </dict>
 </plist>
