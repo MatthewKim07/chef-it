@@ -107,8 +107,7 @@ struct ChefitGuestFlowView: View {
                         onBack: {
                             if !path.isEmpty { path.removeLast() }
                         },
-                        onEmail: { path.append(.emailLogin) },
-                        onLogIn: { path.append(.emailLogin) }
+                        onEmail: { path.append(.emailLogin) }
                     )
                     .toolbar(.hidden, for: .navigationBar)
 
@@ -134,7 +133,6 @@ struct ChefitAuthView: View {
     let onEmail: () -> Void
     var onGoogle: () -> Void = {}
     var onApple: () -> Void = {}
-    let onLogIn: () -> Void
 
     private let outlineGray = Color(red: 0.78, green: 0.78, blue: 0.78)
 
@@ -212,15 +210,6 @@ struct ChefitAuthView: View {
                     )
                 }
                 .padding(.horizontal, ChefitSpacing.lg)
-
-                Button(action: onLogIn) {
-                    Text("Log in")
-                        .font(ChefitTypography.button())
-                        .foregroundStyle(ChefitColors.sageGreen)
-                        .underline()
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 28)
                 .padding(.bottom, ChefitSpacing.twoXL)
             }
             .frame(maxWidth: .infinity)
@@ -280,5 +269,5 @@ struct ChefitAuthView: View {
 }
 
 #Preview("Auth options") {
-    ChefitAuthView(onBack: {}, onEmail: {}, onLogIn: {})
+    ChefitAuthView(onBack: {}, onEmail: {})
 }
