@@ -12,4 +12,5 @@ pool.query('SELECT 1')
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
+  pool,
 };
