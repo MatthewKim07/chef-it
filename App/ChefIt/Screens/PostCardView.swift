@@ -7,6 +7,7 @@ struct PostCardView: View {
     let onAuthorTap: (Int) -> Void
     let onImageTap: (Post) -> Void
     let onCommentTap: (Post) -> Void
+    let onLikeTap: (Post) -> Void
     let onDelete: (Post) async -> Void
     private let mediaHeight: CGFloat = 280
 
@@ -105,7 +106,22 @@ struct PostCardView: View {
     }
 
     private var footerRow: some View {
-        HStack {
+        HStack(spacing: ChefitSpacing.lg) {
+            Button {
+                onLikeTap(post)
+            } label: {
+                HStack(spacing: ChefitSpacing.xs) {
+                    Image(systemName: post.likedByMe ? "heart.fill" : "heart")
+                        .font(.system(size: 16, weight: .regular))
+                    Text("\(post.likeCount)")
+                        .font(ChefitTypography.label())
+                }
+                .foregroundStyle(post.likedByMe ? ChefitColors.peach : ChefitColors.sageGreen)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(post.likedByMe ? "Unlike" : "Like")
+
             Button {
                 onCommentTap(post)
             } label: {

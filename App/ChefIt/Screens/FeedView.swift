@@ -64,6 +64,30 @@ final class FeedViewModel: ObservableObject {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
         posts[index] = post
     }
+
+    func toggleLike(postId: Int) async {
+        guard let index = posts.firstIndex(where: { $0.id == postId }) else { return }
+        let original = posts[index]
+        let optimistic = original.updatingLike(
+            count: original.likedByMe ? max(0, original.likeCount - 1) : original.likeCount + 1,
+            liked: !original.likedByMe
+        )
+        posts[index] = optimistic
+
+        do {
+            let result = original.likedByMe
+                ? try await PostService.shared.unlikePost(id: postId)
+                : try await PostService.shared.likePost(id: postId)
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = posts[i].updatingLike(count: result.likeCount, liked: result.liked)
+            }
+        } catch {
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = original
+            }
+            self.error = error.localizedDescription
+        }
+    }
 }
 
 // MARK: - FeedView
@@ -120,6 +144,9 @@ struct FeedView: View {
                         },
                         onCommentTap: { tappedPost in
                             selectedPost = tappedPost
+                        },
+                        onLikeTap: { tappedPost in
+                            Task { await vm.toggleLike(postId: tappedPost.id) }
                         },
                         onDelete: { tappedPost in await vm.deletePost(id: tappedPost.id) }
                     )

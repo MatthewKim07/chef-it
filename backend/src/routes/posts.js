@@ -1,14 +1,25 @@
 const router = require('express').Router();
 const db = require('../db');
 const requireAuth = require('../middleware/auth');
+const optionalAuth = require('../middleware/optionalAuth');
 const { upload, uploadBuffer } = require('../middleware/upload');
 
-const POST_SELECT = `
+// Returns post columns + comment_count + like_count + liked_by_me.
+// Pass `viewerId` (or null) as the LAST query param so liked_by_me resolves correctly.
+function postSelect(viewerIdParamIndex) {
+  return `
   SELECT p.id, p.recipe_id, p.caption, p.image_url, p.created_at,
          u.id AS user_id, u.display_name, u.avatar_url,
-         COUNT(c.id)::int AS comment_count
+         COALESCE(c.cnt, 0)::int AS comment_count,
+         COALESCE(l.cnt, 0)::int AS like_count,
+         CASE WHEN $${viewerIdParamIndex}::int IS NULL THEN false
+              ELSE EXISTS(SELECT 1 FROM post_likes pl WHERE pl.post_id = p.id AND pl.user_id = $${viewerIdParamIndex})
+         END AS liked_by_me
     FROM posts p
-    JOIN users u ON u.id = p.user_id`;
+    JOIN users u ON u.id = p.user_id
+    LEFT JOIN (SELECT post_id, COUNT(*)::int AS cnt FROM comments GROUP BY post_id) c ON c.post_id = p.id
+    LEFT JOIN (SELECT post_id, COUNT(*)::int AS cnt FROM post_likes GROUP BY post_id) l ON l.post_id = p.id`;
+}
 
 const COMMENT_SELECT = `
   SELECT c.id, c.body, c.created_at,
@@ -17,7 +28,7 @@ const COMMENT_SELECT = `
     JOIN users u ON u.id = c.user_id`;
 
 // GET /api/posts  (optional ?user_id=, ?limit=, ?offset=)
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   const parsedLimit = parseInt(req.query.limit, 10);
   const parsedOffset = parseInt(req.query.offset, 10);
   const parsedUserId = req.query.user_id ? parseInt(req.query.user_id, 10) : null;
@@ -31,26 +42,25 @@ router.get('/', async (req, res) => {
   const userId = Number.isInteger(parsedUserId) && parsedUserId > 0
     ? parsedUserId
     : null;
+  const viewerId = req.user?.id ?? null;
 
   try {
     let postsQuery, postsParams, countQuery, countParams;
     if (userId) {
-      postsQuery  = `${POST_SELECT}
-        LEFT JOIN comments c ON c.post_id = p.id
+      // params: [authorId, limit, offset, viewerId]
+      postsQuery  = `${postSelect(4)}
         WHERE p.user_id = $1
-        GROUP BY p.id, u.id
         ORDER BY p.created_at DESC
         LIMIT $2 OFFSET $3`;
-      postsParams = [userId, limit, offset];
+      postsParams = [userId, limit, offset, viewerId];
       countQuery  = 'SELECT COUNT(*)::int AS total FROM posts WHERE user_id = $1';
       countParams = [userId];
     } else {
-      postsQuery  = `${POST_SELECT}
-        LEFT JOIN comments c ON c.post_id = p.id
-        GROUP BY p.id, u.id
+      // params: [limit, offset, viewerId]
+      postsQuery  = `${postSelect(3)}
         ORDER BY p.created_at DESC
         LIMIT $1 OFFSET $2`;
-      postsParams = [limit, offset];
+      postsParams = [limit, offset, viewerId];
       countQuery  = 'SELECT COUNT(*)::int AS total FROM posts';
       countParams = [];
     }
@@ -68,14 +78,13 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/posts/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
+  const viewerId = req.user?.id ?? null;
   try {
     const { rows } = await db.query(
-      `${POST_SELECT}
-        LEFT JOIN comments c ON c.post_id = p.id
-        WHERE p.id = $1
-        GROUP BY p.id, u.id`,
-      [req.params.id]
+      `${postSelect(2)}
+        WHERE p.id = $1`,
+      [req.params.id, viewerId]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Post not found' });
     res.json(rows[0]);
@@ -105,11 +114,8 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 
     // Return full post with user info
     const { rows: full } = await db.query(
-      `${POST_SELECT}
-        LEFT JOIN comments c ON c.post_id = p.id
-        WHERE p.id = $1
-        GROUP BY p.id, u.id`,
-      [rows[0].id]
+      `${postSelect(2)} WHERE p.id = $1`,
+      [rows[0].id, req.user.id]
     );
     res.status(201).json(full[0]);
   } catch (err) {
@@ -125,8 +131,56 @@ router.delete('/:id', requireAuth, async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: 'Post not found' });
     if (rows[0].user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
+    await db.query('DELETE FROM comments WHERE post_id = $1', [req.params.id]);
+    await db.query('DELETE FROM post_likes WHERE post_id = $1', [req.params.id]);
     await db.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
     res.json({ deleted: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/posts/:id/like
+router.post('/:id/like', requireAuth, async (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  if (!Number.isInteger(postId)) return res.status(400).json({ error: 'Invalid post id' });
+
+  try {
+    const { rows: postRows } = await db.query('SELECT id FROM posts WHERE id = $1', [postId]);
+    if (!postRows[0]) return res.status(404).json({ error: 'Post not found' });
+
+    await db.query(
+      `INSERT INTO post_likes (user_id, post_id) VALUES ($1, $2)
+       ON CONFLICT (user_id, post_id) DO NOTHING`,
+      [req.user.id, postId]
+    );
+    const { rows } = await db.query(
+      'SELECT COUNT(*)::int AS cnt FROM post_likes WHERE post_id = $1',
+      [postId]
+    );
+    res.json({ liked: true, like_count: rows[0].cnt });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/posts/:id/like
+router.delete('/:id/like', requireAuth, async (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  if (!Number.isInteger(postId)) return res.status(400).json({ error: 'Invalid post id' });
+
+  try {
+    await db.query(
+      'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2',
+      [req.user.id, postId]
+    );
+    const { rows } = await db.query(
+      'SELECT COUNT(*)::int AS cnt FROM post_likes WHERE post_id = $1',
+      [postId]
+    );
+    res.json({ liked: false, like_count: rows[0].cnt });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

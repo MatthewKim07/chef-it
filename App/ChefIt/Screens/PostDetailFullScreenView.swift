@@ -184,13 +184,50 @@ struct PostDetailFullScreenView: View {
     }
 
     private var commentSummary: some View {
-        HStack(spacing: ChefitSpacing.xs) {
-            Image(systemName: "bubble.left")
-                .font(.system(size: 14, weight: .regular))
-            Text("\(activePost.commentCount) comments")
-                .font(ChefitTypography.label())
+        HStack(spacing: ChefitSpacing.lg) {
+            Button {
+                Task { await toggleLike() }
+            } label: {
+                HStack(spacing: ChefitSpacing.xs) {
+                    Image(systemName: activePost.likedByMe ? "heart.fill" : "heart")
+                        .font(.system(size: 14, weight: .regular))
+                    Text("\(activePost.likeCount) likes")
+                        .font(ChefitTypography.label())
+                }
+                .foregroundStyle(activePost.likedByMe ? ChefitColors.peach : ChefitColors.sageGreen.opacity(0.82))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(activePost.likedByMe ? "Unlike" : "Like")
+
+            HStack(spacing: ChefitSpacing.xs) {
+                Image(systemName: "bubble.left")
+                    .font(.system(size: 14, weight: .regular))
+                Text("\(activePost.commentCount) comments")
+                    .font(ChefitTypography.label())
+            }
+            .foregroundStyle(ChefitColors.sageGreen.opacity(0.82))
         }
-        .foregroundStyle(ChefitColors.sageGreen.opacity(0.82))
+    }
+
+    private func toggleLike() async {
+        let original = activePost
+        activePost = original.updatingLike(
+            count: original.likedByMe ? max(0, original.likeCount - 1) : original.likeCount + 1,
+            liked: !original.likedByMe
+        )
+        onPostUpdated(activePost)
+
+        do {
+            let result = original.likedByMe
+                ? try await PostService.shared.unlikePost(id: original.id)
+                : try await PostService.shared.likePost(id: original.id)
+            activePost = activePost.updatingLike(count: result.likeCount, liked: result.liked)
+            onPostUpdated(activePost)
+        } catch {
+            activePost = original
+            onPostUpdated(activePost)
+        }
     }
 
     private func reviewCallout(recipeId: String) -> some View {

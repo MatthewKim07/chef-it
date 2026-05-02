@@ -129,6 +129,8 @@ router.delete('/account', requireAuth, async (req, res) => {
     await client.query('BEGIN');
     await client.query('DELETE FROM comments WHERE user_id = $1', [req.user.id]);
     await client.query('DELETE FROM comments WHERE post_id IN (SELECT id FROM posts WHERE user_id = $1)', [req.user.id]);
+    await client.query('DELETE FROM post_likes WHERE user_id = $1', [req.user.id]);
+    await client.query('DELETE FROM post_likes WHERE post_id IN (SELECT id FROM posts WHERE user_id = $1)', [req.user.id]);
     await client.query('DELETE FROM follows WHERE follower_id = $1 OR following_id = $1', [req.user.id]);
     await client.query('DELETE FROM reviews WHERE user_id = $1', [req.user.id]);
     await client.query('DELETE FROM posts WHERE user_id = $1', [req.user.id]);

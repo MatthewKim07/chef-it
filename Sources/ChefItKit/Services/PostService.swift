@@ -19,6 +19,8 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
     public let displayName: String?
     public let avatarURL: String?
     public let commentCount: Int
+    public let likeCount: Int
+    public let likedByMe: Bool
 
     public init(
         id: Int,
@@ -29,7 +31,9 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
         userId: Int,
         displayName: String?,
         avatarURL: String?,
-        commentCount: Int
+        commentCount: Int,
+        likeCount: Int = 0,
+        likedByMe: Bool = false
     ) {
         self.id = id
         self.recipeId = recipeId
@@ -40,6 +44,8 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
         self.displayName = displayName
         self.avatarURL = avatarURL
         self.commentCount = commentCount
+        self.likeCount = likeCount
+        self.likedByMe = likedByMe
     }
 
     enum CodingKeys: String, CodingKey {
@@ -52,6 +58,23 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
         case displayName = "display_name"
         case avatarURL   = "avatar_url"
         case commentCount = "comment_count"
+        case likeCount   = "like_count"
+        case likedByMe   = "liked_by_me"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        recipeId = try c.decodeIfPresent(String.self, forKey: .recipeId)
+        caption = try c.decodeIfPresent(String.self, forKey: .caption)
+        imageURL = try c.decodeIfPresent(String.self, forKey: .imageURL)
+        createdAt = try c.decode(String.self, forKey: .createdAt)
+        userId = try c.decode(Int.self, forKey: .userId)
+        displayName = try c.decodeIfPresent(String.self, forKey: .displayName)
+        avatarURL = try c.decodeIfPresent(String.self, forKey: .avatarURL)
+        commentCount = try c.decodeIfPresent(Int.self, forKey: .commentCount) ?? 0
+        likeCount = try c.decodeIfPresent(Int.self, forKey: .likeCount) ?? 0
+        likedByMe = try c.decodeIfPresent(Bool.self, forKey: .likedByMe) ?? false
     }
 
     public func updatingCommentCount(_ commentCount: Int) -> Post {
@@ -64,8 +87,36 @@ public struct Post: Codable, Identifiable, Equatable, Sendable {
             userId: userId,
             displayName: displayName,
             avatarURL: avatarURL,
-            commentCount: commentCount
+            commentCount: commentCount,
+            likeCount: likeCount,
+            likedByMe: likedByMe
         )
+    }
+
+    public func updatingLike(count: Int, liked: Bool) -> Post {
+        Post(
+            id: id,
+            recipeId: recipeId,
+            caption: caption,
+            imageURL: imageURL,
+            createdAt: createdAt,
+            userId: userId,
+            displayName: displayName,
+            avatarURL: avatarURL,
+            commentCount: commentCount,
+            likeCount: count,
+            likedByMe: liked
+        )
+    }
+}
+
+public struct LikeResponse: Decodable, Sendable {
+    public let liked: Bool
+    public let likeCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case liked
+        case likeCount = "like_count"
     }
 }
 
@@ -97,7 +148,11 @@ public final class PostService {
         var urlStr = "\(baseURL)/api/posts?limit=\(limit)&offset=\(offset)"
         if let uid = userId { urlStr += "&user_id=\(uid)" }
         guard let url = URL(string: urlStr) else { throw PostServiceError.networkError("Invalid URL") }
-        let (data, response) = try await URLSession.shared.data(from: url)
+        var req = URLRequest(url: url)
+        if let token = AuthService.shared.retrieveToken() {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let (data, response) = try await URLSession.shared.data(for: req)
         return try decode(PostsPage.self, data: data, response: response)
     }
 
@@ -105,8 +160,35 @@ public final class PostService {
         guard let url = URL(string: "\(baseURL)/api/posts/\(id)") else {
             throw PostServiceError.networkError("Invalid URL")
         }
-        let (data, response) = try await URLSession.shared.data(from: url)
+        var req = URLRequest(url: url)
+        if let token = AuthService.shared.retrieveToken() {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let (data, response) = try await URLSession.shared.data(for: req)
         return try decode(Post.self, data: data, response: response)
+    }
+
+    public func likePost(id: Int) async throws -> LikeResponse {
+        try await sendLike(method: "POST", postId: id)
+    }
+
+    public func unlikePost(id: Int) async throws -> LikeResponse {
+        try await sendLike(method: "DELETE", postId: id)
+    }
+
+    private func sendLike(method: String, postId: Int) async throws -> LikeResponse {
+        guard let token = AuthService.shared.retrieveToken() else {
+            throw PostServiceError.notAuthenticated
+        }
+        guard let url = URL(string: "\(baseURL)/api/posts/\(postId)/like") else {
+            throw PostServiceError.networkError("Invalid URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = method
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await URLSession.shared.data(for: req)
+        return try decode(LikeResponse.self, data: data, response: response)
     }
 
     public func hasMorePosts(loadedCount: Int, totalCount: Int) -> Bool {
