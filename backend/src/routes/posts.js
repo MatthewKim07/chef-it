@@ -131,6 +131,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: 'Post not found' });
     if (rows[0].user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
+    await db.query('DELETE FROM notifications WHERE post_id = $1', [req.params.id]);
     await db.query('DELETE FROM comments WHERE post_id = $1', [req.params.id]);
     await db.query('DELETE FROM post_likes WHERE post_id = $1', [req.params.id]);
     await db.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
@@ -147,7 +148,7 @@ router.post('/:id/like', requireAuth, async (req, res) => {
   if (!Number.isInteger(postId)) return res.status(400).json({ error: 'Invalid post id' });
 
   try {
-    const { rows: postRows } = await db.query('SELECT id FROM posts WHERE id = $1', [postId]);
+    const { rows: postRows } = await db.query('SELECT id, user_id FROM posts WHERE id = $1', [postId]);
     if (!postRows[0]) return res.status(404).json({ error: 'Post not found' });
 
     await db.query(
@@ -155,6 +156,17 @@ router.post('/:id/like', requireAuth, async (req, res) => {
        ON CONFLICT (user_id, post_id) DO NOTHING`,
       [req.user.id, postId]
     );
+
+    // Notify post owner (skip self-likes).
+    if (postRows[0].user_id !== req.user.id) {
+      await db.query(
+        `INSERT INTO notifications (user_id, actor_id, type, post_id)
+         VALUES ($1, $2, 'like', $3)
+         ON CONFLICT (user_id, actor_id, post_id) WHERE type = 'like' DO NOTHING`,
+        [postRows[0].user_id, req.user.id, postId]
+      );
+    }
+
     const { rows } = await db.query(
       'SELECT COUNT(*)::int AS cnt FROM post_likes WHERE post_id = $1',
       [postId]
@@ -174,6 +186,12 @@ router.delete('/:id/like', requireAuth, async (req, res) => {
   try {
     await db.query(
       'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2',
+      [req.user.id, postId]
+    );
+    // Remove the like notification when unliked.
+    await db.query(
+      `DELETE FROM notifications
+       WHERE actor_id = $1 AND post_id = $2 AND type = 'like'`,
       [req.user.id, postId]
     );
     const { rows } = await db.query(
@@ -209,10 +227,24 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
   if (!body) return res.status(400).json({ error: 'body required' });
 
   try {
+    const postId = parseInt(req.params.id, 10);
+    const { rows: postRows } = await db.query('SELECT user_id FROM posts WHERE id = $1', [postId]);
+    if (!postRows[0]) return res.status(404).json({ error: 'Post not found' });
+
     const { rows } = await db.query(
       'INSERT INTO comments (user_id, post_id, body) VALUES ($1, $2, $3) RETURNING *',
-      [req.user.id, req.params.id, body]
+      [req.user.id, postId, body]
     );
+
+    // Notify post owner (skip self-comments).
+    if (postRows[0].user_id !== req.user.id) {
+      await db.query(
+        `INSERT INTO notifications (user_id, actor_id, type, post_id, comment_id)
+         VALUES ($1, $2, 'comment', $3, $4)`,
+        [postRows[0].user_id, req.user.id, postId, rows[0].id]
+      );
+    }
+
     const { rows: full } = await db.query(
       `${COMMENT_SELECT} WHERE c.id = $1`,
       [rows[0].id]

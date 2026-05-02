@@ -127,6 +127,8 @@ router.delete('/account', requireAuth, async (req, res) => {
     if (!match) return res.status(401).json({ error: 'Password is incorrect' });
 
     await client.query('BEGIN');
+    await client.query('DELETE FROM notifications WHERE user_id = $1 OR actor_id = $1', [req.user.id]);
+    await client.query('DELETE FROM notifications WHERE post_id IN (SELECT id FROM posts WHERE user_id = $1)', [req.user.id]);
     await client.query('DELETE FROM comments WHERE user_id = $1', [req.user.id]);
     await client.query('DELETE FROM comments WHERE post_id IN (SELECT id FROM posts WHERE user_id = $1)', [req.user.id]);
     await client.query('DELETE FROM post_likes WHERE user_id = $1', [req.user.id]);

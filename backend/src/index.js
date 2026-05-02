@@ -19,6 +19,9 @@ app.use('/api/posts', postRoutes);
 const reviewRoutes = require('./routes/reviews');
 app.use('/api/recipes/:recipeId/reviews', reviewRoutes);
 
+const notificationRoutes = require('./routes/notifications');
+app.use('/api/notifications', notificationRoutes);
+
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3000;

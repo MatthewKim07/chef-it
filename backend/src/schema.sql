@@ -49,3 +49,19 @@ CREATE TABLE IF NOT EXISTS post_likes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_post_likes_post ON post_likes(post_id);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  actor_id    INTEGER NOT NULL REFERENCES users(id),
+  type        TEXT NOT NULL,
+  post_id     INTEGER REFERENCES posts(id),
+  comment_id  INTEGER REFERENCES comments(id),
+  read_at     TIMESTAMP,
+  created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_like_unique
+  ON notifications(user_id, actor_id, post_id)
+  WHERE type = 'like';
