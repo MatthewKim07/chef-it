@@ -54,6 +54,25 @@ public final class AuthService: ObservableObject {
         isLoggedIn = false
     }
 
+    public func changePassword(currentPassword: String, newPassword: String) async throws {
+        let body = ["current_password": currentPassword, "new_password": newPassword]
+        let _: OkResponse = try await authedRequest(method: "POST", path: "/api/auth/change-password", body: body)
+    }
+
+    public func changeEmail(password: String, newEmail: String) async throws -> AuthResponse {
+        let body = ["password": password, "new_email": newEmail]
+        let response: AuthResponse = try await authedRequest(method: "POST", path: "/api/auth/change-email", body: body)
+        saveToken(response.token)
+        currentUser = response.user
+        return response
+    }
+
+    public func deleteAccount(password: String) async throws {
+        let body = ["password": password]
+        let _: OkResponse = try await authedRequest(method: "DELETE", path: "/api/auth/account", body: body)
+        logout()
+    }
+
     public func retrieveToken() -> String? {
         let query: [CFString: Any] = [
             kSecClass:            kSecClassGenericPassword,
@@ -77,6 +96,7 @@ public final class AuthService: ObservableObject {
         let id: Int
         let email: String
     }
+    private struct OkResponse: Decodable { let ok: Bool }
 
     private func post<T: Decodable>(path: String, body: [String: String]) async throws -> T {
         guard let url = URL(string: baseURL + path) else {
@@ -98,6 +118,45 @@ public final class AuthService: ObservableObject {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
 
         if status == 200 || status == 201 {
+            return try JSONDecoder().decode(T.self, from: data)
+        }
+
+        let message = (try? JSONDecoder().decode(ErrorBody.self, from: data))?.error ?? "HTTP \(status)"
+
+        switch status {
+        case 401: throw AuthError.invalidCredentials
+        case 409: throw AuthError.emailAlreadyRegistered
+        default:  throw AuthError.serverError(message)
+        }
+    }
+
+    private func authedRequest<T: Decodable>(method: String, path: String, body: [String: String]) async throws -> T {
+        guard let url = URL(string: baseURL + path) else {
+            throw AuthError.networkError("Invalid URL")
+        }
+        guard let token = retrieveToken() else {
+            throw AuthError.invalidCredentials
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let urlError as URLError {
+            throw AuthError.networkError(Self.connectionHint(for: urlError, baseURL: baseURL))
+        }
+
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+
+        if status == 200 || status == 201 || status == 204 {
+            if data.isEmpty, let empty = try? JSONDecoder().decode(T.self, from: Data("{\"ok\":true}".utf8)) {
+                return empty
+            }
             return try JSONDecoder().decode(T.self, from: data)
         }
 
