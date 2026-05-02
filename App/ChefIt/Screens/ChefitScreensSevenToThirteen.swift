@@ -335,6 +335,7 @@ struct ChefitShoppingListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var showDismissButton: Bool = false
+    var onBack: (() -> Void)? = nil
 
     @State private var selectedProviderId: String?
 
@@ -362,45 +363,81 @@ struct ChefitShoppingListView: View {
     }
 
     var body: some View {
-        Group {
-            if cart.items.isEmpty {
-                emptyState
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
-                        BuyIngredientsSection(
-                            quotes: providerQuotes,
-                            recommendations: recommendations,
-                            selectedProviderId: selectedProviderId,
-                            onSelect: handleProviderSelect
-                        )
+        if let onBack {
+            VStack(spacing: 0) {
+                customHeader(onBack: onBack)
+                content
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(ChefitColors.cream.ignoresSafeArea())
+        } else {
+            content
+                .background(ChefitColors.cream.ignoresSafeArea())
+                .navigationTitle("Shopping List")
+                .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    if showDismissButton {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Done") {
+                                dismiss()
+                            }
+                            .font(ChefitTypography.label())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                        }
+                    }
+                }
+        }
+    }
 
-                        IngredientList(
-                            sections: groupedSections,
-                            onToggle: { cart.toggleItem($0) },
-                            onAdjust: { cart.updateQuantity($0, delta: $1) },
-                            onRemove: { cart.removeItem(id: $0.id) }
-                        )
-                    }
-                    .padding(.horizontal, ChefitSpacing.md)
-                    .padding(.vertical, ChefitSpacing.md)
+    @ViewBuilder
+    private var content: some View {
+        if cart.items.isEmpty {
+            emptyState
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
+                    BuyIngredientsSection(
+                        quotes: providerQuotes,
+                        recommendations: recommendations,
+                        selectedProviderId: selectedProviderId,
+                        onSelect: handleProviderSelect
+                    )
+
+                    IngredientList(
+                        sections: groupedSections,
+                        onToggle: { cart.toggleItem($0) },
+                        onAdjust: { cart.updateQuantity($0, delta: $1) },
+                        onRemove: { cart.removeItem(id: $0.id) }
+                    )
                 }
+                .padding(.horizontal, ChefitSpacing.md)
+                .padding(.vertical, ChefitSpacing.md)
             }
         }
-        .background(ChefitColors.cream.ignoresSafeArea())
-        .navigationTitle("Shopping List")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            if showDismissButton {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .font(ChefitTypography.label())
-                    .foregroundStyle(ChefitColors.sageGreen)
+    }
+
+    private func customHeader(onBack: @escaping () -> Void) -> some View {
+        ZStack {
+            Text("Shopping List")
+                .font(.custom("Nunito-Bold", size: 22))
+                .foregroundStyle(ChefitColors.text)
+
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(ChefitColors.sageGreen)
+                        .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Back")
+                Spacer()
             }
         }
+        .padding(.horizontal, ChefitSpacing.md)
+        .padding(.top, ChefitSpacing.sm)
+        .padding(.bottom, ChefitSpacing.md)
     }
 
     private func handleProviderSelect(_ provider: ShoppingProvider) {

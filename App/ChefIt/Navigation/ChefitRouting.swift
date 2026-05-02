@@ -24,6 +24,7 @@ struct ChefitRootCoordinatorView: View {
     @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
+    @State private var shoppingListOrigin: ChefitRoute = .home
     @State private var showCamera = false
     @State private var showPhotoLibrary = false
     @State private var pendingImageData: Data?
@@ -140,7 +141,10 @@ struct ChefitRootCoordinatorView: View {
                 onSearchTap: { route = .search },
                 onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) },
                 onIngredientsTap: { route = .myIngredients },
-                onCartTap: { route = .shoppingList }
+                onCartTap: {
+                    shoppingListOrigin = .home
+                    route = .shoppingList
+                }
             )
 
         case .myIngredients:
@@ -206,9 +210,7 @@ struct ChefitRootCoordinatorView: View {
             )
 
         case .shoppingList:
-            NavigationStack {
-                ChefitShoppingListView()
-            }
+            ChefitShoppingListView(onBack: { route = shoppingListOrigin })
 
         case .saved:
             ChefitSavedView { recipeID in
@@ -217,7 +219,10 @@ struct ChefitRootCoordinatorView: View {
 
         case .profile:
             ChefitProfileView(
-                onShoppingTap: { route = .shoppingList },
+                onShoppingTap: {
+                    shoppingListOrigin = .profile
+                    route = .shoppingList
+                },
                 onPantryTap: { route = .scan },
                 onLogout: { AuthService.shared.logout() }
             )
