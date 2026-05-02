@@ -912,6 +912,7 @@ private final class ProfileViewModel: ObservableObject {
 struct ChefitProfileView: View {
     let onShoppingTap: () -> Void
     let onPantryTap: () -> Void
+    let onSettingsTap: () -> Void
     let onLogout: () -> Void
 
     @EnvironmentObject private var authService: AuthService
@@ -1096,7 +1097,7 @@ struct ChefitProfileView: View {
         VStack(spacing: 0) {
             ChefitProfileMenuRow(label: "Shopping List", onTap: onShoppingTap)
             ChefitProfileMenuRow(label: "Pantry", onTap: onPantryTap)
-            ChefitProfileMenuRow(label: "Settings", onTap: {})
+            ChefitProfileMenuRow(label: "Settings", onTap: onSettingsTap)
             ChefitProfileMenuRow(label: "Help & Support", onTap: {})
         }
         .padding(.horizontal, ChefitSpacing.md)

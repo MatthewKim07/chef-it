@@ -13,6 +13,7 @@ enum ChefitRoute: Hashable {
     case shoppingList
     case saved
     case profile
+    case settings
     case community
     case userProfile(id: Int)
 }
@@ -95,7 +96,7 @@ struct ChefitRootCoordinatorView: View {
                 case .home, .myIngredients, .search: selectedTab = .home
                 case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
                 case .community, .userProfile: selectedTab = .community
-                case .profile: selectedTab = .profile
+                case .profile, .settings: selectedTab = .profile
                 default: break
                 }
                 if case .recommendations = newValue {
@@ -224,7 +225,14 @@ struct ChefitRootCoordinatorView: View {
                     route = .shoppingList
                 },
                 onPantryTap: { route = .scan },
+                onSettingsTap: { route = .settings },
                 onLogout: { AuthService.shared.logout() }
+            )
+
+        case .settings:
+            ChefitSettingsView(
+                onBack: { route = .profile },
+                onAccountDeleted: { AuthService.shared.logout() }
             )
 
         case .community:
