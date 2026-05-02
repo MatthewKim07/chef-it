@@ -284,13 +284,44 @@ private final class OtherUserProfileViewModel: ObservableObject {
         }
         isLoading = false
     }
+
+    func updatePost(_ post: Post) {
+        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        posts[index] = post
+    }
+
+    func toggleLike(postId: Int) async {
+        guard let index = posts.firstIndex(where: { $0.id == postId }) else { return }
+        let original = posts[index]
+        posts[index] = original.updatingLike(
+            count: original.likedByMe ? max(0, original.likeCount - 1) : original.likeCount + 1,
+            liked: !original.likedByMe
+        )
+
+        do {
+            let result = original.likedByMe
+                ? try await PostService.shared.unlikePost(id: postId)
+                : try await PostService.shared.likePost(id: postId)
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = posts[i].updatingLike(count: result.likeCount, liked: result.liked)
+            }
+        } catch {
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = original
+            }
+        }
+    }
 }
 
 struct OtherUserProfileView: View {
     let userId: Int
     let onBack: () -> Void
 
+    @EnvironmentObject private var authService: AuthService
     @StateObject private var vm = OtherUserProfileViewModel()
+    @State private var selectedPost: Post?
+
+    private var currentUserId: Int? { authService.currentUser?.id }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -347,7 +378,10 @@ struct OtherUserProfileView: View {
                         ]
                         LazyVGrid(columns: cols, spacing: 2) {
                             ForEach(vm.posts) { post in
-                                postCell(post)
+                                Button { selectedPost = post } label: {
+                                    postCell(post)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
@@ -375,6 +409,19 @@ struct OtherUserProfileView: View {
             .padding(.top, ChefitSpacing.md)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+        .fullScreenCover(item: $selectedPost) { post in
+            PostDetailFullScreenView(
+                post: post,
+                currentUserId: currentUserId,
+                onBack: { selectedPost = nil },
+                onPostUpdated: { updated in
+                    selectedPost = updated
+                    vm.updatePost(updated)
+                },
+                onDelete: nil
+            )
+            .environmentObject(authService)
+        }
     }
 
     private func postCell(_ post: Post) -> some View {

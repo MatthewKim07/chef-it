@@ -905,6 +905,33 @@ private final class ProfileViewModel: ObservableObject {
             posts.removeAll { $0.id == id }
         } catch { }
     }
+
+    func updatePost(_ post: Post) {
+        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        posts[index] = post
+    }
+
+    func toggleLike(postId: Int) async {
+        guard let index = posts.firstIndex(where: { $0.id == postId }) else { return }
+        let original = posts[index]
+        posts[index] = original.updatingLike(
+            count: original.likedByMe ? max(0, original.likeCount - 1) : original.likeCount + 1,
+            liked: !original.likedByMe
+        )
+
+        do {
+            let result = original.likedByMe
+                ? try await PostService.shared.unlikePost(id: postId)
+                : try await PostService.shared.likePost(id: postId)
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = posts[i].updatingLike(count: result.likeCount, liked: result.liked)
+            }
+        } catch {
+            if let i = posts.firstIndex(where: { $0.id == postId }) {
+                posts[i] = original
+            }
+        }
+    }
 }
 
 // MARK: - Profile View
@@ -985,13 +1012,18 @@ struct ChefitProfileView: View {
             }
             .environmentObject(authService)
         }
-        .sheet(item: $selectedPost) { post in
-            PostDetailSheet(
+        .fullScreenCover(item: $selectedPost) { post in
+            PostDetailFullScreenView(
                 post: post,
-                isOwnPost: post.userId == userId
-            ) {
-                await vm.deletePost(id: post.id)
-            }
+                currentUserId: userId,
+                onBack: { selectedPost = nil },
+                onPostUpdated: { updated in
+                    selectedPost = updated
+                    vm.updatePost(updated)
+                },
+                onDelete: { p in await vm.deletePost(id: p.id) }
+            )
+            .environmentObject(authService)
         }
     }
 
