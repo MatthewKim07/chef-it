@@ -11,6 +11,8 @@ struct ChefitHomeView: View {
     let onRecipeTap: (String) -> Void
     let onIngredientsTap: () -> Void
     let onCartTap: () -> Void
+    let onNotificationsTap: () -> Void
+    let unreadNotificationCount: Int
 
     private var greetingName: String {
         let trimmed = userProfileStore.profile?.displayName?.trimmingCharacters(in: .whitespaces)
@@ -39,9 +41,27 @@ struct ChefitHomeView: View {
                                 .layoutPriority(1)
                         }
                         Spacer(minLength: 8)
-                        Image(systemName: "bell")
-                            .font(.system(size: 24, weight: .regular))
-                            .foregroundStyle(ChefitColors.text.opacity(0.85))
+                        Button(action: onNotificationsTap) {
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: "bell")
+                                    .font(.system(size: 24, weight: .regular))
+                                    .foregroundStyle(ChefitColors.text.opacity(0.85))
+                                    .frame(width: 32, height: 32)
+
+                                if unreadNotificationCount > 0 {
+                                    Text(unreadNotificationCount > 99 ? "99+" : "\(unreadNotificationCount)")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(ChefitColors.peach)
+                                        .clipShape(Capsule())
+                                        .offset(x: 4, y: -2)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Notifications")
                     }
                     .padding(.top, 14)
 

@@ -14,6 +14,7 @@ enum ChefitRoute: Hashable {
     case saved
     case profile
     case settings
+    case notifications
     case community
     case userProfile(id: Int)
 }
@@ -26,6 +27,8 @@ struct ChefitRootCoordinatorView: View {
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
     @State private var shoppingListOrigin: ChefitRoute = .home
+    @State private var unreadNotificationCount: Int = 0
+    @State private var notificationPostTarget: Post?
     @State private var showCamera = false
     @State private var showPhotoLibrary = false
     @State private var pendingImageData: Data?
@@ -93,7 +96,7 @@ struct ChefitRootCoordinatorView: View {
             }
             .onChange(of: route) { _, newValue in
                 switch newValue {
-                case .home, .myIngredients, .search: selectedTab = .home
+                case .home, .myIngredients, .search, .notifications: selectedTab = .home
                 case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
                 case .community, .userProfile: selectedTab = .community
                 case .profile, .settings: selectedTab = .profile
@@ -121,6 +124,31 @@ struct ChefitRootCoordinatorView: View {
             } message: {
                 Text(scanErrorMessage ?? "")
             }
+            .fullScreenCover(item: $notificationPostTarget) { post in
+                PostDetailFullScreenView(
+                    post: post,
+                    currentUserId: AuthService.shared.currentUser?.id,
+                    onBack: { notificationPostTarget = nil },
+                    onPostUpdated: { updated in notificationPostTarget = updated },
+                    onDelete: nil
+                )
+                .environmentObject(AuthService.shared)
+            }
+            .task(id: AuthService.shared.isLoggedIn) {
+                guard AuthService.shared.isLoggedIn else { return }
+                await refreshUnreadCount()
+            }
+            .onChange(of: route) { _, newValue in
+                if newValue == .home {
+                    Task { await refreshUnreadCount() }
+                }
+            }
+    }
+
+    private func refreshUnreadCount() async {
+        if let count = try? await NotificationService.shared.unreadCount() {
+            unreadNotificationCount = count
+        }
     }
 
     private func startPendingScan() {
@@ -145,7 +173,9 @@ struct ChefitRootCoordinatorView: View {
                 onCartTap: {
                     shoppingListOrigin = .home
                     route = .shoppingList
-                }
+                },
+                onNotificationsTap: { route = .notifications },
+                unreadNotificationCount: unreadNotificationCount
             )
 
         case .myIngredients:
@@ -233,6 +263,24 @@ struct ChefitRootCoordinatorView: View {
             ChefitSettingsView(
                 onBack: { route = .profile },
                 onAccountDeleted: { AuthService.shared.logout() }
+            )
+
+        case .notifications:
+            ChefitNotificationsView(
+                onBack: {
+                    unreadNotificationCount = 0
+                    route = .home
+                },
+                onPostTap: { postId in
+                    Task {
+                        if let post = try? await PostService.shared.fetchPost(id: postId) {
+                            notificationPostTarget = post
+                        }
+                    }
+                },
+                onActorTap: { actorId in
+                    route = .userProfile(id: actorId)
+                }
             )
 
         case .community:
