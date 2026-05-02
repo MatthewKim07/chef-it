@@ -43,6 +43,7 @@ struct ChefitRecipeDetailsPayload: Hashable {
 
 struct ChefitRecipeDiscoveryView: View {
     let recipe: ChefitRecipeItem
+    let onBack: () -> Void
     let onViewRecipe: (ChefitRecipeDetailsPayload) -> Void
 
     @EnvironmentObject private var shoppingCart: ShoppingCartViewModel
@@ -155,8 +156,11 @@ struct ChefitRecipeDiscoveryView: View {
         }
         .frame(height: 200)
         .overlay(alignment: .topLeading) {
-            heroBadge
-                .padding(ChefitSpacing.md)
+            HStack(spacing: ChefitSpacing.sm) {
+                circularGlassButton(systemName: "chevron.left", action: onBack)
+                heroBadge
+            }
+            .padding(ChefitSpacing.md)
         }
         .overlay(alignment: .topTrailing) {
             HStack(spacing: ChefitSpacing.sm) {

@@ -103,7 +103,7 @@
 		F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefItApp.swift; sourceTree = "<group>"; };
 		F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteRecipeStoreTests.swift; sourceTree = "<group>"; };
 		FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDiscoveryPlannerTests.swift; sourceTree = "<group>"; };
-		"TEMP_F1562B1C-B20D-48E8-93BE-F5532AAB5924" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		"TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,10 +283,10 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		"TEMP_A5F80C48-0FCC-4661-B1CA-179D9E78A0B5" /* chef-it */ = {
+		"TEMP_444AE9D7-1B8E-4012-B4C8-405BCE6F021E" /* chef-it */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_F1562B1C-B20D-48E8-93BE-F5532AAB5924" /* Secrets.xcconfig */,
+				"TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */,
 			);
 			path = "chef-it";
 			sourceTree = "<group>";
@@ -463,7 +463,7 @@
 		};
 		1E23C52136A1B3B072B78DB4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_F1562B1C-B20D-48E8-93BE-F5532AAB5924" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -568,7 +568,7 @@
 		};
 		7B3977A781468949F587C355 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_F1562B1C-B20D-48E8-93BE-F5532AAB5924" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

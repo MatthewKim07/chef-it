@@ -29,6 +29,7 @@ struct ChefitRootCoordinatorView: View {
     @State private var shoppingListOrigin: ChefitRoute = .home
     @State private var unreadNotificationCount: Int = 0
     @State private var notificationPostTarget: Post?
+    @State private var recipeDiscoverOrigin: ChefitRoute = .home
     @State private var showCamera = false
     @State private var showPhotoLibrary = false
     @State private var pendingImageData: Data?
@@ -168,7 +169,10 @@ struct ChefitRootCoordinatorView: View {
         case .home:
             ChefitHomeView(
                 onSearchTap: { route = .search },
-                onRecipeTap: { recipeID in route = .recipeDiscover(id: recipeID) },
+                onRecipeTap: { recipeID in
+                    recipeDiscoverOrigin = .home
+                    route = .recipeDiscover(id: recipeID)
+                },
                 onIngredientsTap: { route = .myIngredients },
                 onCartTap: {
                     shoppingListOrigin = .home
@@ -186,6 +190,7 @@ struct ChefitRootCoordinatorView: View {
         case .search:
             ChefitSearchView(
                 onResultTap: { recipeID in
+                    recipeDiscoverOrigin = .search
                     route = .recipeDiscover(id: recipeID)
                 },
                 onBack: {
@@ -197,7 +202,10 @@ struct ChefitRootCoordinatorView: View {
             let recipe = homeFeed.recipeByID[id]
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
                 ?? ChefitSampleData.popularRecipes[0]
-            ChefitRecipeDiscoveryView(recipe: recipe) { payload in
+            ChefitRecipeDiscoveryView(
+                recipe: recipe,
+                onBack: { route = recipeDiscoverOrigin }
+            ) { payload in
                 route = .recipeDetails(payload: payload)
             }
 
@@ -245,6 +253,7 @@ struct ChefitRootCoordinatorView: View {
 
         case .saved:
             ChefitSavedView { recipeID in
+                recipeDiscoverOrigin = .saved
                 route = .recipeDiscover(id: recipeID)
             }
 
