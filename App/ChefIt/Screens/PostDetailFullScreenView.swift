@@ -296,7 +296,10 @@ struct PostDetailFullScreenView: View {
             } else {
                 LazyVStack(spacing: ChefitSpacing.md) {
                     ForEach(vm.comments) { comment in
-                        CommentRowView(comment: comment)
+                        CommentRowView(
+                            comment: comment,
+                            isAuthor: comment.userId == activePost.userId
+                        )
                     }
                 }
             }
@@ -445,6 +448,7 @@ struct PostDetailFullScreenView: View {
 
 private struct CommentRowView: View {
     let comment: Comment
+    let isAuthor: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
@@ -452,9 +456,21 @@ private struct CommentRowView: View {
                 avatarView
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(comment.displayName ?? "Chef")
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.sageGreen)
+                    HStack(spacing: ChefitSpacing.xs) {
+                        Text(comment.displayName ?? "Chef")
+                            .font(ChefitTypography.label())
+                            .foregroundStyle(ChefitColors.sageGreen)
+
+                        if isAuthor {
+                            Text("Author")
+                                .font(ChefitTypography.micro())
+                                .foregroundStyle(ChefitColors.peach)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(ChefitColors.peach.opacity(0.15))
+                                .clipShape(Capsule())
+                        }
+                    }
 
                     Text(RelativePostDateFormatter.string(from: comment.createdAt))
                         .font(ChefitTypography.micro())
@@ -511,9 +527,39 @@ enum RelativePostDateFormatter {
             return ""
         }
 
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter.localizedString(for: date, relativeTo: Date())
+        let now = Date()
+        // Clock skew between server and device can yield future timestamps. Clamp.
+        let elapsed = max(0, now.timeIntervalSince(date))
+
+        let minute: TimeInterval = 60
+        let hour: TimeInterval = 3600
+        let day: TimeInterval = 86_400
+        let week: TimeInterval = day * 7
+
+        if elapsed < minute { return "just now" }
+        if elapsed < hour {
+            let m = Int(elapsed / minute)
+            return "\(m) \(m == 1 ? "minute" : "minutes") ago"
+        }
+        if elapsed < day {
+            let h = Int(elapsed / hour)
+            return "\(h) \(h == 1 ? "hour" : "hours") ago"
+        }
+        if elapsed < week {
+            let d = Int(elapsed / day)
+            return "\(d) \(d == 1 ? "day" : "days") ago"
+        }
+
+        let cal = Calendar.current
+        let comps = cal.dateComponents([.year, .month, .weekOfYear], from: date, to: now)
+        if let years = comps.year, years >= 1 {
+            return "\(years) \(years == 1 ? "year" : "years") ago"
+        }
+        if let months = comps.month, months >= 1 {
+            return "\(months) \(months == 1 ? "month" : "months") ago"
+        }
+        let weeks = max(1, Int(elapsed / week))
+        return "\(weeks) \(weeks == 1 ? "week" : "weeks") ago"
     }
 
     private static func makeFormatters() -> [ISO8601DateFormatter] {
