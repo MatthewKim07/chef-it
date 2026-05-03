@@ -17,6 +17,9 @@ settings:
 packages:
   ChefItKit:
     path: .
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 7.0.0
 
 targets:
   ChefIt:
@@ -44,10 +47,15 @@ targets:
         EDAMAM_APP_ID: $(EDAMAM_APP_ID)
         EDAMAM_APP_KEY: $(EDAMAM_APP_KEY)
         AUTH_BASE_URL: $(AUTH_BASE_URL)
+        GOOGLE_CLIENT_ID: $(GOOGLE_CLIENT_ID)
         GEMINI_API_KEY: $(GEMINI_API_KEY)
         OPENAI_API_KEY: $(OPENAI_API_KEY)
         NSCameraUsageDescription: "Chef It uses your camera to scan ingredients in your pantry."
         NSPhotoLibraryUsageDescription: "Chef It can scan photos from your library to detect ingredients."
+        CFBundleURLTypes:
+          - CFBundleURLName: com.chefit.app.oauth
+            CFBundleURLSchemes:
+              - $(GOOGLE_REVERSED_CLIENT_ID)
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
         UIApplicationSceneManifest:
@@ -69,6 +77,10 @@ targets:
     dependencies:
       - package: ChefItKit
         product: ChefItKit
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: GoogleSignIn
+        product: GoogleSignInSwift
 
   ChefItKitTests:
     type: bundle.unit-test

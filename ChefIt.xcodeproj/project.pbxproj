@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0117D4C37AEF9DC364A90F1E /* ChefitHomeSearchViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */; };
 		0297AD2D093EE4F6A9B4731A /* ShoppingListBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */; };
+		040736FE4216CD5C3427D4D1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = DFB433A629117D6FDFE34FBF /* GoogleSignIn */; };
 		0B9D8E71D9840C6ED4EAEBAD /* IngredientStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */; };
 		0F2D85ACF2F7142AFC4640D0 /* RecipeDeduplicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */; };
 		2351BDE4A079B031BF8D72D9 /* IngredientPersistingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */; };
@@ -31,12 +32,14 @@
 		8B30FDB30C523447DD4B333E /* MatchRationaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */; };
 		95ABBFE7FDDC53DA9BD1342F /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC63472C872D506B2DCC2FBC /* FeedView.swift */; };
 		9F2E20E8880D1859C10FDEDA /* MatchRankingStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */; };
+		A57D905D4039CEF8B1700683 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E481F8CDFE47AF4930CEB91A /* GoogleSignInSwift */; };
 		B12278EEF581AD118B8F3B47 /* ShoppingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B73880C06529EA6980EA1 /* ShoppingProvider.swift */; };
 		B56C46BAB5AECF5CDC433383 /* ChefitComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */; };
 		B647FB9276FF4869D2691327 /* ChefitRecipeFlowViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */; };
 		B81DDA876138B7D1E429D6D3 /* MatchingScenariosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */; };
 		B9B2208C7C797796ABCDE619 /* ChefItApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */; };
 		BA75FDA56F696748EB474304 /* ChefitSymbolIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */; };
+		BEE34CFDD087093336EE7012 /* GoogleSignInHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5368FD509526F921397F1D /* GoogleSignInHandler.swift */; };
 		C78B0BB595C4C6539D422402 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 626B30E20835CEF760C8DF25 /* CameraCapture.swift */; };
 		C952507EB70A0E96C7B7607D /* ScanFlowViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */; };
 		CB617A1D60F6BFCC0B3567D4 /* EdamamRecipeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */; };
@@ -58,6 +61,7 @@
 /* Begin PBXFileReference section */
 		0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientPersistingTests.swift; sourceTree = "<group>"; };
 		195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSplashAuthViews.swift; sourceTree = "<group>"; };
+		1C5368FD509526F921397F1D /* GoogleSignInHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInHandler.swift; sourceTree = "<group>"; };
 		208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatcherTests.swift; sourceTree = "<group>"; };
 		28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchRationaleTests.swift; sourceTree = "<group>"; };
 		28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitTheme.swift; sourceTree = "<group>"; };
@@ -103,7 +107,7 @@
 		F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefItApp.swift; sourceTree = "<group>"; };
 		F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteRecipeStoreTests.swift; sourceTree = "<group>"; };
 		FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDiscoveryPlannerTests.swift; sourceTree = "<group>"; };
-		"TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		"TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +116,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				5BEF47A5EA0B67C7428CB01D /* ChefItKit in Frameworks */,
+				040736FE4216CD5C3427D4D1 /* GoogleSignIn in Frameworks */,
+				A57D905D4039CEF8B1700683 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,6 +161,7 @@
 				195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */,
 				3077145A42CE90925B46473C /* CreatePostView.swift */,
 				EC63472C872D506B2DCC2FBC /* FeedView.swift */,
+				1C5368FD509526F921397F1D /* GoogleSignInHandler.swift */,
 				A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */,
 				F08F9F112628201F55CD4D5C /* PostDetailFullScreenView.swift */,
 				BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */,
@@ -283,10 +290,10 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		"TEMP_444AE9D7-1B8E-4012-B4C8-405BCE6F021E" /* chef-it */ = {
+		"TEMP_0D1FA3F9-7ECC-43EA-A180-0CA1F0377E37" /* chef-it */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */,
+				"TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */,
 			);
 			path = "chef-it";
 			sourceTree = "<group>";
@@ -328,6 +335,8 @@
 			name = ChefIt;
 			packageProductDependencies = (
 				06D2747C84F39029B153F7B6 /* ChefItKit */,
+				DFB433A629117D6FDFE34FBF /* GoogleSignIn */,
+				E481F8CDFE47AF4930CEB91A /* GoogleSignInSwift */,
 			);
 			productName = ChefIt;
 			productReference = 667948645BD748A7B80612F4 /* ChefIt.app */;
@@ -360,6 +369,7 @@
 			mainGroup = 6B443C21C8AD2EF25E023D09;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				6FFC46DD116F270C6F62AC7A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				3EDF81ED688CE7C13C4EDFEF /* XCLocalSwiftPackageReference "." */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -407,6 +417,7 @@
 				DD3ADCA9320F20269B9837E8 /* ChefitTheme.swift in Sources */,
 				D52C84D811AD27434B2B3CBD /* CreatePostView.swift in Sources */,
 				95ABBFE7FDDC53DA9BD1342F /* FeedView.swift in Sources */,
+				BEE34CFDD087093336EE7012 /* GoogleSignInHandler.swift in Sources */,
 				5C0229BCAE982C376C25BBE0 /* PostCardView.swift in Sources */,
 				4D8788170C7A8F0076F87E72 /* PostDetailFullScreenView.swift in Sources */,
 				53404D12F98EEBE8D7C9AC11 /* ReviewComposerSheet.swift in Sources */,
@@ -463,7 +474,7 @@
 		};
 		1E23C52136A1B3B072B78DB4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -568,7 +579,7 @@
 		};
 		7B3977A781468949F587C355 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_820BD01C-765B-4772-A004-A5938F61D4DB" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -687,6 +698,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		6FFC46DD116F270C6F62AC7A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		06D2747C84F39029B153F7B6 /* ChefItKit */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -695,6 +717,16 @@
 		4895006B800D275E029B9E61 /* ChefItKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ChefItKit;
+		};
+		DFB433A629117D6FDFE34FBF /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6FFC46DD116F270C6F62AC7A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		E481F8CDFE47AF4930CEB91A /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6FFC46DD116F270C6F62AC7A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
