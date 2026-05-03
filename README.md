@@ -214,21 +214,21 @@ Built with love at ConHacks 2026 by:
   <tr>
     <td align="center" width="33%">
       <a href="https://github.com/MatthewKim07">
-        <img src="https://github.com/MatthewKim07.png" width="100" style="border-radius:50%" alt="Matthew Kim"/><br/>
+        <img src="https://images.weserv.nl/?url=github.com/MatthewKim07.png&h=120&w=120&fit=cover&mask=circle" width="120" alt="Matthew Kim"/><br/>
         <sub><b>Matthew Kim</b></sub>
       </a><br/>
       <sub>🧠 AI · Vision · Pantry Detection</sub>
     </td>
     <td align="center" width="33%">
       <a href="https://github.com/SoroushKhajehpour">
-        <img src="https://github.com/SoroushKhajehpour.png" width="100" style="border-radius:50%" alt="Soroush Khajehpour"/><br/>
+        <img src="https://images.weserv.nl/?url=github.com/SoroushKhajehpour.png&h=120&w=120&fit=cover&mask=circle" width="120" alt="Soroush Khajehpour"/><br/>
         <sub><b>Soroush Khajehpour</b></sub>
       </a><br/>
       <sub>🎨 iOS UI · SwiftUI · Design</sub>
     </td>
     <td align="center" width="33%">
       <a href="https://github.com/alihusseini07">
-        <img src="https://github.com/alihusseini07.png" width="100" style="border-radius:50%" alt="Ali Husseini"/><br/>
+        <img src="https://images.weserv.nl/?url=github.com/alihusseini07.png&h=120&w=120&fit=cover&mask=circle" width="120" alt="Ali Husseini"/><br/>
         <sub><b>Ali Husseini</b></sub>
       </a><br/>
       <sub>⚙️ Backend · Database · Recipe API</sub>
