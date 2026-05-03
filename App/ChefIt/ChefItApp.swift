@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import GoogleSignIn
 import ChefItKit
 
 @MainActor
@@ -50,6 +51,9 @@ struct ChefItApp: App {
                     .environmentObject(shoppingCart)
                     .environmentObject(homeFeed)
                     .environmentObject(userProfileStore)
+            }
+            .onOpenURL { url in
+                GIDSignIn.sharedInstance.handle(url)
             }
             .preferredColorScheme(.light)
         }

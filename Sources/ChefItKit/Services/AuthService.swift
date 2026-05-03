@@ -48,6 +48,27 @@ public final class AuthService: ObservableObject {
         return response
     }
 
+    public func signInWithGoogle(idToken: String) async throws -> AuthResponse {
+        let body = ["id_token": idToken]
+        let response: AuthResponse = try await post(path: "/api/auth/google", body: body)
+        saveToken(response.token)
+        currentUser = response.user
+        isLoggedIn = true
+        return response
+    }
+
+    public func signInWithApple(identityToken: String, displayName: String?) async throws -> AuthResponse {
+        var body: [String: String] = ["identity_token": identityToken]
+        if let displayName = displayName {
+            body["display_name"] = displayName
+        }
+        let response: AuthResponse = try await post(path: "/api/auth/apple", body: body)
+        saveToken(response.token)
+        currentUser = response.user
+        isLoggedIn = true
+        return response
+    }
+
     public func logout() {
         deleteToken()
         currentUser = nil

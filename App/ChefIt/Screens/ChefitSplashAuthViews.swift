@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 import ChefItKit
 
 struct ChefitSplashView: View {
@@ -87,6 +88,8 @@ struct ChefitGuestFlowView: View {
 
     /// Linear stack avoids `fullScreenCover` presenting over the welcome screen on some OS versions.
     @State private var path: [GuestDestination] = []
+    @State private var isLoadingSocial = false
+    @State private var socialError: String?
 
     private enum GuestDestination: Hashable {
         case authHub
@@ -107,9 +110,12 @@ struct ChefitGuestFlowView: View {
                         onBack: {
                             if !path.isEmpty { path.removeLast() }
                         },
-                        onEmail: { path.append(.emailLogin) }
+                        onEmail: { path.append(.emailLogin) },
+                        onGoogle: { performGoogleSignIn() },
+                        onApple: { performAppleSignIn() }
                     )
                     .toolbar(.hidden, for: .navigationBar)
+                    .disabled(isLoadingSocial)
 
                 case .emailLogin:
                     LoginView(onNavigateToRegister: {
@@ -122,6 +128,70 @@ struct ChefitGuestFlowView: View {
                         .environmentObject(authService)
                 }
             }
+        }
+        .overlay {
+            if isLoadingSocial {
+                ZStack {
+                    Color.black.opacity(0.2).ignoresSafeArea()
+                    ProgressView()
+                        .scaleEffect(1.2)
+                        .tint(.white)
+                }
+            }
+        }
+        .alert("Sign-In Error", isPresented: .constant(socialError != nil)) {
+            Button("OK") { socialError = nil }
+        } message: {
+            Text(socialError ?? "")
+        }
+    }
+
+    private func performGoogleSignIn() {
+        isLoadingSocial = true
+        Task {
+            let result = await GoogleSignInHandler().signIn()
+            switch result {
+            case .success(let idToken):
+                do {
+                    _ = try await authService.signInWithGoogle(idToken: idToken)
+                } catch let e as AuthError {
+                    socialError = e.errorDescription
+                } catch {
+                    socialError = "Google sign-in failed. Please try again."
+                }
+            case .failure(let error):
+                socialError = error.localizedDescription
+            }
+            isLoadingSocial = false
+        }
+    }
+
+    private func performAppleSignIn() {
+        isLoadingSocial = true
+        Task {
+            let coordinator = AppleSignInCoordinator()
+            let result = await coordinator.signIn()
+            switch result {
+            case .success(let data):
+                do {
+                    _ = try await authService.signInWithApple(
+                        identityToken: data.identityToken,
+                        displayName: data.displayName
+                    )
+                } catch let e as AuthError {
+                    socialError = e.errorDescription
+                } catch {
+                    socialError = "Apple sign-in failed. Please try again."
+                }
+            case .failure(let error):
+                if let authError = error as? ASAuthorizationError,
+                   authError.code == .canceled {
+                    // User cancelled — no error needed
+                } else {
+                    socialError = error.localizedDescription
+                }
+            }
+            isLoadingSocial = false
         }
     }
 }
