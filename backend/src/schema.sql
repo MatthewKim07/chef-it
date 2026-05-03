@@ -4,9 +4,16 @@ CREATE TABLE IF NOT EXISTS users (
   bio           TEXT,
   avatar_url    TEXT,
   email         TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
+  auth_provider TEXT DEFAULT 'local',
+  provider_id   TEXT,
   created_at    TIMESTAMP DEFAULT NOW()
 );
+
+-- Migrate existing tables: allow OAuth users without passwords
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT DEFAULT 'local';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS provider_id TEXT;
 
 CREATE TABLE IF NOT EXISTS posts (
   id         SERIAL PRIMARY KEY,
