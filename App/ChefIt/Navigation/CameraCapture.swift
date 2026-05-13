@@ -35,19 +35,21 @@ struct CameraCapture: UIViewControllerRepresentable {
             _ picker: UIImagePickerController,
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
         ) {
-            print("[CameraCapture] didFinishPicking fired")
             guard let image = info[.originalImage] as? UIImage else {
-                print("[CameraCapture] No image in info")
                 onCancel()
                 return
             }
-            guard let data = preprocessed(image) else {
-                print("[CameraCapture] preprocessed returned nil")
-                onCancel()
-                return
+            // Resize / JPEG work is CPU-heavy; keep it off the main thread to avoid UI hitches.
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self else { return }
+                guard let data = self.preprocessed(image) else {
+                    DispatchQueue.main.async { self.onCancel() }
+                    return
+                }
+                DispatchQueue.main.async {
+                    self.onImageCaptured(data)
+                }
             }
-            print("[CameraCapture] Image ready: \(data.count) bytes")
-            onImageCaptured(data)
         }
 
         private func preprocessed(_ image: UIImage) -> Data? {

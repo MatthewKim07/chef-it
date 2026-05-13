@@ -27,7 +27,7 @@ final class CurrentUserProfileStore: ObservableObject {
 
 @main
 struct ChefItApp: App {
-    @StateObject private var ingredientBoard = IngredientStore(persister: UserDefaultsIngredientPersister())
+    @StateObject private var ingredientBoard = IngredientStore.live()
     @StateObject private var shoppingCart = ShoppingCartViewModel()
     @StateObject private var homeFeed = HomeFeedViewModel()
     @StateObject private var userProfileStore = CurrentUserProfileStore()

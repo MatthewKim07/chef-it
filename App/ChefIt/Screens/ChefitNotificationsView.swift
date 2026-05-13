@@ -15,7 +15,7 @@ final class NotificationsViewModel: ObservableObject {
             items = try await NotificationService.shared.fetchAll()
             unreadCount = items.filter { $0.isUnread }.count
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }

@@ -23,6 +23,7 @@ public final class IngredientStore: ObservableObject {
 
     private let normalizer: IngredientNormalizer
     private let persister: IngredientPersisting
+    private let persistQueue = DispatchQueue(label: "com.chefit.ingredientboard.persist", qos: .utility)
     private var hasLoaded = false
 
     public init(
@@ -43,7 +44,10 @@ public final class IngredientStore: ObservableObject {
     }
 
     private func persist() {
-        try? persister.save(ingredients)
+        let snapshot = ingredients
+        persistQueue.sync {
+            try? persister.save(snapshot)
+        }
     }
 
     public var canonicalSet: Set<String> {

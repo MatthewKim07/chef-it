@@ -160,7 +160,7 @@ struct ChefitGuestFlowView: View {
                     socialError = "Google sign-in failed. Please try again."
                 }
             case .failure(let error):
-                socialError = error.localizedDescription
+                socialError = UserFacingErrorMessage.message(for: error)
             }
             isLoadingSocial = false
         }
@@ -188,7 +188,7 @@ struct ChefitGuestFlowView: View {
                    authError.code == .canceled {
                     // User cancelled — no error needed
                 } else {
-                    socialError = error.localizedDescription
+                    socialError = UserFacingErrorMessage.message(for: error)
                 }
             }
             isLoadingSocial = false

@@ -15,7 +15,7 @@ private final class PostDetailViewModel: ObservableObject {
         do {
             comments = try await CommentService.shared.fetchComments(postId: postId)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isLoadingComments = false
     }
@@ -441,7 +441,7 @@ struct PostDetailFullScreenView: View {
             activePost = activePost.updatingCommentCount(activePost.commentCount + 1)
             onPostUpdated(activePost)
         } catch {
-            vm.errorMessage = error.localizedDescription
+            vm.errorMessage = UserFacingErrorMessage.message(for: error)
         }
     }
 }

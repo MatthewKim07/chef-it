@@ -110,12 +110,13 @@ final class HomeFeedViewModel: ObservableObject {
         loadTask?.cancel()
         loadTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
-            guard let self else { return }
+            guard let self, !Task.isCancelled else { return }
             await self.loadFeed(pantryItems: pantryItems)
         }
     }
 
     func loadFeed(pantryItems: [Ingredient]) async {
+        guard !Task.isCancelled else { return }
         let hour = Calendar.current.component(.hour, from: Date())
         let context = MealContext(hour: hour)
         forYouSubtitle = context.subtitle
@@ -132,6 +133,7 @@ final class HomeFeedViewModel: ObservableObject {
             expiringDigest: expiring.map(\.canonicalName).sorted().joined(separator: "|")
         )
         if let cached = cache[key] {
+            guard !Task.isCancelled else { return }
             forYouRecipes = cached.forYou
             expiringRecipes = cached.expiring
             recipeByID = cached.recipeByID
@@ -146,6 +148,7 @@ final class HomeFeedViewModel: ObservableObject {
             maxCookingMinutes: context.maxTime
         )
         let fetched = await fetchRecipes(query: plan.query)
+        guard !Task.isCancelled else { return }
         let recipes = fetched.isEmpty ? SeedRecipes.all : fetched
 
         let forYou = rankForYou(
@@ -160,6 +163,7 @@ final class HomeFeedViewModel: ObservableObject {
             context: context
         )
 
+        guard !Task.isCancelled else { return }
         forYouRecipes = Array(forYou.prefix(8))
         expiringRecipes = Array(useSoon.prefix(8))
         recipeByID = Dictionary(

@@ -28,7 +28,7 @@ private actor SessionTracker {
     }
 }
 
-public struct VisionScanService: ScanService {
+public struct VisionScanService: ScanService, Sendable {
     private let apiKey: String
     private let rateLimiter = RateLimiter(requestsPerSecond: 1)
     private let session = SessionTracker()
@@ -46,6 +46,13 @@ public struct VisionScanService: ScanService {
         guard imageData.count <= Self.maxInputBytes else {
             throw ScanError.backendUnavailable
         }
+        let service = self
+        return try await Task.detached(priority: .userInitiated) {
+            try await service.runDetection(imageData: imageData)
+        }.value
+    }
+
+    private func runDetection(imageData: Data) async throws -> ScanResult {
         try await rateLimiter.waitIfNeeded()
         return try await attempt(imageData: imageData, retryCount: 0)
     }
@@ -57,8 +64,10 @@ public struct VisionScanService: ScanService {
         }
 
         let base64 = imageData.base64EncodedString()
-        let urlStr = "https://api.openai.com/v1/chat/completions"
-        var request = URLRequest(url: URL(string: urlStr)!, timeoutInterval: Self.requestTimeoutSeconds)
+        guard let endpoint = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            throw ScanError.backendUnavailable
+        }
+        var request = URLRequest(url: endpoint, timeoutInterval: Self.requestTimeoutSeconds)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")

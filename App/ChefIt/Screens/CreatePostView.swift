@@ -243,7 +243,7 @@ struct CreatePostView: View {
             onPosted?(post)
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isPosting = false
     }

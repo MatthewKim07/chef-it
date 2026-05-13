@@ -194,7 +194,7 @@ struct ChefitChangeEmailSheet: View {
         } catch let authError as AuthError {
             error = authError.userMessage
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
     }
 }
@@ -289,7 +289,7 @@ struct ChefitChangePasswordSheet: View {
         } catch let authError as AuthError {
             error = authError.userMessage
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
     }
 }
@@ -398,7 +398,7 @@ struct ChefitDeleteAccountSheet: View {
         } catch let authError as AuthError {
             error = authError.userMessage
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
     }
 }

@@ -142,7 +142,7 @@ struct ReviewComposerSheet: View {
                 hasExistingReview = true
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }
@@ -160,7 +160,7 @@ struct ReviewComposerSheet: View {
             onSaved(review)
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isSaving = false
     }

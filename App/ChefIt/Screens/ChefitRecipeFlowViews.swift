@@ -406,7 +406,7 @@ private final class RecipeReviewsViewModel: ObservableObject {
         do {
             reviews = try await ReviewService.shared.fetchReviews(recipeId: recipeId)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }

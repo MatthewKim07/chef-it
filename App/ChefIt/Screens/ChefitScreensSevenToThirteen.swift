@@ -851,7 +851,7 @@ private final class ProfileViewModel: ObservableObject {
         do {
             profile = try await UserService.shared.fetchProfile(id: userId)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }
@@ -874,7 +874,7 @@ private final class ProfileViewModel: ObservableObject {
             )
             showEditSheet = false
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isSaving = false
     }
@@ -888,7 +888,7 @@ private final class ProfileViewModel: ObservableObject {
                                       bio: p.bio, avatarURL: url, createdAt: p.createdAt)
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
         isUploadingAvatar = false
     }

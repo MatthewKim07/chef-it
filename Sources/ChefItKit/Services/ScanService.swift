@@ -26,7 +26,7 @@ public struct StubScanService: ScanService {
 
     public func detectIngredients(in imageData: Data) async throws -> ScanResult {
         // Simulate latency so loading state is visible during dev.
-        try? await Task.sleep(nanoseconds: 600_000_000)
+        try? await Task.sleep(nanoseconds: 300_000_000)
 
         let normalizer = IngredientNormalizer()
         let raws: [(String, Double, IngredientCategory)] = [

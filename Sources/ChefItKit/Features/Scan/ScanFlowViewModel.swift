@@ -62,6 +62,7 @@ public final class ScanFlowViewModel: ObservableObject {
     private let ingredientStore: IngredientStore
     private let scanService: any ScanService
     private let normalizer = IngredientNormalizer()
+    private var activeScanID: UUID?
 
     public init(
         ingredientStore: IngredientStore,
@@ -76,6 +77,9 @@ public final class ScanFlowViewModel: ObservableObject {
     }
 
     public func beginScan(imageData: Data, source: ScanSourceKind) async {
+        let scanID = UUID()
+        activeScanID = scanID
+
         draft = ScanDraft(imageData: imageData, source: source)
         candidates = []
         message = nil
@@ -91,6 +95,8 @@ public final class ScanFlowViewModel: ObservableObject {
 
         do {
             let result = try await scanService.detectIngredients(in: imageData)
+            guard activeScanID == scanID else { return }
+
             if result.candidates.isEmpty {
                 phase = .empty
                 message = "No ingredients found. Try a tighter photo or better lighting."
@@ -100,6 +106,7 @@ public final class ScanFlowViewModel: ObservableObject {
             candidates = result.candidates.map { ScanCandidate(detected: $0) }
             phase = .review
         } catch {
+            guard activeScanID == scanID else { return }
             phase = .failed
             message = message(for: error)
         }
@@ -205,7 +212,7 @@ public final class ScanFlowViewModel: ObservableObject {
         case .rateLimited(let retryAfterSeconds):
             return "Scan temporarily limited. Try again in \(retryAfterSeconds)s."
         case .backendUnavailable:
-            return "Scan backend is unavailable right now."
+            return "Ingredient scan is unavailable. Check your connection or try again later."
         case .invalidImage:
             return "That image could not be read."
         }

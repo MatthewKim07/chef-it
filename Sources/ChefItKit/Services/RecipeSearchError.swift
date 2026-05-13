@@ -11,17 +11,27 @@ public enum RecipeSearchError: Error, Equatable, LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case .missingCredentials:
-            return "Recipe API credentials are missing. Set EDAMAM_APP_ID and EDAMAM_APP_KEY before running live discovery."
+            #if DEBUG
+            return "Recipe search is not configured (missing Edamam credentials in this build)."
+            #else
+            return "Recipe search is not available right now. Try again later."
+            #endif
         case .invalidURL:
-            return "Recipe search could not build a valid API request."
+            return "Recipe search could not start. Try again."
         case .invalidResponse:
-            return "Recipe search returned an invalid response."
+            return "Recipe search returned an unexpected response. Try again."
         case .httpStatus(let status):
-            return "Recipe search failed with HTTP \(status)."
+            if status == 401 || status == 403 {
+                return "Recipe search could not authorize this device. Try again later."
+            }
+            if status >= 500 {
+                return "Recipe search is temporarily busy. Try again in a moment."
+            }
+            return "Recipe search could not complete (code \(status)). Try again."
         case .decodingFailed:
-            return "Recipe search returned data Chef It could not read."
+            return "Recipe results could not be read. Try again."
         case .noSuccessfulResponses:
-            return "Recipe search did not return any successful responses."
+            return "No recipes were returned. Try different ingredients."
         }
     }
 }

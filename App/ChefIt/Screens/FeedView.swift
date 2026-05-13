@@ -26,7 +26,7 @@ final class FeedViewModel: ObservableObject {
             posts = page.posts
             total = page.total
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }
@@ -39,7 +39,7 @@ final class FeedViewModel: ObservableObject {
             posts.append(contentsOf: page.posts)
             total = page.total
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
         isLoadingMore = false
     }
@@ -56,7 +56,7 @@ final class FeedViewModel: ObservableObject {
             posts.removeAll { $0.id == id }
             total = max(0, total - 1)
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
     }
 
@@ -85,7 +85,7 @@ final class FeedViewModel: ObservableObject {
             if let i = posts.firstIndex(where: { $0.id == postId }) {
                 posts[i] = original
             }
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
     }
 }
