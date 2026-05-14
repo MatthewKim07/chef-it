@@ -26,7 +26,7 @@
 
 **Chef It** is a native iOS app that turns whatever's sitting in your fridge into dinner. Snap a photo of your pantry, let on-device + cloud vision detect every ingredient, and get instant AI-matched recipes you can actually cook *right now* — no extra grocery run required.
 
-Built end-to-end in **24 hours** at **ConHacks 2026** 🏆.
+Built end-to-end in **36 hours** at **ConHacks 2026** 🏆.
 
 > Less food waste. Less decision fatigue. More cooking.
 
