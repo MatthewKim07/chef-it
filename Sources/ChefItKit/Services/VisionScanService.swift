@@ -59,7 +59,7 @@ public struct VisionScanService: ScanService, Sendable {
 
     private func attempt(imageData: Data, retryCount: Int) async throws -> ScanResult {
         guard !apiKey.isEmpty, !apiKey.hasPrefix("$(") else {
-            print("[VisionScan] ERROR: API key not configured")
+            print("[VisionScan] ERROR: OpenAI API key not configured")
             throw ScanError.backendUnavailable
         }
 

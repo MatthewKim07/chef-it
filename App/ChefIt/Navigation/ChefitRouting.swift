@@ -242,6 +242,9 @@ private struct ChefitRootCoordinatorContent: View {
                 candidates: scanVM.candidates,
                 message: scanVM.message,
                 onToggleCandidate: scanVM.toggleCandidate,
+                onQuantityChange: scanVM.setCandidateQuantity,
+                onQuantityUnitChange: scanVM.setCandidateQuantityUnit,
+                onExpiryChange: scanVM.setCandidateExpiry,
                 onAddManualCandidate: scanVM.addManualCandidate,
                 onFindRecipes: {
                     if scanVM.confirmSelected() {

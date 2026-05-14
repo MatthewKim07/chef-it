@@ -12,10 +12,6 @@ struct ChefitScanPantryView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ChefitSpacing.lg) {
-            Text("chefit")
-                .font(ChefitTypography.label())
-                .foregroundStyle(ChefitColors.sageGreen)
-
             ZStack {
                 if let previewImage = previewImage {
                     Image(uiImage: previewImage)
@@ -90,6 +86,9 @@ struct ChefitDetectedIngredientsView: View {
     let candidates: [ScanCandidate]
     let message: String?
     let onToggleCandidate: (UUID) -> Void
+    let onQuantityChange: (UUID, Double) -> Void
+    let onQuantityUnitChange: (UUID, IngredientQuantityUnit) -> Void
+    let onExpiryChange: (UUID, Date?) -> Void
     let onAddManualCandidate: (String) -> Void
     let onFindRecipes: () -> Void
     @State private var manualIngredientDraft = ""
@@ -105,10 +104,6 @@ struct ChefitDetectedIngredientsView: View {
                     Text("Detected Ingredients")
                         .font(ChefitTypography.h2())
                         .foregroundStyle(ChefitColors.sageGreen)
-                    Spacer()
-                    Text("\(selectedCount)/\(candidates.count) active")
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.matcha)
                 }
 
                 if let message, !message.isEmpty {
@@ -117,24 +112,48 @@ struct ChefitDetectedIngredientsView: View {
                         .foregroundStyle(ChefitColors.peach)
                 }
 
-                HStack(spacing: ChefitSpacing.sm) {
-                    TextField("Add missing ingredient", text: $manualIngredientDraft)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .padding(.horizontal, ChefitSpacing.sm)
-                        .padding(.vertical, ChefitSpacing.sm)
-                        .background(ChefitColors.white)
-                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous)
-                                .stroke(ChefitColors.pistachio, lineWidth: 1)
-                        )
-                    Button("Add") {
-                        let draft = manualIngredientDraft
-                        onAddManualCandidate(draft)
-                        manualIngredientDraft = ""
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Add ingredient manually")
+                        .font(.custom("Nunito-SemiBold", size: 12))
+                        .foregroundStyle(ChefitColors.matcha)
+
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.viewfinder")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(ChefitColors.matcha)
+
+                        TextField("e.g. turmeric, quinoa, apple", text: $manualIngredientDraft)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.sageGreen)
+
+                        Button {
+                            let draft = manualIngredientDraft
+                            onAddManualCandidate(draft)
+                            manualIngredientDraft = ""
+                        } label: {
+                            Text("Add")
+                                .font(.custom("Nunito-Bold", size: 13))
+                                .foregroundStyle(ChefitColors.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(ChefitColors.sageGreen)
+                                .clipShape(Capsule(style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(manualIngredientDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .opacity(manualIngredientDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.45 : 1)
                     }
-                    .buttonStyle(ChefitSecondaryButtonStyle())
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(ChefitColors.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(ChefitColors.pistachio.opacity(0.9), lineWidth: 1)
+                    )
+                    .chefitCardShadow()
                 }
 
                 if candidates.isEmpty {
@@ -142,12 +161,9 @@ struct ChefitDetectedIngredientsView: View {
                         .font(ChefitTypography.body())
                         .foregroundStyle(ChefitColors.matcha)
                 } else {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: ChefitSpacing.sm)], spacing: ChefitSpacing.sm) {
+                    VStack(spacing: ChefitSpacing.sm) {
                         ForEach(candidates) { candidate in
                             candidateCard(candidate)
-                                .onTapGesture {
-                                    onToggleCandidate(candidate.id)
-                                }
                         }
                     }
                 }
@@ -169,44 +185,184 @@ struct ChefitDetectedIngredientsView: View {
     @ViewBuilder
     private func candidateCard(_ candidate: ScanCandidate) -> some View {
         let isActive = candidate.isSelected
-        VStack(spacing: ChefitSpacing.xs) {
-            HStack(spacing: 6) {
-                Image(systemName: symbolName(for: candidate.category))
-                    .font(.system(size: 18, weight: .medium))
-                if !isActive {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
+        VStack(spacing: ChefitSpacing.sm) {
+            HStack(spacing: ChefitSpacing.sm) {
+                IngredientIconView(
+                    ingredientName: candidate.canonicalName,
+                    category: candidate.category,
+                    size: 44
+                )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(candidate.canonicalName.capitalized)
+                        .font(ChefitTypography.label())
+                        .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
+                    Text("Confidence \(Int((candidate.confidence * 100).rounded()))%")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                }
+
+                Spacer()
+
+                Button {
+                    onToggleCandidate(candidate.id)
+                } label: {
+                    Image(systemName: isActive ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: ChefitSpacing.sm) {
+                HStack(spacing: 8) {
+                    Button {
+                        onQuantityChange(candidate.id, max(0.1, candidate.quantity - stepValue(for: candidate.quantityUnit)))
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    Menu {
+                        Section("Unit") {
+                            ForEach(unitOptions(for: candidate), id: \.rawValue) { unit in
+                                Button(unit.label) {
+                                    onQuantityUnitChange(candidate.id, unit)
+                                }
+                            }
+                        }
+                        Section("Quick amount") {
+                            ForEach(quantityPresets(for: candidate.quantityUnit), id: \.self) { preset in
+                                Button(quantityLabel(preset, unit: candidate.quantityUnit)) {
+                                    onQuantityChange(candidate.id, preset)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(quantityLabel(candidate.quantity, unit: candidate.quantityUnit))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 8, weight: .semibold))
+                        }
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .frame(minWidth: 66)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(ChefitColors.white.opacity(0.9))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    Button {
+                        onQuantityChange(candidate.id, candidate.quantity + stepValue(for: candidate.quantityUnit))
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Expiry")
+                        .font(.custom("Nunito-SemiBold", size: 10))
+                        .foregroundStyle(ChefitColors.matcha.opacity(0.85))
+                    if let expiry = candidate.expiresAt {
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { expiry },
+                                set: { onExpiryChange(candidate.id, $0) }
+                            ),
+                            displayedComponents: [.date]
+                        )
+                        .labelsHidden()
+                        .datePickerStyle(.compact)
+                        .tint(ChefitColors.sageGreen)
+                        .font(.custom("Nunito-SemiBold", size: 11))
+                    } else {
+                        Button("Set date") {
+                            onExpiryChange(candidate.id, Calendar.current.date(byAdding: .day, value: 7, to: Date()))
+                        }
+                        .font(.custom("Nunito-SemiBold", size: 11))
+                        .foregroundStyle(ChefitColors.matcha)
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                if candidate.expiresAt != nil {
+                    Button {
+                        onExpiryChange(candidate.id, nil)
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
-
-            Text(candidate.canonicalName.capitalized)
-                .font(ChefitTypography.micro())
-                .foregroundStyle(isActive ? ChefitColors.sageGreen : ChefitColors.peach)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
         }
-        .padding(.vertical, ChefitSpacing.sm)
-        .padding(.horizontal, ChefitSpacing.xs)
-        .frame(maxWidth: .infinity, minHeight: 78)
-        .background(isActive ? ChefitColors.pistachio : ChefitColors.peach.opacity(0.22))
+        .padding(ChefitSpacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ChefitColors.white)
         .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous)
-                .stroke(isActive ? ChefitColors.sageGreen.opacity(0.35) : ChefitColors.peach, lineWidth: 1)
-        )
+        .chefitCardShadow()
+        .opacity(isActive ? 1 : 0.92)
     }
 
-    private func symbolName(for category: IngredientCategory) -> String {
-        switch category {
-        case .produce:   return "carrot.fill"
-        case .protein:   return "bird.fill"
-        case .dairy:     return "cup.and.saucer.fill"
-        case .pantry:    return "drop.fill"
-        case .spice:     return "sparkles"
-        case .grain:     return "takeoutbag.and.cup.and.straw.fill"
-        case .condiment: return "drop.triangle.fill"
-        case .other:     return "circle.fill"
+    private func unitOptions(for candidate: ScanCandidate) -> [IngredientQuantityUnit] {
+        switch candidate.category {
+        case .protein, .produce:
+            return [.item, .gram, .ounce, .pound]
+        case .dairy, .condiment:
+            return [.milliliter, .liter, .cup, .tablespoon]
+        case .grain:
+            return [.gram, .ounce, .cup]
+        case .spice:
+            return [.teaspoon, .tablespoon, .gram]
+        case .pantry, .other:
+            return [.item, .gram, .milliliter]
+        }
+    }
+
+    private func stepValue(for unit: IngredientQuantityUnit) -> Double {
+        switch unit {
+        case .item: return 1
+        case .gram: return 25
+        case .kilogram: return 0.25
+        case .ounce: return 1
+        case .pound: return 0.5
+        case .milliliter: return 50
+        case .liter: return 0.1
+        case .cup: return 0.25
+        case .tablespoon: return 0.5
+        case .teaspoon: return 0.5
+        }
+    }
+
+    private func quantityLabel(_ value: Double, unit: IngredientQuantityUnit) -> String {
+        let formatted: String
+        if value.rounded(.towardZero) == value {
+            formatted = "\(Int(value))"
+        } else {
+            formatted = String(format: "%.1f", value)
+        }
+        return "\(formatted) \(unit.label)"
+    }
+
+    private func quantityPresets(for unit: IngredientQuantityUnit) -> [Double] {
+        switch unit {
+        case .item: return [1, 2, 4, 6]
+        case .gram: return [50, 100, 250, 500]
+        case .kilogram: return [0.5, 1, 2]
+        case .ounce: return [1, 4, 8, 16]
+        case .pound: return [0.5, 1, 2]
+        case .milliliter: return [100, 250, 500, 1000]
+        case .liter: return [0.5, 1, 2]
+        case .cup: return [0.25, 0.5, 1, 2]
+        case .tablespoon: return [1, 2, 4]
+        case .teaspoon: return [0.5, 1, 2]
         }
     }
 }
