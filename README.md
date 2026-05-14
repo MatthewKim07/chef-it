@@ -206,7 +206,7 @@ Chef It has a full design system — sage greens, peach CTAs, rounded everything
 
 ---
 
-## 👥 The Team
+## 👨‍🍳 The Chefs
 
 Built with love at ConHacks 2026 by:
 
