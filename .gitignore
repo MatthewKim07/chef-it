@@ -37,3 +37,5 @@ reference/pantry-pal/
 # Backend
 backend/.env
 backend/node_modules/
+
+chef-it.md
