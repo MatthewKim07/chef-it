@@ -206,25 +206,25 @@ private struct ChefitHomeRecipeCard: View {
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(alignment: .topLeading) {
-                        Text("🥦 \(model.matchPercentText)")
-                            .font(.custom("Nunito-Bold", size: 11))
-                            .foregroundStyle(ChefitColors.sageGreen)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(ChefitColors.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .padding(8)
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        Text(model.contextBadge)
-                            .font(.custom("Nunito-Bold", size: 11))
-                            .foregroundStyle(ChefitColors.sageGreen)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(ChefitColors.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .padding(8)
+                    .overlay(alignment: .top) {
+                        HStack {
+                            Text("🥦 \(model.matchPercentText)")
+                                .font(.custom("Nunito-Bold", size: 11))
+                                .foregroundStyle(ChefitColors.sageGreen)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(ChefitColors.white.opacity(0.95))
+                                .clipShape(Capsule())
+                            Spacer(minLength: 4)
+                            Text(model.contextBadge)
+                                .font(.custom("Nunito-Bold", size: 11))
+                                .foregroundStyle(ChefitColors.sageGreen)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(ChefitColors.white.opacity(0.95))
+                                .clipShape(Capsule())
+                        }
+                        .padding(8)
                     }
 
                 Text(model.recipe.title)
