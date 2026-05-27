@@ -2,10 +2,11 @@ import Foundation
 
 public enum LiveRecipeSearchServiceFactory {
     public static func makeDefault() -> any RecipeSearchService {
-        guard let configuration = RecipeAPIConfiguration.fromEnvironment() else {
-            return MissingRecipeAPIConfigurationService()
-        }
+        TheMealDBRecipeSearchService()
+    }
 
+    public static func makeEdamam() -> (any RecipeSearchService)? {
+        guard let configuration = RecipeAPIConfiguration.fromEnvironment() else { return nil }
         return EdamamRecipeSearchService(configuration: configuration)
     }
 }
