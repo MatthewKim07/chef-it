@@ -7,50 +7,75 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00A50A5B4653555CC418E31F /* almond.png in Resources */ = {isa = PBXBuildFile; fileRef = DD796D78F64FECCC0D46B7E0 /* almond.png */; };
 		0117D4C37AEF9DC364A90F1E /* ChefitHomeSearchViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */; };
 		0297AD2D093EE4F6A9B4731A /* ShoppingListBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */; };
 		040736FE4216CD5C3427D4D1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = DFB433A629117D6FDFE34FBF /* GoogleSignIn */; };
+		04D040E044DB84080A2F98F4 /* hazelnut.png in Resources */ = {isa = PBXBuildFile; fileRef = B6A909611398D59C8476B3D1 /* hazelnut.png */; };
+		0643BE92C1EC960177E90517 /* turmeric.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EE7027F112138B2B1B24977 /* turmeric.png */; };
 		0B9D8E71D9840C6ED4EAEBAD /* IngredientStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */; };
 		0F2D85ACF2F7142AFC4640D0 /* RecipeDeduplicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */; };
 		2351BDE4A079B031BF8D72D9 /* IngredientPersistingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */; };
+		24B34C820263B0FD6EA20973 /* salmon.png in Resources */ = {isa = PBXBuildFile; fileRef = 84EB67816A6EBE9EC31E043D /* salmon.png */; };
 		27175AB165AFCE66DF166861 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE6FBAF210E56C2A166565D9 /* Assets.xcassets */; };
 		294627FD986C952232649D90 /* MatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */; };
+		33F31AA9FD080A7D8E79CC3D /* brown_rice.png in Resources */ = {isa = PBXBuildFile; fileRef = F51E4C2B1C71E9C6C13FC984 /* brown_rice.png */; };
 		34C7CA0DF7482D8E62D50CA5 /* ChefItKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4895006B800D275E029B9E61 /* ChefItKit */; };
+		375295493279538CA4298AD1 /* chicken_breast.png in Resources */ = {isa = PBXBuildFile; fileRef = 9215DF0A9A32E800C982E382 /* chicken_breast.png */; };
+		391209F55B699F838D0D6C59 /* spinach.png in Resources */ = {isa = PBXBuildFile; fileRef = 77C512A552FDE7E1711078B1 /* spinach.png */; };
+		4623FADE465BC92BD0DD2961 /* green_peas.png in Resources */ = {isa = PBXBuildFile; fileRef = 10AA0C6853B05ABC33EAEDEE /* green_peas.png */; };
 		4889A75F6839F48976D30138 /* ChefitSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94370285F2F079AD8C032FF4 /* ChefitSampleData.swift */; };
 		4D8788170C7A8F0076F87E72 /* PostDetailFullScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08F9F112628201F55CD4D5C /* PostDetailFullScreenView.swift */; };
+		4FC3BCC1809463A3C58EB1C5 /* lentils_bowl.png in Resources */ = {isa = PBXBuildFile; fileRef = 13220A979E69F050518C8A23 /* lentils_bowl.png */; };
 		53404D12F98EEBE8D7C9AC11 /* ReviewComposerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */; };
+		5513063179B20358C16FFDEE /* oats.png in Resources */ = {isa = PBXBuildFile; fileRef = E3701CF403B3D2A4E61DB438 /* oats.png */; };
+		57449F1D7296CA2D3CF8CE93 /* broccoli.png in Resources */ = {isa = PBXBuildFile; fileRef = D5E99EAE17EB619B8AD47F9D /* broccoli.png */; };
+		596C7F93BD66B54755E5E338 /* lemon.png in Resources */ = {isa = PBXBuildFile; fileRef = 1E683D04F4BAF0995DE05A80 /* lemon.png */; };
+		59B7211CBD8B5710FF5B0C6D /* redlentils.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E2E9B2D5C0F28C139067C10 /* redlentils.png */; };
 		5B98B43E2F6414C39FE29159 /* ChefitNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17691FC391FE3AABE831C69 /* ChefitNotificationsView.swift */; };
 		5BEF47A5EA0B67C7428CB01D /* ChefItKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06D2747C84F39029B153F7B6 /* ChefItKit */; };
 		5C0229BCAE982C376C25BBE0 /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */; };
+		5E1A07E6542C41308238086D /* walnut.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F54190311697BA2FFA4352B /* walnut.png */; };
+		5E624BBE22F09DBEC3FF0015 /* apple.png in Resources */ = {isa = PBXBuildFile; fileRef = 6C1CC33B66C4CBA82AFAB49E /* apple.png */; };
 		5FA0F1510FDDBE9C749231D7 /* Nunito-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7ABD46A4E43436514EF69B89 /* Nunito-Variable.ttf */; };
+		6000B7383F5966665C85D9BB /* blueberries.png in Resources */ = {isa = PBXBuildFile; fileRef = D7C5C2F3CBE7ABBDCA00C274 /* blueberries.png */; };
 		62D69A585073DB20BCB88BF9 /* ChefitScreensSevenToThirteen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAA9CACDB13A90D37963979 /* ChefitScreensSevenToThirteen.swift */; };
 		6BCD06B08738B18F69D40629 /* NormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1A0C314044C3F27D915395 /* NormalizerTests.swift */; };
 		6D698D77B9FE6292E5074D28 /* IngredientSuggesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E28336416D8342CD47A6700 /* IngredientSuggesterTests.swift */; };
+		724CFF910A1D9339B1A7D390 /* grapefruit.png in Resources */ = {isa = PBXBuildFile; fileRef = A223C90FBBE6DA794E0DCFB0 /* grapefruit.png */; };
 		7768EC12A450E33F1C3AB744 /* ShoppingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8857E427303DF570D2A704 /* ShoppingItem.swift */; };
+		8076EA34C4C1168DF137843E /* avocado.png in Resources */ = {isa = PBXBuildFile; fileRef = F66290583D955A94ED9E00C3 /* avocado.png */; };
 		8120B2CB94FA6F513106FCA4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC986BEBA1586448E69738A /* RootView.swift */; };
 		8B099FEA1F49877056DC2AC2 /* ChefitSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DEF02C69D04FE1F8A46D2C /* ChefitSettingsView.swift */; };
 		8B30FDB30C523447DD4B333E /* MatchRationaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */; };
+		9462FCDAB92702ADFDE65F37 /* quinoa.png in Resources */ = {isa = PBXBuildFile; fileRef = A435E165AB2383B872926D5E /* quinoa.png */; };
 		95ABBFE7FDDC53DA9BD1342F /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC63472C872D506B2DCC2FBC /* FeedView.swift */; };
+		9AFEEEC12BFF4CDD19194B65 /* red_meat.png in Resources */ = {isa = PBXBuildFile; fileRef = C714E5BCD11A96E2DBCC8996 /* red_meat.png */; };
 		9F2E20E8880D1859C10FDEDA /* MatchRankingStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */; };
 		A57D905D4039CEF8B1700683 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E481F8CDFE47AF4930CEB91A /* GoogleSignInSwift */; };
+		A5AD70C7D4ED9271B297A167 /* hazlenut.png in Resources */ = {isa = PBXBuildFile; fileRef = DB851527F09F3BF263A64A46 /* hazlenut.png */; };
 		B12278EEF581AD118B8F3B47 /* ShoppingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B73880C06529EA6980EA1 /* ShoppingProvider.swift */; };
+		B148A6BB305128AD57A75812 /* black_eyed_peas.png in Resources */ = {isa = PBXBuildFile; fileRef = E84CA97E6BCC2E6081D37D39 /* black_eyed_peas.png */; };
 		B56C46BAB5AECF5CDC433383 /* ChefitComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */; };
 		B647FB9276FF4869D2691327 /* ChefitRecipeFlowViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */; };
 		B81DDA876138B7D1E429D6D3 /* MatchingScenariosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */; };
 		B9B2208C7C797796ABCDE619 /* ChefItApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */; };
 		BA75FDA56F696748EB474304 /* ChefitSymbolIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */; };
 		BEE34CFDD087093336EE7012 /* GoogleSignInHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5368FD509526F921397F1D /* GoogleSignInHandler.swift */; };
+		C6358B9EC715D132CB860798 /* ginger.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F77099633A8ABDC8E3BFEE /* ginger.png */; };
 		C78B0BB595C4C6539D422402 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 626B30E20835CEF760C8DF25 /* CameraCapture.swift */; };
 		C952507EB70A0E96C7B7607D /* ScanFlowViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */; };
 		CB617A1D60F6BFCC0B3567D4 /* EdamamRecipeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */; };
 		D3A154961350511122E0CFD5 /* ShoppingCartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B209E7E8916A85C8CABDF33 /* ShoppingCartViewModel.swift */; };
 		D470BF4CD25D04B47A7E48CE /* ChefitSplashAuthViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */; };
 		D52C84D811AD27434B2B3CBD /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3077145A42CE90925B46473C /* CreatePostView.swift */; };
+		DA339294AF2552BB8C79EFD1 /* pomegranate.png in Resources */ = {isa = PBXBuildFile; fileRef = F57B3ED3D0729884572602FC /* pomegranate.png */; };
 		DD3ADCA9320F20269B9837E8 /* ChefitTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */; };
 		E45DEFB5B404106952016833 /* PlayfairDisplay-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66333996EBC4B3E2AC4181A5 /* PlayfairDisplay-Variable.ttf */; };
 		E76AAF31C66810D50FB59FE2 /* RecipeAPIConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D92078D4ADCCD2B140D4FE /* RecipeAPIConfigurationTests.swift */; };
 		E8F23FD2922B885914C940B7 /* MilestoneOneViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CDDEB034EF14A76D0A1F66 /* MilestoneOneViewModelTests.swift */; };
 		EF54CFC14DD824B69FF26B33 /* EdamamRecipeSearchServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CFE59EA87D15DB0961AB0E /* EdamamRecipeSearchServiceTests.swift */; };
+		F191E07DC4104E7B92268EB6 /* eggs.png in Resources */ = {isa = PBXBuildFile; fileRef = 577E77698C5F1A19C57DC5E6 /* eggs.png */; };
 		F31973A5FC07D40B976A3466 /* FavoriteRecipeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */; };
 		F620267220731DB31DAE107A /* RecipeDiscoveryPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */; };
 		F98DA3277A015578D960E1DB /* ChefitRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF5F35DDD07536344D54EE4 /* ChefitRouting.swift */; };
@@ -60,45 +85,67 @@
 
 /* Begin PBXFileReference section */
 		0189B5C30696F588007DFE0C /* IngredientPersistingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientPersistingTests.swift; sourceTree = "<group>"; };
+		0EE7027F112138B2B1B24977 /* turmeric.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = turmeric.png; sourceTree = "<group>"; };
+		10AA0C6853B05ABC33EAEDEE /* green_peas.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = green_peas.png; sourceTree = "<group>"; };
+		13220A979E69F050518C8A23 /* lentils_bowl.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lentils_bowl.png; sourceTree = "<group>"; };
 		195EE6AF0F3AB2E5AD66E640 /* ChefitSplashAuthViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSplashAuthViews.swift; sourceTree = "<group>"; };
 		1C5368FD509526F921397F1D /* GoogleSignInHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInHandler.swift; sourceTree = "<group>"; };
+		1E683D04F4BAF0995DE05A80 /* lemon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lemon.png; sourceTree = "<group>"; };
 		208E17DDAFD62186B3A5D2C3 /* MatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatcherTests.swift; sourceTree = "<group>"; };
 		28120D41691BEAEDD87DA38B /* MatchRationaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchRationaleTests.swift; sourceTree = "<group>"; };
 		28FDC77AF5C065A0A9748FAE /* ChefitTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitTheme.swift; sourceTree = "<group>"; };
 		2E28336416D8342CD47A6700 /* IngredientSuggesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientSuggesterTests.swift; sourceTree = "<group>"; };
 		3077145A42CE90925B46473C /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
+		34F77099633A8ABDC8E3BFEE /* ginger.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ginger.png; sourceTree = "<group>"; };
 		3AAA9CACDB13A90D37963979 /* ChefitScreensSevenToThirteen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitScreensSevenToThirteen.swift; sourceTree = "<group>"; };
 		3BC986BEBA1586448E69738A /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		3E3027EE13BA69F78DEC6519 /* EdamamRecipeAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdamamRecipeAdapterTests.swift; sourceTree = "<group>"; };
 		420B19A93B77D0D16AC3CECE /* ShoppingListBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListBuilder.swift; sourceTree = "<group>"; };
 		4A6507DF2ADDB8C4E61F35B5 /* ChefitHomeFeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitHomeFeedViewModel.swift; sourceTree = "<group>"; };
+		577E77698C5F1A19C57DC5E6 /* eggs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = eggs.png; sourceTree = "<group>"; };
 		626B30E20835CEF760C8DF25 /* CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCapture.swift; sourceTree = "<group>"; };
 		65CDDEB034EF14A76D0A1F66 /* MilestoneOneViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneOneViewModelTests.swift; sourceTree = "<group>"; };
 		66333996EBC4B3E2AC4181A5 /* PlayfairDisplay-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Variable.ttf"; sourceTree = "<group>"; };
 		667948645BD748A7B80612F4 /* ChefIt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChefIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C1CC33B66C4CBA82AFAB49E /* apple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = apple.png; sourceTree = "<group>"; };
 		7581398749997A2257BE1FC4 /* ChefItKitTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ChefItKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		75DEF02C69D04FE1F8A46D2C /* ChefitSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSettingsView.swift; sourceTree = "<group>"; };
+		77C512A552FDE7E1711078B1 /* spinach.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spinach.png; sourceTree = "<group>"; };
 		7ABD46A4E43436514EF69B89 /* Nunito-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-Variable.ttf"; sourceTree = "<group>"; };
 		7B209E7E8916A85C8CABDF33 /* ShoppingCartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingCartViewModel.swift; sourceTree = "<group>"; };
 		7D0019FF8F1C6CAF6515A02E /* ChefitHomeSearchViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitHomeSearchViews.swift; sourceTree = "<group>"; };
+		7E2E9B2D5C0F28C139067C10 /* redlentils.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = redlentils.png; sourceTree = "<group>"; };
 		7F8857E427303DF570D2A704 /* ShoppingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingItem.swift; sourceTree = "<group>"; };
+		84EB67816A6EBE9EC31E043D /* salmon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = salmon.png; sourceTree = "<group>"; };
 		8622F62E496ABE10D2F9E73B /* ChefitRecipeFlowViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitRecipeFlowViews.swift; sourceTree = "<group>"; };
 		8A1E51BD572651E953A1A81B /* ChefitSymbolIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSymbolIcons.swift; sourceTree = "<group>"; };
+		9215DF0A9A32E800C982E382 /* chicken_breast.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = chicken_breast.png; sourceTree = "<group>"; };
 		932B73880C06529EA6980EA1 /* ShoppingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingProvider.swift; sourceTree = "<group>"; };
 		94370285F2F079AD8C032FF4 /* ChefitSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitSampleData.swift; sourceTree = "<group>"; };
 		985B8B9198FE66EA86C2299A /* chef-it */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "chef-it"; path = .; sourceTree = SOURCE_ROOT; };
 		9CF5F35DDD07536344D54EE4 /* ChefitRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitRouting.swift; sourceTree = "<group>"; };
+		9F54190311697BA2FFA4352B /* walnut.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = walnut.png; sourceTree = "<group>"; };
 		A048AAE76EA7CF7A4F5244BB /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
+		A223C90FBBE6DA794E0DCFB0 /* grapefruit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grapefruit.png; sourceTree = "<group>"; };
+		A435E165AB2383B872926D5E /* quinoa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = quinoa.png; sourceTree = "<group>"; };
 		A6CFE59EA87D15DB0961AB0E /* EdamamRecipeSearchServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdamamRecipeSearchServiceTests.swift; sourceTree = "<group>"; };
 		A799AA9741BBFA46B6D41366 /* ChefitComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitComponents.swift; sourceTree = "<group>"; };
 		AE8B3FD7C3965FF6019178FB /* MatchingScenariosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchingScenariosTests.swift; sourceTree = "<group>"; };
+		B6A909611398D59C8476B3D1 /* hazelnut.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hazelnut.png; sourceTree = "<group>"; };
 		BA56A1B108C26F6DB800AAF6 /* ReviewComposerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewComposerSheet.swift; sourceTree = "<group>"; };
 		BC73005FEC6EC3D07F38E905 /* ScanFlowViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFlowViewModelTests.swift; sourceTree = "<group>"; };
 		BFB14B52880B9212F7AE3C2E /* RecipeDeduplicatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDeduplicatorTests.swift; sourceTree = "<group>"; };
+		C714E5BCD11A96E2DBCC8996 /* red_meat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red_meat.png; sourceTree = "<group>"; };
 		D1D92078D4ADCCD2B140D4FE /* RecipeAPIConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeAPIConfigurationTests.swift; sourceTree = "<group>"; };
 		D2702F1F0C18D8E4C03230E0 /* IngredientStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientStoreTests.swift; sourceTree = "<group>"; };
 		D27F9679CA5504F8CDABEE85 /* RecommendationsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationsViewModelTests.swift; sourceTree = "<group>"; };
+		D5E99EAE17EB619B8AD47F9D /* broccoli.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = broccoli.png; sourceTree = "<group>"; };
+		D7C5C2F3CBE7ABBDCA00C274 /* blueberries.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blueberries.png; sourceTree = "<group>"; };
+		DB851527F09F3BF263A64A46 /* hazlenut.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hazlenut.png; sourceTree = "<group>"; };
+		DD796D78F64FECCC0D46B7E0 /* almond.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = almond.png; sourceTree = "<group>"; };
+		E3701CF403B3D2A4E61DB438 /* oats.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = oats.png; sourceTree = "<group>"; };
 		E4CB37286BAA0F3D6AA7D3AB /* MatchRankingStabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchRankingStabilityTests.swift; sourceTree = "<group>"; };
+		E84CA97E6BCC2E6081D37D39 /* black_eyed_peas.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = black_eyed_peas.png; sourceTree = "<group>"; };
 		EB1A0C314044C3F27D915395 /* NormalizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalizerTests.swift; sourceTree = "<group>"; };
 		EC63472C872D506B2DCC2FBC /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		EE6FBAF210E56C2A166565D9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -106,8 +153,11 @@
 		F17691FC391FE3AABE831C69 /* ChefitNotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefitNotificationsView.swift; sourceTree = "<group>"; };
 		F471B19CA4F1BFF011CE7F12 /* ChefItApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChefItApp.swift; sourceTree = "<group>"; };
 		F50FB0F29E7774F7B442FAE3 /* FavoriteRecipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteRecipeStoreTests.swift; sourceTree = "<group>"; };
+		F51E4C2B1C71E9C6C13FC984 /* brown_rice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = brown_rice.png; sourceTree = "<group>"; };
+		F57B3ED3D0729884572602FC /* pomegranate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pomegranate.png; sourceTree = "<group>"; };
+		F66290583D955A94ED9E00C3 /* avocado.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = avocado.png; sourceTree = "<group>"; };
 		FA5BC29F822D5AF1F4B450BB /* RecipeDiscoveryPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDiscoveryPlannerTests.swift; sourceTree = "<group>"; };
-		"TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		"TEMP_3E00B748-49F5-443E-9F80-9B287B15E040" /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				01C332EEB8B107F9BD18E787 /* App */,
+				C354B0771EC27F530E6E5E18 /* ingredients_icons */,
 				E0FDC44E5F1813D858ED5141 /* Packages */,
 				923BC96718882A5AF8EBE1B6 /* Tests */,
 				2E01F887927A27DD6F75CFE4 /* Products */,
@@ -271,6 +322,38 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		C354B0771EC27F530E6E5E18 /* ingredients_icons */ = {
+			isa = PBXGroup;
+			children = (
+				DD796D78F64FECCC0D46B7E0 /* almond.png */,
+				6C1CC33B66C4CBA82AFAB49E /* apple.png */,
+				F66290583D955A94ED9E00C3 /* avocado.png */,
+				E84CA97E6BCC2E6081D37D39 /* black_eyed_peas.png */,
+				D7C5C2F3CBE7ABBDCA00C274 /* blueberries.png */,
+				D5E99EAE17EB619B8AD47F9D /* broccoli.png */,
+				F51E4C2B1C71E9C6C13FC984 /* brown_rice.png */,
+				9215DF0A9A32E800C982E382 /* chicken_breast.png */,
+				577E77698C5F1A19C57DC5E6 /* eggs.png */,
+				34F77099633A8ABDC8E3BFEE /* ginger.png */,
+				A223C90FBBE6DA794E0DCFB0 /* grapefruit.png */,
+				10AA0C6853B05ABC33EAEDEE /* green_peas.png */,
+				B6A909611398D59C8476B3D1 /* hazelnut.png */,
+				DB851527F09F3BF263A64A46 /* hazlenut.png */,
+				1E683D04F4BAF0995DE05A80 /* lemon.png */,
+				13220A979E69F050518C8A23 /* lentils_bowl.png */,
+				E3701CF403B3D2A4E61DB438 /* oats.png */,
+				F57B3ED3D0729884572602FC /* pomegranate.png */,
+				A435E165AB2383B872926D5E /* quinoa.png */,
+				C714E5BCD11A96E2DBCC8996 /* red_meat.png */,
+				7E2E9B2D5C0F28C139067C10 /* redlentils.png */,
+				84EB67816A6EBE9EC31E043D /* salmon.png */,
+				77C512A552FDE7E1711078B1 /* spinach.png */,
+				0EE7027F112138B2B1B24977 /* turmeric.png */,
+				9F54190311697BA2FFA4352B /* walnut.png */,
+			);
+			path = ingredients_icons;
+			sourceTree = "<group>";
+		};
 		C9B5B476E1B904D7B3FA114C /* Cart */ = {
 			isa = PBXGroup;
 			children = (
@@ -290,10 +373,10 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		"TEMP_0D1FA3F9-7ECC-43EA-A180-0CA1F0377E37" /* chef-it */ = {
+		"TEMP_CA8D4E2F-90F2-4F7F-9F44-0B29A67A6F0A" /* chef-it */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */,
+				"TEMP_3E00B748-49F5-443E-9F80-9B287B15E040" /* Secrets.xcconfig */,
 			);
 			path = "chef-it";
 			sourceTree = "<group>";
@@ -391,6 +474,31 @@
 				27175AB165AFCE66DF166861 /* Assets.xcassets in Resources */,
 				5FA0F1510FDDBE9C749231D7 /* Nunito-Variable.ttf in Resources */,
 				E45DEFB5B404106952016833 /* PlayfairDisplay-Variable.ttf in Resources */,
+				00A50A5B4653555CC418E31F /* almond.png in Resources */,
+				5E624BBE22F09DBEC3FF0015 /* apple.png in Resources */,
+				8076EA34C4C1168DF137843E /* avocado.png in Resources */,
+				B148A6BB305128AD57A75812 /* black_eyed_peas.png in Resources */,
+				6000B7383F5966665C85D9BB /* blueberries.png in Resources */,
+				57449F1D7296CA2D3CF8CE93 /* broccoli.png in Resources */,
+				33F31AA9FD080A7D8E79CC3D /* brown_rice.png in Resources */,
+				375295493279538CA4298AD1 /* chicken_breast.png in Resources */,
+				F191E07DC4104E7B92268EB6 /* eggs.png in Resources */,
+				C6358B9EC715D132CB860798 /* ginger.png in Resources */,
+				724CFF910A1D9339B1A7D390 /* grapefruit.png in Resources */,
+				4623FADE465BC92BD0DD2961 /* green_peas.png in Resources */,
+				04D040E044DB84080A2F98F4 /* hazelnut.png in Resources */,
+				A5AD70C7D4ED9271B297A167 /* hazlenut.png in Resources */,
+				596C7F93BD66B54755E5E338 /* lemon.png in Resources */,
+				4FC3BCC1809463A3C58EB1C5 /* lentils_bowl.png in Resources */,
+				5513063179B20358C16FFDEE /* oats.png in Resources */,
+				DA339294AF2552BB8C79EFD1 /* pomegranate.png in Resources */,
+				9462FCDAB92702ADFDE65F37 /* quinoa.png in Resources */,
+				9AFEEEC12BFF4CDD19194B65 /* red_meat.png in Resources */,
+				59B7211CBD8B5710FF5B0C6D /* redlentils.png in Resources */,
+				24B34C820263B0FD6EA20973 /* salmon.png in Resources */,
+				391209F55B699F838D0D6C59 /* spinach.png in Resources */,
+				0643BE92C1EC960177E90517 /* turmeric.png in Resources */,
+				5E1A07E6542C41308238086D /* walnut.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,7 +582,7 @@
 		};
 		1E23C52136A1B3B072B78DB4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_3E00B748-49F5-443E-9F80-9B287B15E040" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -579,7 +687,7 @@
 		};
 		7B3977A781468949F587C355 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_BF448825-A84B-46C4-9C78-CE27EDEB85E6" /* Secrets.xcconfig */;
+			baseConfigurationReference = "TEMP_3E00B748-49F5-443E-9F80-9B287B15E040" /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

@@ -20,8 +20,15 @@ enum ChefitRoute: Hashable {
 }
 
 struct ChefitRootCoordinatorView: View {
-    // RootView already owns unauthenticated entry. The coordinator should start
-    // inside the authenticated app shell rather than replaying placeholder auth.
+    @EnvironmentObject private var ingredientStore: IngredientStore
+
+    var body: some View {
+        ChefitRootCoordinatorContent(ingredientStore: ingredientStore)
+    }
+}
+
+private struct ChefitRootCoordinatorContent: View {
+    @ObservedObject private var ingredientStore: IngredientStore
     @EnvironmentObject private var homeFeed: HomeFeedViewModel
     @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
     @State private var route: ChefitRoute = .home
@@ -35,13 +42,16 @@ struct ChefitRootCoordinatorView: View {
     @State private var pendingImageData: Data?
     @State private var pendingSource: ScanSourceKind = .camera
     @State private var scanErrorMessage: String?
-    @StateObject private var scanVM = ScanFlowViewModel(
-        ingredientStore: IngredientStore.live(),
-        scanService: VisionScanService()
-    )
-    @StateObject private var recommendationsVM = RecommendationsViewModel(
-        ingredientStore: IngredientStore.live()
-    )
+    @StateObject private var scanVM: ScanFlowViewModel
+    @StateObject private var recommendationsVM: RecommendationsViewModel
+
+    init(ingredientStore: IngredientStore) {
+        _ingredientStore = ObservedObject(wrappedValue: ingredientStore)
+        _scanVM = StateObject(
+            wrappedValue: ScanFlowViewModel(ingredientStore: ingredientStore, scanService: VisionScanService())
+        )
+        _recommendationsVM = StateObject(wrappedValue: RecommendationsViewModel(ingredientStore: ingredientStore))
+    }
 
     private var profileAvatarURL: URL? {
         guard let urlStr = userProfileStore.profile?.avatarURL else { return nil }
@@ -106,18 +116,22 @@ struct ChefitRootCoordinatorView: View {
                 if case .recommendations = newValue {
                     Task { await recommendationsVM.refresh() }
                 }
+                if newValue == .home {
+                    Task { await refreshUnreadCount() }
+                }
             }
             .onChange(of: scanVM.phase) { _, phase in
                 switch phase {
                 case .review, .empty:
                     route = .detectedIngredients
                 case .failed:
-                    scanErrorMessage = scanVM.message ?? "Scan failed. Check Xcode console for details."
+                    scanErrorMessage = scanVM.message
+                        ?? "We couldn’t read ingredients from that photo. Try another image."
                 default:
                     break
                 }
             }
-            .alert("Scan Failed", isPresented: Binding(
+            .alert("Couldn’t scan", isPresented: Binding(
                 get: { scanErrorMessage != nil },
                 set: { if !$0 { scanErrorMessage = nil; scanVM.reset() } }
             )) {
@@ -138,11 +152,6 @@ struct ChefitRootCoordinatorView: View {
             .task(id: AuthService.shared.isLoggedIn) {
                 guard AuthService.shared.isLoggedIn else { return }
                 await refreshUnreadCount()
-            }
-            .onChange(of: route) { _, newValue in
-                if newValue == .home {
-                    Task { await refreshUnreadCount() }
-                }
             }
     }
 
@@ -201,7 +210,8 @@ struct ChefitRootCoordinatorView: View {
         case .recipeDiscover(let id):
             let recipe = homeFeed.recipeByID[id]
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
-                ?? ChefitSampleData.popularRecipes[0]
+                ?? ChefitSampleData.popularRecipes.first
+                ?? ChefitRecipeItem(id: id, title: "Recipe", imageURL: nil, minutes: 20, difficulty: "Easy")
             ChefitRecipeDiscoveryView(
                 recipe: recipe,
                 onBack: { route = recipeDiscoverOrigin }
@@ -232,6 +242,9 @@ struct ChefitRootCoordinatorView: View {
                 candidates: scanVM.candidates,
                 message: scanVM.message,
                 onToggleCandidate: scanVM.toggleCandidate,
+                onQuantityChange: scanVM.setCandidateQuantity,
+                onQuantityUnitChange: scanVM.setCandidateQuantityUnit,
+                onExpiryChange: scanVM.setCandidateExpiry,
                 onAddManualCandidate: scanVM.addManualCandidate,
                 onFindRecipes: {
                     if scanVM.confirmSelected() {
@@ -337,7 +350,7 @@ private final class OtherUserProfileViewModel: ObservableObject {
             profile = p
             posts = pg.posts
         } catch {
-            self.error = error.localizedDescription
+            self.error = UserFacingErrorMessage.message(for: error)
         }
         isLoading = false
     }

@@ -47,9 +47,11 @@ public final class RecommendationsViewModel: ObservableObject {
         self.normalizer = normalizer
         self.ingredientCount = ingredientStore.ingredients.count
 
-        ingredientSink = ingredientStore.$ingredients.sink { [weak self] ingredients in
-            self?.ingredientCount = ingredients.count
-        }
+        ingredientSink = ingredientStore.$ingredients
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] ingredients in
+                self?.ingredientCount = ingredients.count
+            }
     }
 
     public func refresh() async {
@@ -84,8 +86,7 @@ public final class RecommendationsViewModel: ObservableObject {
             isLoading = false
         } catch {
             isLoading = false
-            errorMessage = (error as? LocalizedError)?.errorDescription
-                ?? "Recipe search failed. Try again."
+            errorMessage = UserFacingErrorMessage.message(for: error)
         }
     }
 

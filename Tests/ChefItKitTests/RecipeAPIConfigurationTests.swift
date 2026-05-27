@@ -14,6 +14,7 @@ struct RecipeAPIConfigurationTests {
 
         #expect(configuration.appID == "app-id")
         #expect(configuration.appKey == "app-key")
+        #expect(configuration.accountUser == RecipeAPIConfiguration.defaultAccountUser)
     }
 
     @Test func ignoresMissingAndUnresolvedBuildSettings() {
@@ -23,5 +24,17 @@ struct RecipeAPIConfigurationTests {
         ])
 
         #expect(configuration == nil)
+    }
+
+    @Test func readsOptionalEdamamAccountUser() throws {
+        let configuration = try #require(
+            RecipeAPIConfiguration.fromEnvironment([
+                "EDAMAM_APP_ID": "app-id",
+                "EDAMAM_APP_KEY": "app-key",
+                "EDAMAM_ACCOUNT_USER": " ios-local-user "
+            ])
+        )
+
+        #expect(configuration.accountUser == "ios-local-user")
     }
 }

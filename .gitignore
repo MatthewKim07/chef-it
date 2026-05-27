@@ -1,5 +1,8 @@
 # Swift / Xcode
 .build/
+*.o
+*.d
+*.swiftdeps
 .swiftpm/
 DerivedData/
 *.xcodeproj/xcuserdata/

@@ -206,25 +206,25 @@ private struct ChefitHomeRecipeCard: View {
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(alignment: .topLeading) {
-                        Text("🥦 \(model.matchPercentText)")
-                            .font(.custom("Nunito-Bold", size: 11))
-                            .foregroundStyle(ChefitColors.sageGreen)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(ChefitColors.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .padding(8)
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        Text(model.contextBadge)
-                            .font(.custom("Nunito-Bold", size: 11))
-                            .foregroundStyle(ChefitColors.sageGreen)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(ChefitColors.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .padding(8)
+                    .overlay(alignment: .top) {
+                        HStack {
+                            Text("🥦 \(model.matchPercentText)")
+                                .font(.custom("Nunito-Bold", size: 11))
+                                .foregroundStyle(ChefitColors.sageGreen)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(ChefitColors.white.opacity(0.95))
+                                .clipShape(Capsule())
+                            Spacer(minLength: 4)
+                            Text(model.contextBadge)
+                                .font(.custom("Nunito-Bold", size: 11))
+                                .foregroundStyle(ChefitColors.sageGreen)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(ChefitColors.white.opacity(0.95))
+                                .clipShape(Capsule())
+                        }
+                        .padding(8)
                     }
 
                 Text(model.recipe.title)
@@ -302,45 +302,228 @@ private struct ChefitHomeRecipeCard: View {
 
 struct ChefitMyIngredientsView: View {
     let onBack: () -> Void
+    @EnvironmentObject private var ingredientStore: IngredientStore
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                Text("My Ingredients")
-                    .font(.custom("Nunito-Bold", size: 22))
-                    .foregroundStyle(ChefitColors.text)
+        ScrollView {
+            VStack(spacing: ChefitSpacing.md) {
+                header
 
-                HStack {
-                    Button(action: onBack) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
+                if ingredientStore.ingredients.isEmpty {
+                    VStack(spacing: ChefitSpacing.sm) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 34))
+                            .foregroundStyle(ChefitColors.matcha)
+                        Text("Your pantry shelf is empty.")
+                            .font(ChefitTypography.h3())
                             .foregroundStyle(ChefitColors.sageGreen)
-                            .frame(minWidth: 44, minHeight: 44, alignment: .leading)
-                            .contentShape(Rectangle())
+                        Text("Scan or add ingredients to start building recipes.")
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.matcha)
+                            .multilineTextAlignment(.center)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Back")
-                    Spacer()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ChefitSpacing.twoXL)
+                } else {
+                    ForEach(ingredientStore.ingredients.sorted(by: { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })) { ingredient in
+                        ingredientRow(ingredient)
+                    }
                 }
             }
-            .padding(.horizontal, ChefitSpacing.md)
-            .padding(.top, ChefitSpacing.sm)
-            .padding(.bottom, ChefitSpacing.md)
-
-            Spacer(minLength: 8)
-
-            Image("ChefitIngredientsPantryHero")
-                .renderingMode(.original)
-                .resizable()
-                .interpolation(.high)
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, ChefitSpacing.md)
-
-            Spacer(minLength: 8)
+            .padding(ChefitSpacing.md)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ChefitColors.cream.ignoresSafeArea())
+    }
+
+    private var header: some View {
+        ZStack {
+            Text("My Ingredients")
+                .font(.custom("Nunito-Bold", size: 22))
+                .foregroundStyle(ChefitColors.text)
+
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(ChefitColors.sageGreen)
+                        .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Back")
+                Spacer()
+            }
+        }
+    }
+
+    private func ingredientRow(_ ingredient: Ingredient) -> some View {
+        VStack(alignment: .leading, spacing: ChefitSpacing.xs) {
+            HStack(spacing: ChefitSpacing.sm) {
+                IngredientIconView(
+                    ingredientName: ingredient.canonicalName,
+                    category: ingredient.category,
+                    size: 42
+                )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ingredient.name.capitalized)
+                        .font(ChefitTypography.label())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                    Text(ingredient.source == .scan ? "Scanned" : "Manual")
+                        .font(ChefitTypography.micro())
+                        .foregroundStyle(ChefitColors.matcha)
+                }
+                Spacer()
+                Button {
+                    ingredientStore.remove(ingredient.id)
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(ChefitColors.peach)
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: ChefitSpacing.sm) {
+                HStack(spacing: 8) {
+                    Button {
+                        ingredientStore.updateQuantity(
+                            ingredient.id,
+                            quantity: max(0.1, ingredient.quantity - stepValue(for: ingredient.quantityUnit))
+                        )
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    .buttonStyle(.plain)
+
+                    Menu {
+                        ForEach(unitOptions(for: ingredient), id: \.rawValue) { unit in
+                            Button(unit.label) {
+                                ingredientStore.updateQuantityUnit(ingredient.id, unit: unit)
+                            }
+                        }
+                    } label: {
+                        Text(quantityLabel(ingredient.quantity, unit: ingredient.quantityUnit))
+                            .font(ChefitTypography.micro())
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .frame(minWidth: 64)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(ChefitColors.white.opacity(0.8))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        ingredientStore.updateQuantity(
+                            ingredient.id,
+                            quantity: ingredient.quantity + stepValue(for: ingredient.quantityUnit)
+                        )
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+
+                Text("Expiry date")
+                    .font(.custom("Nunito-SemiBold", size: 10))
+                    .foregroundStyle(ChefitColors.matcha.opacity(0.85))
+                if let expiry = ingredient.expiresAt {
+                    DatePicker(
+                        "",
+                        selection: Binding(
+                            get: { expiry },
+                            set: { ingredientStore.updateExpiry(ingredient.id, expiresAt: $0) }
+                        ),
+                        displayedComponents: [.date]
+                    )
+                    .labelsHidden()
+                    .datePickerStyle(.compact)
+                    .font(.custom("Nunito-SemiBold", size: 11))
+
+                    Button {
+                        ingredientStore.updateExpiry(ingredient.id, expiresAt: nil)
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                            .foregroundStyle(ChefitColors.matcha)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button("Set expiry") {
+                        ingredientStore.updateExpiry(
+                            ingredient.id,
+                            expiresAt: Calendar.current.date(byAdding: .day, value: 7, to: Date())
+                        )
+                    }
+                    .font(.custom("Nunito-SemiBold", size: 11))
+                    .foregroundStyle(ChefitColors.matcha)
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if let expiresAt = ingredient.expiresAt {
+                Text("Estimated expiry date: \(dateFormatter.string(from: expiresAt))")
+                    .font(.custom("Nunito-Regular", size: 11))
+                    .foregroundStyle(ChefitColors.matcha.opacity(0.9))
+            }
+        }
+        .padding(ChefitSpacing.sm)
+        .background(ChefitColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous)
+                .stroke(ChefitColors.pistachio, lineWidth: 1)
+        )
+    }
+
+    private func unitOptions(for ingredient: Ingredient) -> [IngredientQuantityUnit] {
+        switch ingredient.category {
+        case .protein, .produce:
+            return [.item, .gram, .ounce, .pound]
+        case .dairy, .condiment:
+            return [.milliliter, .liter, .cup, .tablespoon]
+        case .grain:
+            return [.gram, .ounce, .cup]
+        case .spice:
+            return [.teaspoon, .tablespoon, .gram]
+        case .pantry, .other:
+            return [.item, .gram, .milliliter]
+        }
+    }
+
+    private func stepValue(for unit: IngredientQuantityUnit) -> Double {
+        switch unit {
+        case .item: return 1
+        case .gram: return 25
+        case .kilogram: return 0.25
+        case .ounce: return 1
+        case .pound: return 0.5
+        case .milliliter: return 50
+        case .liter: return 0.1
+        case .cup: return 0.25
+        case .tablespoon: return 0.5
+        case .teaspoon: return 0.5
+        }
+    }
+
+    private func quantityLabel(_ value: Double, unit: IngredientQuantityUnit) -> String {
+        let formatted: String
+        if value.rounded(.towardZero) == value {
+            formatted = "\(Int(value))"
+        } else {
+            formatted = String(format: "%.1f", value)
+        }
+        return "\(formatted) \(unit.label)"
     }
 }
 

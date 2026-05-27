@@ -80,6 +80,7 @@ struct EdamamRecipeSearchServiceTests {
         #expect(queryItems.contains(URLQueryItem(name: "health", value: "keto-friendly")))
         #expect(queryItems.contains(URLQueryItem(name: "time", value: "30")))
         #expect(queryItems.contains(URLQueryItem(name: "field", value: "ingredientLines")))
+        #expect(request.value(forHTTPHeaderField: "Edamam-Account-User") == RecipeAPIConfiguration.defaultAccountUser)
     }
 
     @Test func searchAdaptsAndDeduplicatesAPIResponses() async throws {

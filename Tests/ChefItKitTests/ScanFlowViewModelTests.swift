@@ -78,7 +78,7 @@ struct ScanFlowViewModelTests {
         await model.beginScan(imageData: Data([4, 2]), source: .camera)
 
         #expect(model.phase == .failed)
-        #expect(model.message == "Scan backend is unavailable right now.")
+        #expect(model.message == "Ingredient scan is unavailable. Check your connection or try again later.")
     }
 
     @Test func confirmSelectedAddsScanIngredientsToBoard() async {

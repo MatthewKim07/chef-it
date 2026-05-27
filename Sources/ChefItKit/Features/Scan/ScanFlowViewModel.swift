@@ -40,6 +40,9 @@ public struct ScanCandidate: Identifiable, Hashable, Sendable {
     public let category: IngredientCategory
     public let confidence: Double
     public var isSelected: Bool
+    public var quantity: Double
+    public var quantityUnit: IngredientQuantityUnit
+    public var expiresAt: Date?
 
     public init(detected: DetectedIngredient, isSelected: Bool = true) {
         self.id = detected.id
@@ -48,6 +51,38 @@ public struct ScanCandidate: Identifiable, Hashable, Sendable {
         self.category = detected.category
         self.confidence = detected.confidence
         self.isSelected = isSelected
+        self.quantity = 1
+        self.quantityUnit = Self.defaultUnit(for: detected.canonicalName, category: detected.category)
+        self.expiresAt = Self.estimatedExpiry(for: detected.category)
+    }
+
+    private static func defaultUnit(for canonical: String, category: IngredientCategory) -> IngredientQuantityUnit {
+        let discrete: Set<String> = [
+            "egg", "eggs", "apple", "banana", "onion", "potato", "tomato", "avocado", "lemon", "lime"
+        ]
+        let volume: Set<String> = ["milk", "olive oil", "soy sauce", "vinegar", "cream"]
+        if discrete.contains(canonical) { return .item }
+        if volume.contains(canonical) { return .milliliter }
+        switch category {
+        case .protein, .produce, .grain: return .gram
+        case .dairy, .condiment: return .milliliter
+        case .pantry, .spice, .other: return .item
+        }
+    }
+
+    private static func estimatedExpiry(for category: IngredientCategory, from now: Date = Date()) -> Date? {
+        let days: Int
+        switch category {
+        case .protein: days = 3
+        case .produce: days = 7
+        case .dairy: days = 7
+        case .condiment: days = 90
+        case .grain: days = 180
+        case .spice: days = 365
+        case .pantry: days = 120
+        case .other: days = 14
+        }
+        return Calendar.current.date(byAdding: .day, value: days, to: now)
     }
 }
 
@@ -62,6 +97,7 @@ public final class ScanFlowViewModel: ObservableObject {
     private let ingredientStore: IngredientStore
     private let scanService: any ScanService
     private let normalizer = IngredientNormalizer()
+    private var activeScanID: UUID?
 
     public init(
         ingredientStore: IngredientStore,
@@ -76,6 +112,9 @@ public final class ScanFlowViewModel: ObservableObject {
     }
 
     public func beginScan(imageData: Data, source: ScanSourceKind) async {
+        let scanID = UUID()
+        activeScanID = scanID
+
         draft = ScanDraft(imageData: imageData, source: source)
         candidates = []
         message = nil
@@ -91,6 +130,8 @@ public final class ScanFlowViewModel: ObservableObject {
 
         do {
             let result = try await scanService.detectIngredients(in: imageData)
+            guard activeScanID == scanID else { return }
+
             if result.candidates.isEmpty {
                 phase = .empty
                 message = "No ingredients found. Try a tighter photo or better lighting."
@@ -100,6 +141,7 @@ public final class ScanFlowViewModel: ObservableObject {
             candidates = result.candidates.map { ScanCandidate(detected: $0) }
             phase = .review
         } catch {
+            guard activeScanID == scanID else { return }
             phase = .failed
             message = message(for: error)
         }
@@ -111,6 +153,21 @@ public final class ScanFlowViewModel: ObservableObject {
         message = nil
     }
 
+    public func setCandidateQuantity(_ id: UUID, quantity: Double) {
+        guard let index = candidates.firstIndex(where: { $0.id == id }) else { return }
+        candidates[index].quantity = max(0.1, quantity)
+    }
+
+    public func setCandidateQuantityUnit(_ id: UUID, unit: IngredientQuantityUnit) {
+        guard let index = candidates.firstIndex(where: { $0.id == id }) else { return }
+        candidates[index].quantityUnit = unit
+    }
+
+    public func setCandidateExpiry(_ id: UUID, expiresAt: Date?) {
+        guard let index = candidates.firstIndex(where: { $0.id == id }) else { return }
+        candidates[index].expiresAt = expiresAt
+    }
+
     @discardableResult
     public func confirmSelected() -> Bool {
         let selected = candidates.filter(\.isSelected)
@@ -119,10 +176,15 @@ public final class ScanFlowViewModel: ObservableObject {
             return false
         }
 
-        let outcomes = ingredientStore.addMany(
-            selected.map(\.rawName),
-            source: .scan
-        )
+        let outcomes = selected.map { candidate in
+            ingredientStore.add(
+                rawName: candidate.rawName,
+                source: .scan,
+                quantity: candidate.quantity,
+                quantityUnit: candidate.quantityUnit,
+                expiresAt: candidate.expiresAt
+            )
+        }
         lastConfirmFeedback = summarize(outcomes)
         clearSession(preserveFeedback: true)
         return true
@@ -205,7 +267,7 @@ public final class ScanFlowViewModel: ObservableObject {
         case .rateLimited(let retryAfterSeconds):
             return "Scan temporarily limited. Try again in \(retryAfterSeconds)s."
         case .backendUnavailable:
-            return "Scan backend is unavailable right now."
+            return "Ingredient scan is unavailable. Check your connection or try again later."
         case .invalidImage:
             return "That image could not be read."
         }

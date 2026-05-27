@@ -23,6 +23,7 @@ public final class IngredientStore: ObservableObject {
 
     private let normalizer: IngredientNormalizer
     private let persister: IngredientPersisting
+    private let persistQueue = DispatchQueue(label: "com.chefit.ingredientboard.persist", qos: .utility)
     private var hasLoaded = false
 
     public init(
@@ -43,7 +44,10 @@ public final class IngredientStore: ObservableObject {
     }
 
     private func persist() {
-        try? persister.save(ingredients)
+        let snapshot = ingredients
+        persistQueue.sync {
+            try? persister.save(snapshot)
+        }
     }
 
     public var canonicalSet: Set<String> {
@@ -54,6 +58,8 @@ public final class IngredientStore: ObservableObject {
     public func add(
         rawName: String,
         source: IngredientSource = .manual,
+        quantity: Double = 1,
+        quantityUnit: IngredientQuantityUnit? = nil,
         expiresAt: Date? = nil
     ) -> IngredientAddOutcome {
         let canonical = normalizer.canonicalize(rawName)
@@ -67,6 +73,8 @@ public final class IngredientStore: ObservableObject {
             canonicalName: canonical,
             category: category,
             source: source,
+            quantity: quantity,
+            quantityUnit: quantityUnit ?? defaultUnit(for: canonical, category: category),
             expiresAt: expiresAt
         )
         ingredients.append(ingredient)
@@ -76,7 +84,7 @@ public final class IngredientStore: ObservableObject {
 
     @discardableResult
     public func addMany(_ raws: [String], source: IngredientSource = .manual) -> [IngredientAddOutcome] {
-        raws.map { add(rawName: $0, source: source) }
+        raws.map { add(rawName: $0, source: source, quantity: 1, quantityUnit: nil, expiresAt: nil) }
     }
 
     @discardableResult
@@ -153,11 +161,85 @@ public final class IngredientStore: ObservableObject {
             category: normalizer.category(for: canonical),
             source: prior.source,
             addedAt: prior.addedAt,
+            quantity: prior.quantity,
+            quantityUnit: prior.quantityUnit,
             expiresAt: prior.expiresAt
         )
         ingredients[index] = updated
         persist()
         return .renamed(updated)
+    }
+
+    public func updateQuantity(_ id: Ingredient.ID, quantity: Double) {
+        guard let index = ingredients.firstIndex(where: { $0.id == id }) else { return }
+        let prior = ingredients[index]
+        let updated = Ingredient(
+            id: prior.id,
+            name: prior.name,
+            canonicalName: prior.canonicalName,
+            category: prior.category,
+            source: prior.source,
+            addedAt: prior.addedAt,
+            quantity: max(0.1, quantity),
+            quantityUnit: prior.quantityUnit,
+            expiresAt: prior.expiresAt
+        )
+        ingredients[index] = updated
+        persist()
+    }
+
+    public func updateQuantityUnit(_ id: Ingredient.ID, unit: IngredientQuantityUnit) {
+        guard let index = ingredients.firstIndex(where: { $0.id == id }) else { return }
+        let prior = ingredients[index]
+        let updated = Ingredient(
+            id: prior.id,
+            name: prior.name,
+            canonicalName: prior.canonicalName,
+            category: prior.category,
+            source: prior.source,
+            addedAt: prior.addedAt,
+            quantity: prior.quantity,
+            quantityUnit: unit,
+            expiresAt: prior.expiresAt
+        )
+        ingredients[index] = updated
+        persist()
+    }
+
+    public func updateExpiry(_ id: Ingredient.ID, expiresAt: Date?) {
+        guard let index = ingredients.firstIndex(where: { $0.id == id }) else { return }
+        let prior = ingredients[index]
+        let updated = Ingredient(
+            id: prior.id,
+            name: prior.name,
+            canonicalName: prior.canonicalName,
+            category: prior.category,
+            source: prior.source,
+            addedAt: prior.addedAt,
+            quantity: prior.quantity,
+            quantityUnit: prior.quantityUnit,
+            expiresAt: expiresAt
+        )
+        ingredients[index] = updated
+        persist()
+    }
+
+    private func defaultUnit(for canonical: String, category: IngredientCategory) -> IngredientQuantityUnit {
+        let discrete: Set<String> = [
+            "egg", "eggs", "apple", "banana", "onion", "potato", "tomato", "avocado",
+            "lime", "lemon", "orange", "pear", "peach"
+        ]
+        let volume: Set<String> = ["milk", "olive oil", "soy sauce", "vinegar", "cream"]
+        if discrete.contains(canonical) { return .item }
+        if volume.contains(canonical) { return .milliliter }
+        switch category {
+        case .protein, .produce, .grain:
+            return .gram
+        case .dairy, .condiment:
+            return .milliliter
+        case .pantry, .spice, .other:
+            return .item
+        }
     }
 
     /// Ingredients with explicit freshness metadata that are near expiry.

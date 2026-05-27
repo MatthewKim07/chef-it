@@ -100,6 +100,7 @@ public struct EdamamRecipeSearchService: RecipeSearchService {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("gzip", forHTTPHeaderField: "Accept-Encoding")
+        request.setValue(configuration.accountUser, forHTTPHeaderField: "Edamam-Account-User")
         return request
     }
 

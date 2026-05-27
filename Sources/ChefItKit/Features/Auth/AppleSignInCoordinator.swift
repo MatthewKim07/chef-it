@@ -75,15 +75,19 @@ public final class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDe
     nonisolated public func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         MainActor.assumeIsolated {
             #if canImport(UIKit)
-            UIApplication.shared.connectedScenes
+            return UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }
                 .first?
                 .windows
                 .first { $0.isKeyWindow } ?? UIWindow()
             #elseif canImport(AppKit)
-            NSApplication.shared.keyWindow ?? NSWindow()
+            return NSApplication.shared.keyWindow
+                ?? NSApplication.shared.mainWindow
+                ?? NSApplication.shared.windows.first
+                ?? NSWindow()
             #else
-            fatalError("Unsupported platform")
+            assertionFailure("Sign in with Apple requires UIKit or AppKit.")
+            preconditionFailure("Unsupported platform for Apple Sign-In")
             #endif
         }
     }
