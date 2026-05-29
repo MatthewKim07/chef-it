@@ -450,40 +450,44 @@ struct ChefitRecipeDetailsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                HStack {
-                    Button(action: onBack) {
-                        Image(systemName: "chevron.left")
-                            .foregroundStyle(ChefitColors.sageGreen)
-                            .frame(width: 44, height: 44, alignment: .leading)
-                            .contentShape(Rectangle())
+        ZStack(alignment: .topLeading) {
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+                    Color.clear.frame(height: 44)
+
+                    if let imageURL = recipe.imageURL {
+                        AsyncImage(url: imageURL) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
+                        }
+                        .frame(height: 180)
+                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
                     }
-                    .buttonStyle(.plain)
-                    Spacer()
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(ChefitColors.sageGreen)
-                }
 
-                if let imageURL = recipe.imageURL {
-                    AsyncImage(url: imageURL) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
+                    headerCard
+                    tabSelector
+
+                    ScrollView {
+                        tabContent
+                            .padding(.bottom, ChefitSpacing.twoXL + ChefitSpacing.lg)
                     }
-                    .frame(height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
                 }
-
-                headerCard
-                tabSelector
-
-                ScrollView {
-                    tabContent
-                        .padding(.bottom, ChefitSpacing.twoXL + ChefitSpacing.lg)
-                }
+                .padding(ChefitSpacing.md)
             }
-            .padding(ChefitSpacing.md)
+
+            Button(action: onBack) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(ChefitColors.sageGreen)
+                    .frame(width: 38, height: 38)
+                    .background(ChefitColors.white.opacity(0.92))
+                    .clipShape(Circle())
+                    .chefitCardShadow()
+            }
+            .buttonStyle(.plain)
+            .padding(.leading, ChefitSpacing.md)
+            .padding(.top, ChefitSpacing.md)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
