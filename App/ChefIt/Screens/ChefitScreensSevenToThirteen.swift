@@ -369,12 +369,23 @@ struct ChefitDetectedIngredientsView: View {
 
 struct ChefitRecommendationsView: View {
     @ObservedObject var vm: RecommendationsViewModel
+    let onBack: () -> Void
     let onRecipeTap: (Recipe) -> Void
     @State private var favorites: Set<String> = []
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: ChefitSpacing.md) {
+                HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    Spacer()
+                }
                 Text("Recipes you can make")
                     .font(ChefitTypography.h2())
                     .foregroundStyle(ChefitColors.sageGreen)

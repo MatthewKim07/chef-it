@@ -37,6 +37,7 @@ private struct ChefitRootCoordinatorContent: View {
     @State private var unreadNotificationCount: Int = 0
     @State private var notificationPostTarget: Post?
     @State private var recipeDiscoverOrigin: ChefitRoute = .home
+    @State private var recipeDetailsOrigin: ChefitRoute = .home
     @State private var showCamera = false
     @State private var showPhotoLibrary = false
     @State private var pendingImageData: Data?
@@ -112,9 +113,6 @@ private struct ChefitRootCoordinatorContent: View {
                 case .community, .userProfile: selectedTab = .community
                 case .profile, .settings: selectedTab = .profile
                 default: break
-                }
-                if case .recommendations = newValue {
-                    Task { await recommendationsVM.refresh() }
                 }
                 if newValue == .home {
                     Task { await refreshUnreadCount() }
@@ -216,17 +214,14 @@ private struct ChefitRootCoordinatorContent: View {
                 recipe: recipe,
                 onBack: { route = recipeDiscoverOrigin }
             ) { payload in
+                recipeDetailsOrigin = .recipeDiscover(id: id)
                 route = .recipeDetails(payload: payload)
             }
 
         case .recipeDetails(let payload):
             ChefitRecipeDetailsView(
                 recipe: payload,
-                onBack: {
-                    let hasMainRecipe = homeFeed.recipeByID[payload.id] != nil
-                        || ChefitSampleData.popularRecipes.contains(where: { $0.id == payload.id })
-                    route = hasMainRecipe ? .recipeDiscover(id: payload.id) : .recommendations
-                }
+                onBack: { route = recipeDetailsOrigin }
             )
 
         case .scan:
@@ -248,6 +243,7 @@ private struct ChefitRootCoordinatorContent: View {
                 onAddManualCandidate: scanVM.addManualCandidate,
                 onFindRecipes: {
                     if scanVM.confirmSelected() {
+                        Task { await recommendationsVM.refresh() }
                         route = .recommendations
                     }
                 }
@@ -256,7 +252,9 @@ private struct ChefitRootCoordinatorContent: View {
         case .recommendations:
             ChefitRecommendationsView(
                 vm: recommendationsVM,
+                onBack: { route = .detectedIngredients },
                 onRecipeTap: { recipe in
+                    recipeDetailsOrigin = .recommendations
                     route = .recipeDetails(payload: .fromRecipe(recipe))
                 }
             )
