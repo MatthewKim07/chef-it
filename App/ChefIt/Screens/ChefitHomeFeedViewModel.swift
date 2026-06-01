@@ -167,9 +167,10 @@ final class HomeFeedViewModel: ObservableObject {
         forYouRecipes = Array(forYou.prefix(8))
         expiringRecipes = Array(useSoon.prefix(8))
         recipeByID = Dictionary(
-            uniqueKeysWithValues: (forYouRecipes + expiringRecipes).map { ui in
+            (forYouRecipes + expiringRecipes).map { ui in
                 (ui.id, chefitItem(from: ui.recipe))
-            }
+            },
+            uniquingKeysWith: { first, _ in first }
         )
 
         cache[key] = FeedCacheValue(
