@@ -19,7 +19,6 @@ struct ChefitScanPantryView: View {
                         .scaledToFit()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .clipped()
-                        .blur(radius: isAnalyzing ? 10 : 0)
                 } else {
                     VStack(spacing: ChefitSpacing.sm) {
                         Image(systemName: "camera.viewfinder")
@@ -33,18 +32,7 @@ struct ChefitScanPantryView: View {
                 }
 
                 if isAnalyzing {
-                    ZStack {
-                        Color.black.opacity(0.35)
-                        VStack(spacing: ChefitSpacing.sm) {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(ChefitColors.white)
-                                .scaleEffect(1.2)
-                            Text("Scanning…")
-                                .font(ChefitTypography.label())
-                                .foregroundStyle(ChefitColors.white)
-                        }
-                    }
+                    ScannerOverlayView()
                 }
             }
             .frame(maxWidth: .infinity, minHeight: previewBoxHeight, maxHeight: previewBoxHeight)
@@ -79,6 +67,92 @@ struct ChefitScanPantryView: View {
     private var previewImage: UIImage? {
         guard let previewImageData else { return nil }
         return UIImage(data: previewImageData)
+    }
+}
+
+private struct ScanCorners: Shape {
+    var cornerLength: CGFloat = 22
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let l = cornerLength
+        // top-left
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY + l))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + l, y: rect.minY))
+        // top-right
+        p.move(to: CGPoint(x: rect.maxX - l, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + l))
+        // bottom-right
+        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - l))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX - l, y: rect.maxY))
+        // bottom-left
+        p.move(to: CGPoint(x: rect.minX + l, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - l))
+        return p
+    }
+}
+
+private struct ScannerOverlayView: View {
+    @State private var yFraction: CGFloat = 0
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let lineY = 16 + yFraction * (h - 32)
+
+            ZStack(alignment: .topLeading) {
+                // Glow band
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.clear, Color.cyan.opacity(0.25), Color.white.opacity(0.15), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: w, height: 36)
+                    .position(x: w / 2, y: lineY)
+                    .blur(radius: 6)
+
+                // Scan line
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.clear, .white, Color(red: 0.4, green: 0.85, blue: 1.0), .white, .clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: w, height: 2)
+                    .position(x: w / 2, y: lineY)
+
+                // Corner brackets
+                ScanCorners()
+                    .stroke(Color.white, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .padding(10)
+
+                // Label
+                Text("Scanning…")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(Color.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.45))
+                    .clipShape(Capsule())
+                    .frame(maxWidth: .infinity)
+                    .position(x: w / 2, y: h - 24)
+            }
+        }
+        .clipped()
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                yFraction = 1
+            }
+        }
     }
 }
 
