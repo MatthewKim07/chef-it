@@ -1020,54 +1020,96 @@ private struct QuantityStepper: View {
 
 struct ChefitSavedView: View {
     let onRecipeTap: (String) -> Void
+    @EnvironmentObject private var savedRecipes: SavedRecipeStore
+    @State private var isEditing = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: ChefitSpacing.md) {
-                HStack {
-                    Text("Saved Recipes")
-                        .font(ChefitTypography.h2())
-                        .foregroundStyle(ChefitColors.sageGreen)
-                    Spacer()
-                    Text("Edit")
-                        .font(ChefitTypography.label())
-                        .foregroundStyle(ChefitColors.peach)
-                }
-
-                ForEach(ChefitSampleData.popularRecipes) { recipe in
-                    HStack(spacing: ChefitSpacing.sm) {
-                        AsyncImage(url: recipe.imageURL) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            RoundedRectangle(cornerRadius: ChefitRadius.md).fill(ChefitColors.pistachio)
-                        }
-                        .frame(width: 90, height: 70)
-                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(recipe.title)
-                                .font(ChefitTypography.h3())
-                                .foregroundStyle(ChefitColors.sageGreen)
-                            Text("\(recipe.minutes) min · \(recipe.difficulty)")
-                                .font(ChefitTypography.micro())
-                                .foregroundStyle(ChefitColors.matcha)
-                        }
-                        Spacer()
-                        Image(systemName: "heart.fill")
-                            .foregroundStyle(ChefitColors.peach)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Saved Recipes")
+                    .font(ChefitTypography.h2())
+                    .foregroundStyle(ChefitColors.sageGreen)
+                Spacer()
+                if !savedRecipes.recipes.isEmpty {
+                    Button(isEditing ? "Done" : "Edit") {
+                        withAnimation { isEditing.toggle() }
                     }
-                    .padding(ChefitSpacing.sm)
-                    .background(ChefitColors.white)
-                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
-                    .chefitCardShadow()
-                    .onTapGesture {
-                        onRecipeTap(recipe.id)
-                    }
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.peach)
                 }
             }
-            .padding(ChefitSpacing.md)
+            .padding(.horizontal, ChefitSpacing.md)
+            .padding(.top, ChefitSpacing.md)
+            .padding(.bottom, ChefitSpacing.sm)
+
+            if savedRecipes.recipes.isEmpty {
+                VStack(spacing: ChefitSpacing.md) {
+                    Image(systemName: "bookmark")
+                        .font(.system(size: 48))
+                        .foregroundStyle(ChefitColors.matcha)
+                    Text("No saved recipes yet")
+                        .font(ChefitTypography.h3())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                    Text("Tap the heart on any recipe to save it here.")
+                        .font(ChefitTypography.body())
+                        .foregroundStyle(ChefitColors.matcha)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, ChefitSpacing.xl)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(savedRecipes.recipes) { recipe in
+                        HStack(spacing: ChefitSpacing.sm) {
+                            AsyncImage(url: recipe.imageURL) { phase in
+                                if case .success(let img) = phase {
+                                    img.resizable().scaledToFill()
+                                } else {
+                                    RoundedRectangle(cornerRadius: ChefitRadius.md)
+                                        .fill(ChefitColors.pistachio)
+                                }
+                            }
+                            .frame(width: 90, height: 70)
+                            .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(recipe.title)
+                                    .font(ChefitTypography.h3())
+                                    .foregroundStyle(ChefitColors.sageGreen)
+                                    .lineLimit(2)
+                                Text("\(recipe.minutes) min · \(recipe.difficulty)")
+                                    .font(ChefitTypography.micro())
+                                    .foregroundStyle(ChefitColors.matcha)
+                            }
+                            Spacer()
+                            Image(systemName: "heart.fill")
+                                .foregroundStyle(ChefitColors.peach)
+                        }
+                        .padding(ChefitSpacing.sm)
+                        .background(ChefitColors.white)
+                        .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.md, style: .continuous))
+                        .chefitCardShadow()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if !isEditing { onRecipeTap(recipe.id) }
+                        }
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+                    .onDelete { offsets in
+                        savedRecipes.remove(at: offsets)
+                    }
+                }
+                .listStyle(.plain)
+                .environment(\.editMode, .constant(isEditing ? .active : .inactive))
+                .background(ChefitColors.cream)
+            }
         }
         .background(ChefitColors.cream.ignoresSafeArea())
+        .onChange(of: savedRecipes.recipes.isEmpty) { _, empty in
+            if empty { isEditing = false }
+        }
     }
 }
 

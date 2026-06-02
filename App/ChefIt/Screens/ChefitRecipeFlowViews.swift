@@ -48,9 +48,11 @@ struct ChefitRecipeDiscoveryView: View {
 
     @EnvironmentObject private var shoppingCart: ShoppingCartViewModel
     @EnvironmentObject private var ingredientStore: IngredientStore
+    @EnvironmentObject private var savedRecipes: SavedRecipeStore
 
-    @State private var isFavorite: Bool = false
     @State private var showCartSheet = false
+
+    private var isFavorite: Bool { savedRecipes.isSaved(recipe.id) }
 
     private struct IngredientStatus: Hashable {
         let name: String
@@ -165,7 +167,7 @@ struct ChefitRecipeDiscoveryView: View {
         .overlay(alignment: .topTrailing) {
             HStack(spacing: ChefitSpacing.sm) {
                 circularGlassButton(systemName: isFavorite ? "heart.fill" : "heart") {
-                    isFavorite.toggle()
+                    savedRecipes.toggle(recipe)
                 }
                 circularGlassButton(systemName: "ellipsis") {}
             }

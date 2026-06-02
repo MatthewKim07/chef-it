@@ -1,6 +1,6 @@
 import Foundation
 
-struct ChefitRecipeItem: Identifiable, Hashable {
+struct ChefitRecipeItem: Identifiable, Hashable, Codable {
     let id: String
     let title: String
     let imageURL: URL?
@@ -11,24 +11,24 @@ struct ChefitRecipeItem: Identifiable, Hashable {
 enum ChefitSampleData {
     static let popularRecipes: [ChefitRecipeItem] = [
         .init(
-            id: "creamy-pasta",
-            title: "Creamy Pasta",
-            imageURL: URL(string: "https://source.unsplash.com/400x300/?creamy,pasta"),
+            id: "52772",
+            title: "Teriyaki Chicken Casserole",
+            imageURL: URL(string: "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"),
+            minutes: 40,
+            difficulty: "Easy"
+        ),
+        .init(
+            id: "52771",
+            title: "Spicy Arrabiata Penne",
+            imageURL: URL(string: "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg"),
             minutes: 20,
             difficulty: "Easy"
         ),
         .init(
-            id: "veggie-stir-fry",
-            title: "Veggie Stir Fry",
-            imageURL: URL(string: "https://source.unsplash.com/400x300/?stir,fry"),
-            minutes: 25,
-            difficulty: "Easy"
-        ),
-        .init(
-            id: "tomato-broccoli-pasta",
-            title: "Tomato & Broccoli Pasta",
-            imageURL: URL(string: "https://source.unsplash.com/400x300/?tomato,pasta"),
-            minutes: 20,
+            id: "52785",
+            title: "Dal fry",
+            imageURL: URL(string: "https://www.themealdb.com/images/media/meals/wuxrtu1468353242.jpg"),
+            minutes: 30,
             difficulty: "Medium"
         )
     ]

@@ -3,6 +3,7 @@ import SwiftUI
 enum ChefitTab: Hashable {
     case home
     case scan
+    case saved
     case community
     case profile
 }
@@ -15,6 +16,7 @@ struct ChefitBottomNavBar: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             navItem(title: "Home", icon: "house", tab: .home)
+            navItem(title: "Saved", icon: "bookmark", tab: .saved)
             scanButton
             navItem(title: "Community", icon: "person.2", tab: .community)
             navItem(title: "Profile", icon: "person.crop.circle", tab: .profile)

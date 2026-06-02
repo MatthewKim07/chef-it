@@ -25,12 +25,50 @@ final class CurrentUserProfileStore: ObservableObject {
     }
 }
 
+@MainActor
+final class SavedRecipeStore: ObservableObject {
+    @Published private(set) var recipes: [ChefitRecipeItem] = []
+    private let key = "ChefIt.SavedRecipes.v1"
+
+    init() {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let saved = try? JSONDecoder().decode([ChefitRecipeItem].self, from: data) {
+            recipes = saved
+        }
+    }
+
+    func isSaved(_ id: String) -> Bool {
+        recipes.contains { $0.id == id }
+    }
+
+    func toggle(_ recipe: ChefitRecipeItem) {
+        if let idx = recipes.firstIndex(where: { $0.id == recipe.id }) {
+            recipes.remove(at: idx)
+        } else {
+            recipes.insert(recipe, at: 0)
+        }
+        persist()
+    }
+
+    func remove(at offsets: IndexSet) {
+        recipes.remove(atOffsets: offsets)
+        persist()
+    }
+
+    private func persist() {
+        if let data = try? JSONEncoder().encode(recipes) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+}
+
 @main
 struct ChefItApp: App {
     @StateObject private var ingredientBoard = IngredientStore.live()
     @StateObject private var shoppingCart = ShoppingCartViewModel()
     @StateObject private var homeFeed = HomeFeedViewModel()
     @StateObject private var userProfileStore = CurrentUserProfileStore()
+    @StateObject private var savedRecipes = SavedRecipeStore()
 
     init() {
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -51,6 +89,7 @@ struct ChefItApp: App {
                     .environmentObject(shoppingCart)
                     .environmentObject(homeFeed)
                     .environmentObject(userProfileStore)
+                    .environmentObject(savedRecipes)
             }
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)

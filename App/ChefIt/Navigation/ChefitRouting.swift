@@ -75,6 +75,8 @@ private struct ChefitRootCoordinatorContent: View {
                             route = .home
                         case .scan:
                             route = .scan
+                        case .saved:
+                            route = .saved
                         case .community:
                             route = .community
                         case .profile:
@@ -110,6 +112,7 @@ private struct ChefitRootCoordinatorContent: View {
                 switch newValue {
                 case .home, .myIngredients, .search, .notifications: selectedTab = .home
                 case .scan, .detectedIngredients, .recommendations: selectedTab = .scan
+                case .saved: selectedTab = .saved
                 case .community, .userProfile: selectedTab = .community
                 case .profile, .settings: selectedTab = .profile
                 default: break
