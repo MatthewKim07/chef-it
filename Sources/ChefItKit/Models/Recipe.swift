@@ -12,6 +12,8 @@ public struct Recipe: Identifiable, Hashable, Codable, Sendable {
     public let dietaryTags: [String]
     public let imageURL: URL?
     public let sourceURL: URL?
+    /// TheMealDB category string (e.g. "Breakfast", "Chicken"). Empty = untagged, no meal-time restriction.
+    public let mealCategory: String
 
     public init(
         id: String,
@@ -24,7 +26,8 @@ public struct Recipe: Identifiable, Hashable, Codable, Sendable {
         ingredients: [String],
         dietaryTags: [String] = [],
         imageURL: URL? = nil,
-        sourceURL: URL? = nil
+        sourceURL: URL? = nil,
+        mealCategory: String = ""
     ) {
         self.id = id
         self.title = title
@@ -37,6 +40,7 @@ public struct Recipe: Identifiable, Hashable, Codable, Sendable {
         self.dietaryTags = dietaryTags
         self.imageURL = imageURL
         self.sourceURL = sourceURL
+        self.mealCategory = mealCategory
     }
 }
 

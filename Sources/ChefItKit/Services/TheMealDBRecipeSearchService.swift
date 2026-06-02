@@ -90,7 +90,8 @@ public struct TheMealDBRecipeSearchService: RecipeSearchService {
             ingredients: meal.ingredients,
             dietaryTags: dietaryTags,
             imageURL: meal.strMealThumb.flatMap(URL.init),
-            sourceURL: meal.strSource.flatMap(URL.init)
+            sourceURL: meal.strSource.flatMap(URL.init),
+            mealCategory: meal.strCategory ?? ""
         )
     }
 

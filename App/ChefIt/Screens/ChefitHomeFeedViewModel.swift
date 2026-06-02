@@ -42,6 +42,27 @@ enum MealContext: Hashable {
         case .lateNight: return "🌙 Late Night"
         }
     }
+
+    /// TheMealDB categories allowed for this meal time.
+    /// Empty string = untagged recipe (seed data), always allowed.
+    var allowedCategories: Set<String> {
+        switch self {
+        case .breakfast:
+            return ["Breakfast", ""]
+        case .lunch:
+            return ["Chicken", "Beef", "Lamb", "Pork", "Seafood", "Pasta",
+                    "Vegetarian", "Vegan", "Miscellaneous", "Side", "Starter",
+                    "Goat", "Soup", ""]
+        case .dinner:
+            return ["Chicken", "Beef", "Lamb", "Pork", "Seafood", "Pasta",
+                    "Vegetarian", "Vegan", "Miscellaneous", "Side", "Starter",
+                    "Goat", "Soup", ""]
+        case .lateNight:
+            return ["Chicken", "Beef", "Lamb", "Pork", "Seafood", "Pasta",
+                    "Vegetarian", "Vegan", "Miscellaneous", "Side", "Starter",
+                    "Goat", "Soup", ""]
+        }
+    }
 }
 
 enum RecipeBadge: Hashable {
@@ -198,6 +219,7 @@ final class HomeFeedViewModel: ObservableObject {
         context: MealContext
     ) -> [RecipeUIModel] {
         recipes
+            .filter { context.allowedCategories.contains($0.mealCategory) }
             .map { recipe in
                 let ingredientMatch = ingredientCoverage(recipe: recipe, pantryCanonical: pantryCanonical)
                 let timeFit = timeFit(recipe: recipe, context: context)
@@ -229,7 +251,9 @@ final class HomeFeedViewModel: ObservableObject {
         let expiringCanonicals = Set(expiring.map(\.canonicalName))
         guard !expiringCanonicals.isEmpty else { return [] }
 
-        return recipes.compactMap { recipe in
+        return recipes
+            .filter { context.allowedCategories.contains($0.mealCategory) }
+            .compactMap { recipe in
             let recipeCanonicals = Set(recipe.ingredients.map(normalizer.canonicalize))
             let hits = recipeCanonicals.intersection(expiringCanonicals)
             guard !hits.isEmpty else { return nil }
