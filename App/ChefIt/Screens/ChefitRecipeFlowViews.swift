@@ -11,6 +11,7 @@ struct ChefitRecipeDetailsPayload: Hashable {
     let ingredients: [String]
     let blurb: String
     let sourceURL: URL?
+    let instructions: String
 
     static func fromSample(_ recipe: ChefitRecipeItem) -> ChefitRecipeDetailsPayload {
         ChefitRecipeDetailsPayload(
@@ -22,7 +23,8 @@ struct ChefitRecipeDetailsPayload: Hashable {
             servings: 2,
             ingredients: ChefitSampleData.recipeDetailIngredients.map(\.1),
             blurb: "A chef-it favorite built from your pantry-ready picks.",
-            sourceURL: nil
+            sourceURL: nil,
+            instructions: ""
         )
     }
 
@@ -36,8 +38,28 @@ struct ChefitRecipeDetailsPayload: Hashable {
             servings: recipe.servings,
             ingredients: recipe.ingredients,
             blurb: recipe.blurb,
-            sourceURL: recipe.sourceURL
+            sourceURL: recipe.sourceURL,
+            instructions: recipe.instructions
         )
+    }
+
+    /// Splits raw instruction text into individual step strings.
+    var parsedSteps: [String] {
+        guard !instructions.isEmpty else { return [] }
+        return instructions
+            .components(separatedBy: "\r\n\r\n")
+            .flatMap { $0.components(separatedBy: "\n\n") }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { step in
+                // Strip leading "1." / "Step 1:" / "STEP 1\n" prefixes
+                step
+                    .replacingOccurrences(of: #"^\d+[\.\)]\s*"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"^Step\s*\d+\s*[:\-\n\r]\s*"#, with: "",
+                                          options: [.regularExpression, .caseInsensitive])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            .filter { !$0.isEmpty }
     }
 }
 
@@ -597,11 +619,21 @@ struct ChefitRecipeDetailsView: View {
                 }
             }
         case .steps:
+            let steps = recipe.parsedSteps.isEmpty
+                ? [
+                    "Gather and prep all ingredients from the list.",
+                    "Cook following the recipe timing (~\(recipe.minutes) min).",
+                    "Season and adjust to taste with pantry staples.",
+                    "Plate and serve \(recipe.servings) portion(s)."
+                  ]
+                : recipe.parsedSteps
             VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
-                ChefitStepRow(stepNumber: 1, text: "Prep the ingredients from the list.", systemImage: ChefitSymbol.stepTomatoes)
-                ChefitStepRow(stepNumber: 2, text: "Cook based on the recipe source timing (\(recipe.minutes) min).", systemImage: ChefitSymbol.stepBoilPasta)
-                ChefitStepRow(stepNumber: 3, text: "Season and adjust with pantry staples.", systemImage: ChefitSymbol.stepSaute)
-                ChefitStepRow(stepNumber: 4, text: "Plate and serve \(recipe.servings) portion(s).", systemImage: ChefitSymbol.stepServe)
+                ForEach(Array(steps.enumerated()), id: \.offset) { index, text in
+                    ExpandableStepRow(stepNumber: index + 1, text: text)
+                    if index < steps.count - 1 {
+                        Divider().overlay(ChefitColors.pistachio.opacity(0.5))
+                    }
+                }
             }
         case .notes:
             VStack(alignment: .leading, spacing: ChefitSpacing.sm) {

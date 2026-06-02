@@ -314,6 +314,46 @@ struct ChefitStepRow: View {
     }
 }
 
+struct ExpandableStepRow: View {
+    let stepNumber: Int
+    let text: String
+    @State private var isExpanded = false
+
+    private var isLong: Bool { text.count > 80 }
+
+    var body: some View {
+        Button {
+            guard isLong else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+        } label: {
+            HStack(alignment: .top, spacing: ChefitSpacing.sm) {
+                Text("\(stepNumber)")
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.white)
+                    .frame(width: 28, height: 28)
+                    .background(ChefitColors.peach)
+                    .clipShape(Circle())
+
+                Text(isExpanded || !isLong ? text : text.prefix(80) + "…")
+                    .font(ChefitTypography.body())
+                    .foregroundStyle(ChefitColors.text)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+
+                if isLong {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(ChefitColors.matcha)
+                        .padding(.top, 4)
+                }
+            }
+            .padding(.vertical, ChefitSpacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct ChefitProfileMenuRow: View {
     let label: String
     let onTap: () -> Void
