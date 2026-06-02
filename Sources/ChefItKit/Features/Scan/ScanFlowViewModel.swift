@@ -186,7 +186,7 @@ public final class ScanFlowViewModel: ObservableObject {
             )
         }
         lastConfirmFeedback = summarize(outcomes)
-        clearSession(preserveFeedback: true)
+        clearSession(preserveFeedback: true, preserveScan: true)
         return true
     }
 
@@ -227,10 +227,12 @@ public final class ScanFlowViewModel: ObservableObject {
         clearSession(preserveFeedback: false)
     }
 
-    private func clearSession(preserveFeedback: Bool) {
+    private func clearSession(preserveFeedback: Bool, preserveScan: Bool = false) {
         phase = .idle
-        draft = nil
-        candidates = []
+        if !preserveScan {
+            draft = nil
+            candidates = []
+        }
         message = nil
         if !preserveFeedback {
             lastConfirmFeedback = nil

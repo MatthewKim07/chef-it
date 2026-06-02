@@ -159,6 +159,7 @@ private struct ScannerOverlayView: View {
 struct ChefitDetectedIngredientsView: View {
     let candidates: [ScanCandidate]
     let message: String?
+    let onBack: () -> Void
     let onToggleCandidate: (UUID) -> Void
     let onQuantityChange: (UUID, Double) -> Void
     let onQuantityUnitChange: (UUID, IngredientQuantityUnit) -> Void
@@ -175,9 +176,16 @@ struct ChefitDetectedIngredientsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: ChefitSpacing.md) {
                 HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                    }
+                    .buttonStyle(.plain)
                     Text("Detected Ingredients")
                         .font(ChefitTypography.h2())
                         .foregroundStyle(ChefitColors.sageGreen)
+                    Spacer()
                 }
 
                 if let message, !message.isEmpty {

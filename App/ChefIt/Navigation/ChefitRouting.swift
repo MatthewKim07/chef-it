@@ -239,6 +239,10 @@ private struct ChefitRootCoordinatorContent: View {
             ChefitDetectedIngredientsView(
                 candidates: scanVM.candidates,
                 message: scanVM.message,
+                onBack: {
+                    scanVM.reset()
+                    route = .scan
+                },
                 onToggleCandidate: scanVM.toggleCandidate,
                 onQuantityChange: scanVM.setCandidateQuantity,
                 onQuantityUnitChange: scanVM.setCandidateQuantityUnit,
