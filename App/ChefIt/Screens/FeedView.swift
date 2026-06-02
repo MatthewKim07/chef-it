@@ -6,6 +6,7 @@ import ChefItKit
 @MainActor
 final class FeedViewModel: ObservableObject {
     @Published var posts: [Post] = []
+    @Published var searchQuery: String = ""
     @Published var isLoading = false
     @Published var isLoadingMore = false
     @Published var error: String?
@@ -15,6 +16,16 @@ final class FeedViewModel: ObservableObject {
 
     var hasMore: Bool {
         PostService.shared.hasMorePosts(loadedCount: posts.count, totalCount: total)
+    }
+
+    var displayedPosts: [Post] {
+        let sorted = posts.sorted { $0.likeCount > $1.likeCount }
+        let q = searchQuery.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return sorted }
+        return sorted.filter { post in
+            (post.displayName?.lowercased().contains(q) == true) ||
+            (post.caption?.lowercased().contains(q) == true)
+        }
     }
 
     func loadInitial() async {
@@ -94,9 +105,9 @@ final class FeedViewModel: ObservableObject {
 
 struct FeedView: View {
     let onAuthorTap: (Int) -> Void
+    @ObservedObject var vm: FeedViewModel
 
     @EnvironmentObject private var authService: AuthService
-    @StateObject private var vm = FeedViewModel()
 
     @State private var selectedPost: Post?
 
@@ -108,6 +119,8 @@ struct FeedView: View {
                 loadingState
             } else if let error = vm.error, vm.posts.isEmpty {
                 errorState(error)
+            } else if vm.displayedPosts.isEmpty && !vm.searchQuery.isEmpty {
+                noResultsState
             } else if vm.posts.isEmpty {
                 emptyState
             } else {
@@ -134,7 +147,7 @@ struct FeedView: View {
     private var feedList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: ChefitSpacing.md) {
-                ForEach(vm.posts) { post in
+                ForEach(vm.displayedPosts) { post in
                     PostCardView(
                         post: post,
                         currentUserId: currentUserId,
@@ -151,7 +164,7 @@ struct FeedView: View {
                         onDelete: { tappedPost in await vm.deletePost(id: tappedPost.id) }
                     )
                     .onAppear {
-                        if post.id == vm.posts.last?.id {
+                        if post.id == vm.posts.last?.id && vm.searchQuery.isEmpty {
                             Task { await vm.loadMore() }
                         }
                     }
@@ -210,6 +223,20 @@ struct FeedView: View {
                     .foregroundStyle(ChefitColors.matcha)
                     .multilineTextAlignment(.center)
             }
+        }
+        .padding(ChefitSpacing.twoXL)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var noResultsState: some View {
+        VStack(spacing: ChefitSpacing.lg) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48, weight: .thin))
+                .foregroundStyle(ChefitColors.matcha)
+            Text("No results for \"\(vm.searchQuery)\"")
+                .font(ChefitTypography.h3())
+                .foregroundStyle(ChefitColors.sageGreen)
+                .multilineTextAlignment(.center)
         }
         .padding(ChefitSpacing.twoXL)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

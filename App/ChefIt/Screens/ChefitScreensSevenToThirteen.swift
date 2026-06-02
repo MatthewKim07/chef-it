@@ -1681,23 +1681,71 @@ private extension View {
 struct ChefitCommunityView: View {
     let onAuthorTap: (Int) -> Void
 
+    @StateObject private var feedVM = FeedViewModel()
+    @State private var isSearching = false
+
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
-                Text("Community")
-                    .font(ChefitTypography.h2())
-                    .foregroundStyle(ChefitColors.sageGreen)
-                Spacer()
+            HStack(spacing: ChefitSpacing.sm) {
+                if isSearching {
+                    HStack(spacing: ChefitSpacing.sm) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(ChefitColors.matcha)
+                        TextField("Search recipes, people, foods…", text: $feedVM.searchQuery)
+                            .font(ChefitTypography.body())
+                            .foregroundStyle(ChefitColors.text)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                        if !feedVM.searchQuery.isEmpty {
+                            Button {
+                                feedVM.searchQuery = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(ChefitColors.matcha)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, ChefitSpacing.sm)
+                    .padding(.vertical, 9)
+                    .background(ChefitColors.pistachio.opacity(0.25))
+                    .clipShape(RoundedRectangle(cornerRadius: ChefitRadius.sm, style: .continuous))
+
+                    Button("Cancel") {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isSearching = false
+                            feedVM.searchQuery = ""
+                        }
+                    }
+                    .font(ChefitTypography.label())
+                    .foregroundStyle(ChefitColors.peach)
+                } else {
+                    Text("Community")
+                        .font(ChefitTypography.h2())
+                        .foregroundStyle(ChefitColors.sageGreen)
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isSearching = true
+                        }
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 20, weight: .regular))
+                            .foregroundStyle(ChefitColors.sageGreen)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                }
             }
             .padding(.horizontal, ChefitSpacing.md)
             .padding(.top, ChefitSpacing.md)
             .padding(.bottom, ChefitSpacing.sm)
+            .animation(.easeInOut(duration: 0.2), value: isSearching)
 
             Divider()
                 .overlay(ChefitColors.pistachio.opacity(0.8))
 
-            FeedView(onAuthorTap: onAuthorTap)
+            FeedView(onAuthorTap: onAuthorTap, vm: feedVM)
         }
         .background(ChefitColors.cream.ignoresSafeArea())
     }
