@@ -58,6 +58,11 @@ public final class NotificationService {
     private struct ErrorBody: Decodable { let error: String }
     private struct OkResponse: Decodable { let ok: Bool }
 
+    public func registerDeviceToken(_ token: String) async {
+        guard AuthService.shared.isLoggedIn else { return }
+        try? await sendBody(method: "PUT", path: "/api/users/device-token", body: ["device_token": token])
+    }
+
     public func fetchAll() async throws -> [AppNotification] {
         let page: NotificationsPage = try await get(path: "/api/notifications")
         return page.notifications
@@ -101,5 +106,16 @@ public final class NotificationService {
         case 401: throw NotificationServiceError.notAuthenticated
         default:  throw NotificationServiceError.serverError(message)
         }
+    }
+
+    private func sendBody(method: String, path: String, body: [String: String]) async throws {
+        guard let token = AuthService.shared.retrieveToken() else { return }
+        guard let url = URL(string: baseURL + path) else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = method
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try? JSONEncoder().encode(body)
+        _ = try? await URLSession.shared.data(for: req)
     }
 }

@@ -1,7 +1,25 @@
 import SwiftUI
 import UIKit
+import UserNotifications
 import GoogleSignIn
 import ChefItKit
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        Task { await NotificationService.shared.registerDeviceToken(token) }
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("APNs registration failed: \(error.localizedDescription)")
+    }
+}
 
 @MainActor
 final class CurrentUserProfileStore: ObservableObject {
@@ -64,6 +82,7 @@ final class SavedRecipeStore: ObservableObject {
 
 @main
 struct ChefItApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var ingredientBoard = IngredientStore.live()
     @StateObject private var shoppingCart = ShoppingCartViewModel()
     @StateObject private var homeFeed = HomeFeedViewModel()

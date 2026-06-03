@@ -72,3 +72,5 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, crea
 CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_like_unique
   ON notifications(user_id, actor_id, post_id)
   WHERE type = 'like';
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS device_token TEXT;

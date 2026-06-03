@@ -3,6 +3,7 @@ const db = require('../db');
 const requireAuth = require('../middleware/auth');
 const optionalAuth = require('../middleware/optionalAuth');
 const { upload, uploadBuffer } = require('../middleware/upload');
+const { sendPush } = require('../pushService');
 
 // Returns post columns + comment_count + like_count + liked_by_me.
 // Pass `viewerId` (or null) as the LAST query param so liked_by_me resolves correctly.
@@ -165,6 +166,16 @@ router.post('/:id/like', requireAuth, async (req, res) => {
          ON CONFLICT (user_id, actor_id, post_id) WHERE type = 'like' DO NOTHING`,
         [postRows[0].user_id, req.user.id, postId]
       );
+      const { rows: ownerRows } = await db.query(
+        'SELECT device_token, display_name FROM users WHERE id = $1', [postRows[0].user_id]
+      );
+      const { rows: actorRows } = await db.query(
+        'SELECT display_name FROM users WHERE id = $1', [req.user.id]
+      );
+      if (ownerRows[0]?.device_token) {
+        const actor = actorRows[0]?.display_name || 'Someone';
+        sendPush(ownerRows[0].device_token, 'New Like', `${actor} liked your post`, { postId });
+      }
     }
 
     const { rows } = await db.query(
@@ -243,6 +254,17 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
          VALUES ($1, $2, 'comment', $3, $4)`,
         [postRows[0].user_id, req.user.id, postId, rows[0].id]
       );
+      const { rows: ownerRows } = await db.query(
+        'SELECT device_token FROM users WHERE id = $1', [postRows[0].user_id]
+      );
+      const { rows: actorRows } = await db.query(
+        'SELECT display_name FROM users WHERE id = $1', [req.user.id]
+      );
+      if (ownerRows[0]?.device_token) {
+        const actor = actorRows[0]?.display_name || 'Someone';
+        const preview = body.length > 40 ? body.slice(0, 40) + '…' : body;
+        sendPush(ownerRows[0].device_token, 'New Comment', `${actor}: ${preview}`, { postId });
+      }
     }
 
     const { rows: full } = await db.query(

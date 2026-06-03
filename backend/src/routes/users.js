@@ -64,4 +64,17 @@ router.post('/:id/avatar', requireAuth, upload.single('avatar'), async (req, res
   }
 });
 
+// PUT /api/users/device-token — save APNs token for push notifications
+router.put('/device-token', requireAuth, async (req, res) => {
+  const { device_token } = req.body;
+  if (!device_token) return res.status(400).json({ error: 'device_token required' });
+  try {
+    await db.query('UPDATE users SET device_token = $1 WHERE id = $2', [device_token, req.user.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
