@@ -457,10 +457,21 @@ struct ChefitRecipeDetailsView: View {
     let onBack: () -> Void
 
     @EnvironmentObject private var authService: AuthService
+    @EnvironmentObject private var savedRecipes: SavedRecipeStore
     @StateObject private var reviewsVM = RecipeReviewsViewModel()
     @State private var selectedTab: RecipeTab = .ingredients
     @State private var showReviewComposer = false
     @State private var showCreatePost = false
+
+    private var recipeItem: ChefitRecipeItem {
+        ChefitRecipeItem(
+            id: recipe.id,
+            title: recipe.title,
+            imageURL: recipe.imageURL,
+            minutes: recipe.minutes,
+            difficulty: recipe.difficulty
+        )
+    }
 
     private var currentUserId: Int? { authService.currentUser?.id }
     private var currentUserReview: Review? {
@@ -511,6 +522,22 @@ struct ChefitRecipeDetailsView: View {
             }
             .buttonStyle(.plain)
             .padding(.leading, ChefitSpacing.md)
+            .padding(.top, ChefitSpacing.md)
+
+            Button {
+                savedRecipes.toggle(recipeItem)
+            } label: {
+                Image(systemName: savedRecipes.isSaved(recipe.id) ? "heart.fill" : "heart")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(savedRecipes.isSaved(recipe.id) ? ChefitColors.peach : ChefitColors.sageGreen)
+                    .frame(width: 38, height: 38)
+                    .background(ChefitColors.white.opacity(0.92))
+                    .clipShape(Circle())
+                    .chefitCardShadow()
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.trailing, ChefitSpacing.md)
             .padding(.top, ChefitSpacing.md)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
