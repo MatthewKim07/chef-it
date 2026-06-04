@@ -453,7 +453,7 @@ struct ChefitRecommendationsView: View {
     @ObservedObject var vm: RecommendationsViewModel
     let onBack: () -> Void
     let onRecipeTap: (Recipe) -> Void
-    @State private var favorites: Set<String> = []
+    @EnvironmentObject private var savedRecipes: SavedRecipeStore
 
     var body: some View {
         ScrollView {
@@ -564,11 +564,17 @@ struct ChefitRecommendationsView: View {
             }
             Spacer()
             Button {
-                if favorites.contains(match.recipe.id) { favorites.remove(match.recipe.id) }
-                else { favorites.insert(match.recipe.id) }
+                let item = ChefitRecipeItem(
+                    id: match.recipe.id,
+                    title: match.recipe.title,
+                    imageURL: match.recipe.imageURL,
+                    minutes: match.recipe.cookingMinutes,
+                    difficulty: match.recipe.difficulty.rawValue.capitalized
+                )
+                savedRecipes.toggle(item)
             } label: {
-                Image(systemName: favorites.contains(match.recipe.id) ? "heart.fill" : "heart")
-                    .foregroundStyle(favorites.contains(match.recipe.id) ? ChefitColors.peach : ChefitColors.matcha)
+                Image(systemName: savedRecipes.isSaved(match.recipe.id) ? "heart.fill" : "heart")
+                    .foregroundStyle(savedRecipes.isSaved(match.recipe.id) ? ChefitColors.peach : ChefitColors.matcha)
             }
             .buttonStyle(.plain)
         }

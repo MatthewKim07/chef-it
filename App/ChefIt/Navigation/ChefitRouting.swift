@@ -74,7 +74,10 @@ private struct ChefitRootCoordinatorContent: View {
                         case .home:
                             route = .home
                         case .scan:
-                            route = .scan
+                            switch route {
+                            case .scan, .detectedIngredients, .recommendations: break
+                            default: route = .scan
+                            }
                         case .saved:
                             route = .saved
                         case .community:
