@@ -73,6 +73,7 @@ struct ChefitRecipeDiscoveryView: View {
     @EnvironmentObject private var savedRecipes: SavedRecipeStore
 
     @State private var showCartSheet = false
+    @State private var showUnsaveConfirmation = false
 
     private var isFavorite: Bool { savedRecipes.isSaved(recipe.id) }
 
@@ -146,6 +147,12 @@ struct ChefitRecipeDiscoveryView: View {
                     .environmentObject(shoppingCart)
             }
         }
+        .alert("Unsave this recipe?", isPresented: $showUnsaveConfirmation) {
+            Button("Unsave", role: .destructive) { savedRecipes.toggle(recipe) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to remove \"\(recipe.title)\" from your saved recipes?")
+        }
     }
 
     private var heroSection: some View {
@@ -189,7 +196,11 @@ struct ChefitRecipeDiscoveryView: View {
         .overlay(alignment: .topTrailing) {
             HStack(spacing: ChefitSpacing.sm) {
                 circularGlassButton(systemName: isFavorite ? "heart.fill" : "heart") {
-                    savedRecipes.toggle(recipe)
+                    if isFavorite {
+                        showUnsaveConfirmation = true
+                    } else {
+                        savedRecipes.toggle(recipe)
+                    }
                 }
                 circularGlassButton(systemName: "ellipsis") {}
             }
@@ -462,6 +473,7 @@ struct ChefitRecipeDetailsView: View {
     @State private var selectedTab: RecipeTab = .ingredients
     @State private var showReviewComposer = false
     @State private var showCreatePost = false
+    @State private var showUnsaveConfirmation = false
 
     private var recipeItem: ChefitRecipeItem {
         ChefitRecipeItem(
@@ -525,7 +537,11 @@ struct ChefitRecipeDetailsView: View {
             .padding(.top, ChefitSpacing.md)
 
             Button {
-                savedRecipes.toggle(recipeItem)
+                if savedRecipes.isSaved(recipe.id) {
+                    showUnsaveConfirmation = true
+                } else {
+                    savedRecipes.toggle(recipeItem)
+                }
             } label: {
                 Image(systemName: savedRecipes.isSaved(recipe.id) ? "heart.fill" : "heart")
                     .font(.system(size: 15, weight: .semibold))
@@ -570,6 +586,12 @@ struct ChefitRecipeDetailsView: View {
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+        }
+        .alert("Unsave this recipe?", isPresented: $showUnsaveConfirmation) {
+            Button("Unsave", role: .destructive) { savedRecipes.toggle(recipeItem) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to remove \"\(recipe.title)\" from your saved recipes?")
         }
     }
 
