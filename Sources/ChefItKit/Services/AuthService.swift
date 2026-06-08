@@ -13,7 +13,7 @@ public final class AuthService: ObservableObject {
     private let keychainAccount = "jwt"
 
     public init() {
-        baseURL = Self.resolvedBaseURL()
+        baseURL = APIConfig.resolvedBaseURL()
         currentUser = nil
         isLoggedIn = false
 
@@ -183,24 +183,6 @@ public final class AuthService: ObservableObject {
         case 409: throw AuthError.emailAlreadyRegistered
         default:  throw AuthError.serverError(message)
         }
-    }
-
-    private static func resolvedBaseURL(
-        environment: [String: String] = ProcessInfo.processInfo.environment,
-        bundle: Bundle = .main
-    ) -> String {
-        firstConfiguredValue(
-            environment["AUTH_BASE_URL"],
-            bundle.object(forInfoDictionaryKey: "AUTH_BASE_URL") as? String
-        ) ?? "http://127.0.0.1:3000"
-    }
-
-    private static func firstConfiguredValue(_ values: String?...) -> String? {
-        values
-            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .first { value in
-                !value.isEmpty && !value.hasPrefix("$(")
-            }
     }
 
 private static func userFromToken(_ token: String) -> AuthUser? {

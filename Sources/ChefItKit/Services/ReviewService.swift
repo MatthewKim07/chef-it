@@ -56,7 +56,7 @@ public enum ReviewServiceError: LocalizedError {
 public final class ReviewService {
     public static let shared = ReviewService()
 
-    private let baseURL = "http://127.0.0.1:3000"
+    private let baseURL = APIConfig.resolvedBaseURL()
     private struct ErrorBody: Decodable { let error: String }
     private struct ReviewRequest: Encodable {
         let rating: Int

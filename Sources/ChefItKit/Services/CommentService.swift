@@ -54,7 +54,7 @@ public enum CommentServiceError: LocalizedError {
 public final class CommentService {
     public static let shared = CommentService()
 
-    private let baseURL = "http://127.0.0.1:3000"
+    private let baseURL = APIConfig.resolvedBaseURL()
     private struct ErrorBody: Decodable { let error: String }
 
     public func fetchComments(postId: Int) async throws -> [Comment] {

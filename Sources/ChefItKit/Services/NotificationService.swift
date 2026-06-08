@@ -54,7 +54,7 @@ public enum NotificationServiceError: LocalizedError {
 @MainActor
 public final class NotificationService {
     public static let shared = NotificationService()
-    private let baseURL = "http://127.0.0.1:3000"
+    private let baseURL = APIConfig.resolvedBaseURL()
     private struct ErrorBody: Decodable { let error: String }
     private struct OkResponse: Decodable { let ok: Bool }
 

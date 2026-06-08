@@ -141,7 +141,7 @@ public enum PostServiceError: LocalizedError {
 @MainActor
 public final class PostService {
     public static let shared = PostService()
-    private let baseURL = "http://127.0.0.1:3000"
+    private let baseURL = APIConfig.resolvedBaseURL()
     private struct ErrorBody: Decodable { let error: String }
 
     public func fetchPosts(userId: Int? = nil, limit: Int = 20, offset: Int = 0) async throws -> PostsPage {

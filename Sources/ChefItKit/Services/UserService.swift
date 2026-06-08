@@ -45,7 +45,7 @@ public enum UserServiceError: LocalizedError {
 public final class UserService {
     public static let shared = UserService()
 
-    private let baseURL: String = "http://127.0.0.1:3000"
+    private let baseURL: String = APIConfig.resolvedBaseURL()
 
     private struct ErrorBody: Decodable { let error: String }
 
