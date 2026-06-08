@@ -668,14 +668,16 @@ struct ChefitRecipeDetailsView: View {
                 }
             }
         case .steps:
-            let steps = recipe.parsedSteps.isEmpty
+            let parsed = recipe.parsedSteps
+            let isUsable = parsed.count > 1 || (parsed.first?.count ?? 0) > 60
+            let steps = !isUsable
                 ? [
                     "Gather and prep all ingredients from the list.",
                     "Cook following the recipe timing (~\(recipe.minutes) min).",
                     "Season and adjust to taste with pantry staples.",
                     "Plate and serve \(recipe.servings) portion(s)."
                   ]
-                : recipe.parsedSteps
+                : parsed
             VStack(alignment: .leading, spacing: ChefitSpacing.sm) {
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, text in
                     ExpandableStepRow(stepNumber: index + 1, text: text)
