@@ -31,6 +31,7 @@ private struct ChefitRootCoordinatorContent: View {
     @ObservedObject private var ingredientStore: IngredientStore
     @EnvironmentObject private var homeFeed: HomeFeedViewModel
     @EnvironmentObject private var userProfileStore: CurrentUserProfileStore
+    @EnvironmentObject private var savedRecipes: SavedRecipeStore
     @State private var route: ChefitRoute = .home
     @State private var selectedTab: ChefitTab = .home
     @State private var shoppingListOrigin: ChefitRoute = .home
@@ -213,8 +214,8 @@ private struct ChefitRootCoordinatorContent: View {
 
         case .recipeDiscover(let id):
             let recipe = homeFeed.recipeByID[id]
+                ?? savedRecipes.recipes.first(where: { $0.id == id })
                 ?? ChefitSampleData.popularRecipes.first(where: { $0.id == id })
-                ?? ChefitSampleData.popularRecipes.first
                 ?? ChefitRecipeItem(id: id, title: "Recipe", imageURL: nil, minutes: 20, difficulty: "Easy")
             ChefitRecipeDiscoveryView(
                 recipe: recipe,
