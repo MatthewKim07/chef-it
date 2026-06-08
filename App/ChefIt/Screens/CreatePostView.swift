@@ -249,18 +249,20 @@ struct CreatePostView: View {
     }
 
     private func loadSelectedImage(_ item: PhotosPickerItem) async {
-        guard let data = try? await item.loadTransferable(type: Data.self),
-              let (uiImage, normalizedData) = normalizeImageData(data) else { return }
+        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+        guard let (uiImage, normalizedData) = await Task.detached(priority: .userInitiated, operation: {
+            Self.normalizeImageData(data)
+        }).value else { return }
         imageData = normalizedData
         previewImage = Image(uiImage: uiImage)
     }
 
-    private func normalizeImageData(_ data: Data) -> (UIImage, Data)? {
+    private static func normalizeImageData(_ data: Data) -> (UIImage, Data)? {
         guard let sourceImage = UIImage(data: data) else { return nil }
 
-        // Force a stable orientation and cap large dimensions so preview/upload
-        // behave consistently across image types and aspect ratios.
-        let maxDimension: CGFloat = 1600
+        // Cap dimensions and compress hard — this is a feed thumbnail, not a
+        // print. Smaller payload = faster upload, especially over weak networks.
+        let maxDimension: CGFloat = 1080
         let largestSide = max(sourceImage.size.width, sourceImage.size.height)
         let scale = largestSide > 0 ? min(1, maxDimension / largestSide) : 1
         let targetSize = CGSize(
@@ -274,7 +276,7 @@ struct CreatePostView: View {
         let normalizedImage = renderer.image { _ in
             sourceImage.draw(in: CGRect(origin: .zero, size: targetSize))
         }
-        let normalizedData = normalizedImage.jpegData(compressionQuality: 0.9) ?? data
+        let normalizedData = normalizedImage.jpegData(compressionQuality: 0.6) ?? data
 
         return (normalizedImage, normalizedData)
     }
