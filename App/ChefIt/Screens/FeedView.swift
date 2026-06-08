@@ -19,10 +19,9 @@ final class FeedViewModel: ObservableObject {
     }
 
     var displayedPosts: [Post] {
-        let sorted = posts.sorted { $0.likeCount > $1.likeCount }
         let q = searchQuery.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return sorted }
-        return sorted.filter { post in
+        guard !q.isEmpty else { return posts }
+        return posts.filter { post in
             (post.displayName?.lowercased().contains(q) == true) ||
             (post.caption?.lowercased().contains(q) == true)
         }
